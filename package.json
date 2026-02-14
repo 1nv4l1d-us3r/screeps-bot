@@ -1,5 +1,23 @@
 {
-  "dependencies": {
-    "@types/screeps": "^3.3.8"
-  }
+  "name": "screeps-bot",
+  "version": "1.0.0",
+  "description": "my bot program for the screeps game",
+  "main": "index.js",
+  "devDependencies": {
+    "@types/node": "^25.2.3",
+    "@types/screeps": "^3.3.8",
+    "esbuild": "^0.27.3",
+    "screeps-api": "^1.16.1",
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3"
+  },
+  "scripts": {
+    "build": "node built.js",
+    "push": "npm run build && tsx scripts/upload.ts",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module"
 }
