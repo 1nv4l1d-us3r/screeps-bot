@@ -2,13 +2,24 @@ import { WorkerRoles, WorkerSpawnOrder } from "../roles/base";
 import { WorkerCreepMemory } from "../roles";
 
 
+interface WorkerBodyPartsConfig {
+    repeatingParts: BodyPartConstant[];
+    fixedParts?: BodyPartConstant[];
+}
 
-
-const WorkerBodyParts: Record<WorkerRoles, BodyPartConstant[]> = {
-    [WorkerRoles.HARVESTER]: [WORK, CARRY, MOVE, MOVE],
-    [WorkerRoles.UPGRADER]: [WORK, CARRY, MOVE, MOVE],
-    [WorkerRoles.BUILDER]: [WORK, CARRY, MOVE, MOVE],
-    [WorkerRoles.MINER]: [WORK, CARRY, MOVE],
+const WorkerBodyPartsConfig: Record<WorkerRoles, WorkerBodyPartsConfig> = {
+    [WorkerRoles.HARVESTER]: { 
+        repeatingParts: [WORK, CARRY, MOVE, MOVE] 
+    },
+    [WorkerRoles.UPGRADER]: { 
+        repeatingParts: [WORK, CARRY, MOVE, MOVE] 
+    },
+    [WorkerRoles.BUILDER]: { 
+        repeatingParts: [WORK, CARRY, MOVE, MOVE] 
+    },
+    [WorkerRoles.MINER]: { 
+        repeatingParts: [WORK, MOVE], fixedParts: [CARRY] 
+    },
 }
 
 
@@ -55,7 +66,7 @@ const getDesiredWorkerCountForRoom = (room: Room):RoomWorkerCounts => {
         const sources=room.find(FIND_SOURCES)
         roomWorkerCount[WorkerRoles.HARVESTER] = 4;
         roomWorkerCount[WorkerRoles.UPGRADER] = 1;
-        roomWorkerCount[WorkerRoles.BUILDER] = 2;
+        roomWorkerCount[WorkerRoles.BUILDER] = 1;
         roomWorkerCount[WorkerRoles.MINER] = sources.length;
     }
     return roomWorkerCount;
@@ -86,15 +97,31 @@ const getRoomSpawns = (room: Room) => {
 
 
 const spawnWorker = (role: WorkerRoles,spawn:StructureSpawn,budget:number) => {
-    const creepParts=WorkerBodyParts[role];
-    const AutoSizedCreepParts = getWorkerBodyParts(budget, creepParts);
+    const creepBodyConfig=WorkerBodyPartsConfig[role];
+
+    const repeatingParts = creepBodyConfig.repeatingParts;
+    const fixedParts = creepBodyConfig.fixedParts || [];
+
+    const creepParts: BodyPartConstant[] = [];
+    let remainingBudget = budget;
     
+    if(fixedParts.length > 0) {
+        creepParts.push(...fixedParts);
+        const fixedPartsCost = fixedParts.reduce((acc, part) => acc + BODYPART_COST[part], 0);
+        remainingBudget -= fixedPartsCost;
+    }
+    const AutoScaledRepeatingParts = getWorkerBodyParts(remainingBudget, repeatingParts);
+
+    if(AutoScaledRepeatingParts.length > 0) {
+        creepParts.push(...AutoScaledRepeatingParts);
+    }
+
     const newCreepName = `worker-${role}-${Game.time}`;
     const newCreepMemory:WorkerCreepMemory = {
         role: role         
     }
     const spawnResult=spawn.spawnCreep(
-        AutoSizedCreepParts, 
+        creepParts, 
         newCreepName, 
         {
             memory: newCreepMemory  
