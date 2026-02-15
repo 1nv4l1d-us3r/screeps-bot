@@ -1,35 +1,27 @@
-import { CreepRoles } from "./base";
+import { collectEnergy, EnergyCollectionMemory } from "../actions/energyCollection";
+import { WorkerRoles } from "./base";
 import { baseHarvesterMemory, harvesterRole } from "./harvester";
 import { upgraderRole } from "./upgrader";
 
 
-export interface baseBuilderMemory extends baseHarvesterMemory{
+export interface baseBuilderMemory extends EnergyCollectionMemory{
     targetConstructionSiteId?: Id<ConstructionSite>;
 }
 
 interface builderMemory extends baseBuilderMemory{
-    role: CreepRoles.BUILDER;
+    role: WorkerRoles.BUILDER;
 }
 
-export type BuilderCreep = Creep & {
+export type Builder = Creep & {
     memory: builderMemory;
 }
 
-type BaseBuilderCreep = Creep & {
+type BaseBuilder = Creep & {
     memory: baseBuilderMemory;
 }
 
 
-export const builderRole = (creep: BaseBuilderCreep) => {
-    creep.say(`builder role: ${CreepRoles.BUILDER}`);
-    if(creep.store.getFreeCapacity() === 0) {
-        creep.memory.isHarvesting = false;
-    }
-
-    if(creep.memory.isHarvesting) {
-        harvesterRole(creep);
-        return;
-    }
+export const builderRole = (creep: BaseBuilder) => {
 
     if(!creep.memory.targetConstructionSiteId) {
         const closestConstructionSite = creep.pos.findClosestByRange(FIND_MY_CONSTRUCTION_SITES);
@@ -54,7 +46,7 @@ export const builderRole = (creep: BaseBuilderCreep) => {
                 creep.memory.targetConstructionSiteId = undefined;
             }
             else if(buildResult === ERR_NOT_ENOUGH_RESOURCES) {
-                creep.memory.isHarvesting = true;
+                creep.memory.isCollectingEnergy = true;
             }
         }
     }

@@ -1,89 +1,67 @@
-import { CreepRoles } from "./base";
+import { collectEnergy } from "../actions/energyCollection";
+import {  WorkerRoles } from "./base";
+import { builderRole } from "./builder";
+import { EnergyCollectionMemory } from "../actions/energyCollection";
 
 
-export interface baseHarvesterMemory{
-    isHarvesting:boolean;
-    targetSourceId?: Id<Source>;
+export interface baseHarvesterMemory extends EnergyCollectionMemory{
+    energyFillingStructureId?: Id<Structure>;
 }
 
 interface harvesterMemory extends baseHarvesterMemory{
-    role: CreepRoles.HARVESTER;
+    role: WorkerRoles.HARVESTER;
 }
 
-export type HarvesterCreep = Creep & {
+export type Harvester = Creep & {
     memory: harvesterMemory;
 }
 
 // other creeps can inherit from this memory
-type BaseHarvesterCreep = Creep & {
+type BaseHarvester = Creep & {
     memory: baseHarvesterMemory;
 }
 
 
 
-export const harvesterRole = (creep: BaseHarvesterCreep) => {
+export const harvesterRole = (creep:BaseHarvester) => {
 
-    if(!creep.memory.targetSourceId) {
-        const sources = creep.room.find(FIND_SOURCES);
-        if(sources.length > 0) {
-            creep.memory.targetSourceId = sources[0].id;
-            creep.memory.isHarvesting = true;
-        }
-        return;
-    }
-
-    if(creep.store.getFreeCapacity() === 0) {
-        creep.memory.isHarvesting = false;
-    }
-
-
-    if(creep.memory.isHarvesting) {
-        creep.say(`harvesting source: ${creep.memory.targetSourceId}`);
-        const source = Game.getObjectById(creep.memory.targetSourceId);
-        if(source) {
-            const harvestResult = creep.harvest(source);
-            creep.say(`harvest result: ${harvestResult}`);
-            if(harvestResult === ERR_NOT_IN_RANGE) {
-                creep.say('not in range moving to source');
-                creep.moveTo(source);
-            }
-            else if(harvestResult === ERR_NOT_ENOUGH_RESOURCES) {
-                creep.memory.targetSourceId = undefined;
-            }
-        }
-    }
-
-    if(!creep.memory.isHarvesting) {
-        creep.say('upgrading controller');
-
-
+    if (!creep.memory.energyFillingStructureId) {
         const energyFillingStructure = creep.pos.findClosestByRange(
             FIND_MY_STRUCTURES,
             {
-                filter:
-                    (st) =>
-                        st.structureType == STRUCTURE_SPAWN
-                        || (st.structureType == STRUCTURE_EXTENSION || st.structureType == STRUCTURE_TOWER)
-                        && st.store.energy < st.store.getCapacity('energy')
+                filter: (st) =>
+                    (   st.structureType === STRUCTURE_SPAWN
+                        || st.structureType === STRUCTURE_EXTENSION
+                        || st.structureType === STRUCTURE_TOWER
+                    )
+                    && st.store.energy < st.store.getCapacity('energy')
             }
-               
         );
-
         if(energyFillingStructure) {
-            creep.say(`filling energy to ${energyFillingStructure.id}`);
+            creep.memory.energyFillingStructureId = energyFillingStructure.id;
+        }
+        else {
+            creep.say('no energy filling structure found, upgrading controller');
+            builderRole(creep);
+            return;
+        }
+    }
+    if(creep.memory.energyFillingStructureId) {
+        const energyFillingStructure = Game.getObjectById(creep.memory.energyFillingStructureId);
+        if(energyFillingStructure) {
             const fillResult = creep.transfer(energyFillingStructure, RESOURCE_ENERGY);
-            console.log(`fill result: ${fillResult}`);
             if(fillResult === ERR_NOT_IN_RANGE) {
                 creep.moveTo(energyFillingStructure);
             }
             else if(fillResult === ERR_NOT_ENOUGH_RESOURCES) {
-                creep.memory.isHarvesting = true;
+                creep.memory.isCollectingEnergy = true;
+            }
+            else if(fillResult === ERR_FULL || fillResult ==ERR_INVALID_TARGET) {
+                creep.memory.energyFillingStructureId = undefined;
             }
         }
-
-       
-        
     }
+
 
 
 }

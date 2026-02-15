@@ -1,12 +1,12 @@
-import { CreepRoles } from "../roles/base";
-import { WorkerCreep } from "../roles";
+import { WorkerRoles, WorkerSpawnOrder } from "../roles/base"; 
+import { Worker } from "../roles";
 
 
 
-const WorkerBodyParts: Record<CreepRoles, BodyPartConstant[]> = {
-    [CreepRoles.HARVESTER]: [WORK, CARRY, MOVE, MOVE],
-    [CreepRoles.UPGRADER]: [WORK, CARRY, MOVE, MOVE],
-    [CreepRoles.BUILDER]: [WORK, CARRY, MOVE, MOVE],
+const WorkerBodyParts: Record<WorkerRoles, BodyPartConstant[]> = {
+    [WorkerRoles.HARVESTER]: [WORK, CARRY, MOVE, MOVE],
+    [WorkerRoles.UPGRADER]: [WORK, CARRY, MOVE, MOVE],
+    [WorkerRoles.BUILDER]: [WORK, CARRY, MOVE, MOVE],
 }
 
 
@@ -23,14 +23,15 @@ const getWorkerBodyParts = (budget: number,bodyParts: BodyPartConstant[]) => {
     console.log(`Body Parts: ${bodyParts.join(', ')}`);
     
 
-    let bodyArray: BodyPartConstant[]
+    let bodyArray: BodyPartConstant[]=[];
 
     if(affordableSetCount <=1) {
-        bodyArray = bodyParts;
+        bodyArray = bodyParts
     }
     else {
-        bodyArray = Array(affordableSetCount).fill(bodyParts)
-        console.log(bodyArray,'bodyArray');
+        for(let i = 0; i < affordableSetCount; i++) {
+            bodyArray.push(...bodyParts);
+        }
     }
     return bodyArray;
 }
@@ -38,20 +39,65 @@ const getWorkerBodyParts = (budget: number,bodyParts: BodyPartConstant[]) => {
 
 
 
+type RoomWorkerCounts = Partial<Record<WorkerRoles, number>>;
 
-const getRoomWorkers = (room: Room): Record<CreepRoles, number> => {
+const getDesiredWorkerCountForRoom = (room: Room):RoomWorkerCounts => {
 
-    const roomWorkers: Record<CreepRoles, number> = {
-        [CreepRoles.HARVESTER]: 6,
-        [CreepRoles.UPGRADER]: 2,
-        [CreepRoles.BUILDER]: 2,
+    const roomWorkerCount: RoomWorkerCounts = {};
+    const roomLevel = room.controller?.level || 0;
+
+    if(roomLevel ==1) {
+      roomWorkerCount[WorkerRoles.HARVESTER] = 6;
     }
+    else if(roomLevel ==2) {
+        roomWorkerCount[WorkerRoles.HARVESTER] = 6;
+        roomWorkerCount[WorkerRoles.UPGRADER] = 1;
+        roomWorkerCount[WorkerRoles.BUILDER] = 2;
+    }
+    return roomWorkerCount;
+}
 
-    return roomWorkers;
+const getRoomWorkerPopulationForRoom = (room: Room):RoomWorkerCounts=> {
+    const roomWorkerCount: RoomWorkerCounts = {};
+
+    const roomCreeps = Object.values(Game.creeps).filter(creep => creep.my && creep.room.name === room.name) as Worker[];
+
+    roomCreeps.forEach(creep => {
+        roomWorkerCount[creep.memory.role] = (roomWorkerCount[creep.memory.role] || 0) + 1;
+    });
+    return roomWorkerCount;
 }
 
 
 
+
+const getRoomSpawns = (room: Room) => {
+    const freeSpawns = room.find(FIND_MY_SPAWNS).filter(spawn => spawn.spawning === null);
+    if(!freeSpawns.length) {
+        return null;
+    }
+    const firstSpawn = freeSpawns[0];
+    return firstSpawn;
+}
+
+
+const spawnWorker = (role: WorkerRoles,spawn:StructureSpawn,budget:number) => {
+    const creepParts=WorkerBodyParts[role];
+    const AutoSizedCreepParts = getWorkerBodyParts(budget, creepParts);
+    
+    const newCreepName = `worker-${role}-${Game.time}`;
+    const newCreepMemory:Worker['memory'] = {
+        role: role         
+    }
+    const spawnResult=spawn.spawnCreep(
+        AutoSizedCreepParts, 
+        newCreepName, 
+        {
+            memory: newCreepMemory  
+        }
+    );
+    return spawnResult;
+}
 
 
 
@@ -59,58 +105,33 @@ const getRoomWorkers = (room: Room): Record<CreepRoles, number> => {
 export const handleRoomSpawning = (room: Room) => {
     console.log(`Spawning in room: ${room.name}`);
 
-    const roomWorkers = getRoomWorkers(room);
-    const roomWorkerCount = Object.values(roomWorkers).reduce((acc, count) => acc + count, 0);
+    const desiredWorkerCount = getDesiredWorkerCountForRoom(room);
+    const roomWorkerPopulation = getRoomWorkerPopulationForRoom(room);
+    const desiredWorkerCountTotal = Object.values(desiredWorkerCount).reduce((acc, count) => acc + count, 0);
+    const roomWorkerPopulationTotal = Object.values(roomWorkerPopulation).reduce((acc, count) => acc + count, 0);
 
-    const roomCreeps = Object.values(Game.creeps)
-        .filter(
-            creep => creep.my && creep.room.name === room.name
-        ) as WorkerCreep[];
-    console.log(`Room Creeps: ${roomCreeps.length}`);
-    console.log(`Room Worker Count: ${roomWorkerCount}`);
+    if(roomWorkerPopulationTotal < desiredWorkerCountTotal) {
+        const RolesToSpawn = Object.keys(desiredWorkerCount)
+            .sort((a, b) => WorkerSpawnOrder[a as WorkerRoles] - WorkerSpawnOrder[b as WorkerRoles]
+        ) as WorkerRoles[];
 
-    if(roomCreeps.length < roomWorkerCount) {
-        const creepRoles=roomCreeps.reduce((acc, creep) => {
-            acc[creep.memory.role] = (acc[creep.memory.role] || 0) + 1;
-            return acc;
-        }, {} as Record<CreepRoles, number>);
+        for (const role of RolesToSpawn) {
+            const desiredCount = desiredWorkerCount[role] || 0;
+            const presentCount = roomWorkerPopulation[role] || 0;
 
-        for(const role of Object.keys(roomWorkers) as CreepRoles[]) {
-            const roleCount = roomWorkers[role];
-            const presentRoleCount = creepRoles[role] || 0;
-
-            console.log(`Role: ${role}, Role Count: ${roleCount}, Present Role Count: ${presentRoleCount}`);
-
-            if(presentRoleCount < roleCount) {
-                const spawnRole = role ;
-                const roomSpawns = room.find(FIND_MY_SPAWNS).filter(spawn => spawn.spawning === null);
-                if(!roomSpawns.length) {
-                    return ;
+            if(presentCount < desiredCount) {
+                const spawn = getRoomSpawns(room);
+                if(!spawn) {
+                    return 
                 }
-                const spawn = roomSpawns[0];
-                const spawnBodyParts = getWorkerBodyParts(room.energyCapacityAvailable, WorkerBodyParts[spawnRole]);
-
-
-
-
-                const newCreepName = `worker-${spawnRole}-${Game.time}`;
-                const newCreepMemory:WorkerCreep['memory'] = {
-                    role: spawnRole,
-                    isHarvesting: true
+                const spawnBudget = spawn.room.energyCapacityAvailable;
+                const spawnResult = spawnWorker(role, spawn, spawnBudget);
+                if(spawnResult === ERR_NOT_ENOUGH_ENERGY) {
+                    return;
                 }
-
-                spawn.spawnCreep(
-                    spawnBodyParts, 
-                    newCreepName, {
-                        memory: newCreepMemory  
-                    }
-                );
             }
-
-
         }
-    
-
     }
 
+   
 }

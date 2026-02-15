@@ -1,58 +1,38 @@
-import { CreepRoles } from "./base";
-import {baseHarvesterMemory,harvesterRole} from "./harvester";
+import { collectEnergy, EnergyCollectionMemory } from "../actions/energyCollection";
+import { WorkerRoles } from "./base";
 
 
-export interface baseUpgraderMemory extends baseHarvesterMemory{
-    roomControllerId?: Id<StructureController>;
+export interface baseUpgraderMemory extends EnergyCollectionMemory{
 }
 
 interface upgraderMemory extends baseUpgraderMemory{
-    role: CreepRoles.UPGRADER;
+    role: WorkerRoles.UPGRADER;
 }
 
-export type UpgraderCreep = Creep & {
+export type Upgrader = Creep & {
     memory: upgraderMemory;
 }
 
-type  BaseUpgraderCreep = Creep & {
+type  BaseUpgrader = Creep & {
     memory: baseUpgraderMemory;
 }
 
 
-export const upgraderRole = (creep: BaseUpgraderCreep) => {
+export const upgraderRole = (creep: BaseUpgrader) => {
 
-    if(creep.store.getUsedCapacity() === 0) {
-        creep.memory.isHarvesting = true;
+    const roomController=creep.room.controller
+
+    if(!roomController){
+        return 
     }
 
-    if(creep.memory.isHarvesting) {
-        harvesterRole(creep);
-        return;
+    const upgradeResult = creep.upgradeController(roomController);
+
+    if(upgradeResult==ERR_NOT_IN_RANGE){
+        creep.moveTo(roomController)
     }
-
-    if(!creep.memory.roomControllerId) {
-        const controller = creep.room.controller;
-        if(controller) {
-            creep.memory.roomControllerId = controller.id;
-        }
-        return;
+    if(upgradeResult==ERR_NOT_ENOUGH_RESOURCES){
+        creep.memory.isCollectingEnergy=true
     }
-
-    if(creep.memory.roomControllerId) {
-        const controller = Game.getObjectById(creep.memory.roomControllerId);
-        if(controller) {
-            const upgradeResult = creep.upgradeController(controller);
-            console.log(`upgrade result: ${upgradeResult}`);
-            if(upgradeResult === ERR_NOT_IN_RANGE) {
-                creep.say('not in range moving to controller');
-                creep.moveTo(controller);
-            }
-            else if(upgradeResult === ERR_NOT_ENOUGH_RESOURCES) {
-                creep.memory.isHarvesting = true;
-            }
-        }
-    }
-
-
     
 }

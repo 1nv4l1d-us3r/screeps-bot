@@ -1,23 +1,23 @@
-import { CreepRoles } from "./base";
-import { harvesterRole,HarvesterCreep } from "./harvester";
-import { upgraderRole,UpgraderCreep } from "./upgrader";
-import { builderRole,BuilderCreep } from "./builder";
+import { WorkerRoles } from "./base";
+import { harvesterRole,Harvester } from "./harvester";
+import { upgraderRole,Upgrader } from "./upgrader";
+import { builderRole,Builder } from "./builder";
 
 
 
-export type WorkerCreep = 
-    | HarvesterCreep
-    | UpgraderCreep
-    | BuilderCreep;
+export type Worker=
+    | Harvester
+    | Builder
+    | Upgrader
     
 
-export const getWorkerHandler = (creep: WorkerCreep) => {
+export const getWorkerHandler = (creep: Worker) => {
     switch(creep.memory.role) {
-        case CreepRoles.HARVESTER:
+        case WorkerRoles.HARVESTER:
             return harvesterRole
-        case CreepRoles.UPGRADER:
+        case WorkerRoles.UPGRADER:
             return upgraderRole;
-        case CreepRoles.BUILDER:
+        case WorkerRoles.BUILDER:
             return builderRole;
     }
 }
