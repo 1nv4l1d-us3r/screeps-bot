@@ -27,6 +27,10 @@ export const builderRole = (creep: BaseBuilder) => {
 
     if(creep.memory.targetConstructionSiteId) {
         const constructionSite = Game.getObjectById(creep.memory.targetConstructionSiteId);
+        if(!constructionSite) {
+            creep.memory.targetConstructionSiteId = undefined;
+            return;
+        }
         if(constructionSite) {
             const buildResult = creep.build(constructionSite);
             if(buildResult === ERR_NOT_IN_RANGE) {

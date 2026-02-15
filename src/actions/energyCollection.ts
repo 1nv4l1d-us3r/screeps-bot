@@ -100,6 +100,9 @@ export const collectEnergy = (creep: EnergyCollectingCreep) => {
         if(!leastTraficStorageStructure) {
             const nearestResource = findNearestEnergyResource(creep);
             if(!nearestResource) {
+                if(creep.store.getUsedCapacity() > creep.store.getCapacity()/2) {
+                    creep.memory.isCollectingEnergy = false;
+                }
                 return;
             }
             creep.memory.energyDroppedResourceId = nearestResource.id;

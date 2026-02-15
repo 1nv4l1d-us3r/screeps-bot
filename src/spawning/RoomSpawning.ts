@@ -62,7 +62,7 @@ const getDesiredWorkerCountForRoom = (room: Room):RoomWorkerCounts => {
     if(roomLevel ==1) {
       roomWorkerCount[WorkerRoles.HARVESTER] = 6;
     }
-    else if(roomLevel ==2) {
+    else {
         const sources=room.find(FIND_SOURCES)
         roomWorkerCount[WorkerRoles.HARVESTER] = 4;
         roomWorkerCount[WorkerRoles.UPGRADER] = 1;

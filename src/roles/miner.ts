@@ -63,7 +63,7 @@ export const minerRole = (creep: BaseMiner) => {
             creep.memory.miningResourceId = undefined;
             return;
         }
-        const storageStructure = creep.pos.findInRange(FIND_STRUCTURES, 2, {
+        const storageStructure = miningResource.pos.findInRange(FIND_STRUCTURES, 2, {
             filter: (st) => (
                 st.structureType === STRUCTURE_LINK || st.structureType === STRUCTURE_CONTAINER 
                 ) 
