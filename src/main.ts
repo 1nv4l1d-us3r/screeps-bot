@@ -5,6 +5,7 @@ import { handleRoomSpawning } from "./spawning/RoomSpawning";
 import { clearDeadCreepMemory } from "./cleanup";
 
 import { collectEnergy } from "./actions/energyCollection";
+import { mineResource } from "./actions/miningEnergy";
 
 
 export const loop = () => {
@@ -12,8 +13,12 @@ export const loop = () => {
     const myCreeps = Object.values(Game.creeps).filter(creep => creep.my) as Worker[];
     myCreeps.forEach(creep => {
 
-        if(creep.memory.isCollectingEnergy) {
+        if('isCollectingEnergy' in creep.memory && creep.memory.isCollectingEnergy) {
             collectEnergy(creep);
+            return;
+        }
+        if('isMiningResource' in creep.memory && creep.memory.isMiningResource) {
+            mineResource(creep);
             return;
         }
         const workerRole=creep.memory.role;

@@ -4,10 +4,12 @@ export enum WorkerRoles{
     HARVESTER = "harvester",
     UPGRADER = "upgrader",
     BUILDER = "builder",
+    MINER = "miner",
 }
 
 export const WorkerSpawnOrder:Record<WorkerRoles, number> = {
-    [WorkerRoles.HARVESTER]: 0,
-    [WorkerRoles.BUILDER]: 2,
-    [WorkerRoles.UPGRADER]: 1,
+    [WorkerRoles.MINER]: 0,
+    [WorkerRoles.HARVESTER]: 1,
+    [WorkerRoles.UPGRADER]: 2,
+    [WorkerRoles.BUILDER]: 3,
 }

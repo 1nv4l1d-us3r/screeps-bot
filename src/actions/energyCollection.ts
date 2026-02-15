@@ -7,12 +7,12 @@ export interface EnergyCollectionMemory{
     energySourceId?: Id<Source>;
 }
 
-type EnergyCollectingCreep = Creep & {
+type EnergyCollectingWorker = Creep & {
     memory: EnergyCollectionMemory;
 }
 
 
-const collectEnergyPrimitive = (creep: EnergyCollectingCreep) => {
+const collectEnergyPrimitive = (creep: EnergyCollectingWorker) => {
     if(!creep.memory.energySourceId) {
         const sources = creep.room.find(FIND_SOURCES);
         if(!sources.length) {
@@ -24,7 +24,7 @@ const collectEnergyPrimitive = (creep: EnergyCollectingCreep) => {
         }
         else {
             const roomCollectingCreeps = creep.room.find(FIND_MY_CREEPS, {
-                filter: (c:Worker) => c.memory.energySourceId !== undefined
+                filter: (c:Worker) => c.memory?.energySourceId !== undefined
             }) as Worker[];
 
 
@@ -66,7 +66,7 @@ const collectEnergyPrimitive = (creep: EnergyCollectingCreep) => {
 }
 
 
-export const collectEnergy = (creep: EnergyCollectingCreep) => {
+export const collectEnergy = (creep: EnergyCollectingWorker) => {
 
     collectEnergyPrimitive(creep);
 }
