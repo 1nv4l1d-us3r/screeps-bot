@@ -20,7 +20,6 @@ export const builderRole = (creep: BaseBuilder) => {
             creep.memory.targetConstructionSiteId = closestConstructionSite.id;
         }
         else {
-            creep.say('no construction sites found, upgrading controller');
             upgraderRole(creep);
             return;
         }

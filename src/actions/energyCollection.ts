@@ -23,7 +23,7 @@ const collectEnergyPrimitive = (creep: EnergyCollectingCreep) => {
         }
         else {
             const roomCollectingCreeps = creep.room.find(FIND_MY_CREEPS, {
-                filter: (c) => c.memory.isCollectingEnergy!== undefined
+                filter: (c) => c.memory.isCollectingEnergy !== undefined
             }) 
 
 
@@ -33,7 +33,7 @@ const collectEnergyPrimitive = (creep: EnergyCollectingCreep) => {
             let leastTrafic = Infinity;
 
             for(const source of sources) {
-                const collectorCount = roomCollectingCreeps.filter(creep => creep.memory.role  === source.id).length;
+                const collectorCount = roomCollectingCreeps.filter(creep => creep.memory.energySourceId  === source.id).length;
                 console.log('source: ', source.id, 'collectorCount: ', collectorCount);
                 if(collectorCount < leastTrafic) {
                     leastTrafic = collectorCount;
@@ -59,7 +59,7 @@ const collectEnergyPrimitive = (creep: EnergyCollectingCreep) => {
         }
     }
 
-    if(creep.store.getFreeCapacity() === 0) {
+    if(creep.store.getUsedCapacity() == creep.store.getCapacity()) {
         creep.memory.isCollectingEnergy = false;
     }
 }

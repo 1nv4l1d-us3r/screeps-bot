@@ -32,7 +32,6 @@ export const harvesterRole = (creep:BaseHarvester) => {
             creep.memory.energyFillingStructureId = energyFillingStructure.id;
         }
         else {
-            creep.say('no energy filling structure found, upgrading controller');
             builderRole(creep);
             return;
         }

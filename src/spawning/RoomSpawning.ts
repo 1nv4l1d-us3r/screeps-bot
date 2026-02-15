@@ -52,9 +52,11 @@ const getDesiredWorkerCountForRoom = (room: Room):RoomWorkerCounts => {
       roomWorkerCount[WorkerRoles.HARVESTER] = 6;
     }
     else if(roomLevel ==2) {
-        roomWorkerCount[WorkerRoles.HARVESTER] = 6;
+        const sources=room.find(FIND_SOURCES)
+        roomWorkerCount[WorkerRoles.HARVESTER] = 4;
         roomWorkerCount[WorkerRoles.UPGRADER] = 1;
         roomWorkerCount[WorkerRoles.BUILDER] = 2;
+        roomWorkerCount[WorkerRoles.MINER] = sources.length;
     }
     return roomWorkerCount;
 }
@@ -105,8 +107,6 @@ const spawnWorker = (role: WorkerRoles,spawn:StructureSpawn,budget:number) => {
 
 
 export const handleRoomSpawning = (room: Room) => {
-    console.log(`Spawning in room: ${room.name}`);
-
     const desiredWorkerCount = getDesiredWorkerCountForRoom(room);
     const roomWorkerPopulation = getRoomWorkerPopulationForRoom(room);
     const desiredWorkerCountTotal = Object.values(desiredWorkerCount).reduce((acc, count) => acc + count, 0);
@@ -128,6 +128,9 @@ export const handleRoomSpawning = (room: Room) => {
                 }
                 const spawnBudget = spawn.room.energyCapacityAvailable;
                 const spawnResult = spawnWorker(role, spawn, spawnBudget);
+                if(spawnResult ==OK) {
+                    return;
+                }
                 if(spawnResult === ERR_NOT_ENOUGH_ENERGY) {
                     return;
                 }

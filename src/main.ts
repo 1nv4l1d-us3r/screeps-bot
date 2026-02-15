@@ -12,7 +12,7 @@ export const loop = () => {
 
     const myCreeps = Object.values(Game.creeps).filter(creep => creep.my);
     myCreeps.forEach(creep => {
-        if (creep.memory.role) {
+        if (creep.memory.isCollectingEnergy) {
             collectEnergy(creep);
             return;
         }
