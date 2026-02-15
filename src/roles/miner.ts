@@ -121,7 +121,7 @@ export const minerRole = (creep: BaseMiner) => {
                 return;
             }
             else if(transferResult === ERR_NOT_ENOUGH_RESOURCES) {
-                creep.memory.isCollectingEnergy = true;
+                creep.memory.isMiningResource = true;
             }
         }
     }
