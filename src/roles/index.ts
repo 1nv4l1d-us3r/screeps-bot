@@ -1,18 +1,18 @@
 import { WorkerRoles } from "./base";
-import { harvesterRole,Harvester } from "./harvester";
-import { upgraderRole,Upgrader } from "./upgrader";
-import { builderRole,Builder } from "./builder";
-import { minerRole,Miner } from "./miner";
+import { harvesterRole,HarvesterMemory } from "./harvester";
+import { upgraderRole,UpgraderMemory } from "./upgrader";
+import { builderRole,BuilderMemory } from "./builder";
+import { minerRole,MinerMemory } from "./miner";
+
+
+export interface WorkerCreepMemory extends HarvesterMemory,UpgraderMemory,BuilderMemory,MinerMemory {
+    role:WorkerRoles
+}
 
 
 
-export type Worker=
-    | Harvester
-    | Builder
-    | Upgrader
-    | Miner
 
-export const getWorkerHandler = (creep: Worker) => {
+export const getWorkerHandler = (creep: Creep) => {
     switch(creep.memory.role) {
         case WorkerRoles.HARVESTER:
             return harvesterRole

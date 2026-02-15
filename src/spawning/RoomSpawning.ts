@@ -1,5 +1,6 @@
 import { WorkerRoles, WorkerSpawnOrder } from "../roles/base"; 
-import { Worker } from "../roles";
+import { WorkerCreepMemory } from "../roles";
+
 
 
 
@@ -7,6 +8,7 @@ const WorkerBodyParts: Record<WorkerRoles, BodyPartConstant[]> = {
     [WorkerRoles.HARVESTER]: [WORK, CARRY, MOVE, MOVE],
     [WorkerRoles.UPGRADER]: [WORK, CARRY, MOVE, MOVE],
     [WorkerRoles.BUILDER]: [WORK, CARRY, MOVE, MOVE],
+    [WorkerRoles.MINER]: [WORK, CARRY, MOVE],
 }
 
 
@@ -60,7 +62,7 @@ const getDesiredWorkerCountForRoom = (room: Room):RoomWorkerCounts => {
 const getRoomWorkerPopulationForRoom = (room: Room):RoomWorkerCounts=> {
     const roomWorkerCount: RoomWorkerCounts = {};
 
-    const roomCreeps = Object.values(Game.creeps).filter(creep => creep.my && creep.room.name === room.name) as Worker[];
+    const roomCreeps = Object.values(Game.creeps).filter(creep => creep.my && creep.room.name === room.name) 
 
     roomCreeps.forEach(creep => {
         roomWorkerCount[creep.memory.role] = (roomWorkerCount[creep.memory.role] || 0) + 1;
@@ -86,7 +88,7 @@ const spawnWorker = (role: WorkerRoles,spawn:StructureSpawn,budget:number) => {
     const AutoSizedCreepParts = getWorkerBodyParts(budget, creepParts);
     
     const newCreepName = `worker-${role}-${Game.time}`;
-    const newCreepMemory:Worker['memory'] = {
+    const newCreepMemory:WorkerCreepMemory = {
         role: role         
     }
     const spawnResult=spawn.spawnCreep(

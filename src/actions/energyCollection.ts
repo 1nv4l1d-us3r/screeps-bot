@@ -1,18 +1,17 @@
-import { WorkerRoles } from "../roles/base";
-import { Worker } from "../roles"; 
 
 export interface EnergyCollectionMemory{
-    role: WorkerRoles;
     isCollectingEnergy?:boolean;
     energySourceId?: Id<Source>;
 }
 
-type EnergyCollectingWorker = Creep & {
+
+type EnergyCollectingCreep = Creep & {
     memory: EnergyCollectionMemory;
 }
 
 
-const collectEnergyPrimitive = (creep: EnergyCollectingWorker) => {
+
+const collectEnergyPrimitive = (creep: EnergyCollectingCreep) => {
     if(!creep.memory.energySourceId) {
         const sources = creep.room.find(FIND_SOURCES);
         if(!sources.length) {
@@ -24,8 +23,8 @@ const collectEnergyPrimitive = (creep: EnergyCollectingWorker) => {
         }
         else {
             const roomCollectingCreeps = creep.room.find(FIND_MY_CREEPS, {
-                filter: (c:Worker) => c.memory?.energySourceId !== undefined
-            }) as Worker[];
+                filter: (c) => c.memory.isCollectingEnergy!== undefined
+            }) 
 
 
             const firstSource = sources[0];
@@ -34,7 +33,7 @@ const collectEnergyPrimitive = (creep: EnergyCollectingWorker) => {
             let leastTrafic = Infinity;
 
             for(const source of sources) {
-                const collectorCount = roomCollectingCreeps.filter(creep => creep.memory.energySourceId === source.id).length;
+                const collectorCount = roomCollectingCreeps.filter(creep => creep.memory.role  === source.id).length;
                 console.log('source: ', source.id, 'collectorCount: ', collectorCount);
                 if(collectorCount < leastTrafic) {
                     leastTrafic = collectorCount;
@@ -66,8 +65,7 @@ const collectEnergyPrimitive = (creep: EnergyCollectingWorker) => {
 }
 
 
-export const collectEnergy = (creep: EnergyCollectingWorker) => {
-
+export const collectEnergy = (creep: EnergyCollectingCreep) => {
     collectEnergyPrimitive(creep);
 }
 

@@ -1,23 +1,14 @@
-import { collectEnergy, EnergyCollectionMemory } from "../actions/energyCollection";
+import { EnergyCollectionMemory } from "../actions/energyCollection";
 import { WorkerRoles } from "./base";
-import { baseHarvesterMemory, harvesterRole } from "./harvester";
 import { upgraderRole } from "./upgrader";
 
 
-export interface baseBuilderMemory extends EnergyCollectionMemory{
+export interface BuilderMemory extends EnergyCollectionMemory{
     targetConstructionSiteId?: Id<ConstructionSite>;
 }
 
-interface builderMemory extends baseBuilderMemory{
-    role: WorkerRoles.BUILDER;
-}
-
-export type Builder = Creep & {
-    memory: builderMemory;
-}
-
 type BaseBuilder = Creep & {
-    memory: baseBuilderMemory;
+    memory: BuilderMemory
 }
 
 

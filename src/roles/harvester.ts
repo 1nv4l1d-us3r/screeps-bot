@@ -1,24 +1,15 @@
-import { collectEnergy } from "../actions/energyCollection";
-import {  WorkerRoles } from "./base";
-import { builderRole } from "./builder";
 import { EnergyCollectionMemory } from "../actions/energyCollection";
+import { WorkerRoles } from "./base";
+import { builderRole } from "./builder";
 
 
-export interface baseHarvesterMemory extends EnergyCollectionMemory{
+export interface HarvesterMemory extends EnergyCollectionMemory{
     energyFillingStructureId?: Id<Structure>;
-}
-
-interface harvesterMemory extends baseHarvesterMemory{
-    role: WorkerRoles.HARVESTER;
-}
-
-export type Harvester = Creep & {
-    memory: harvesterMemory;
 }
 
 // other creeps can inherit from this memory
 type BaseHarvester = Creep & {
-    memory: baseHarvesterMemory;
+    memory: HarvesterMemory;
 }
 
 

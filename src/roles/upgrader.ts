@@ -2,19 +2,11 @@ import { collectEnergy, EnergyCollectionMemory } from "../actions/energyCollecti
 import { WorkerRoles } from "./base";
 
 
-export interface baseUpgraderMemory extends EnergyCollectionMemory{
-}
-
-interface upgraderMemory extends baseUpgraderMemory{
-    role: WorkerRoles.UPGRADER;
-}
-
-export type Upgrader = Creep & {
-    memory: upgraderMemory;
+export interface UpgraderMemory extends EnergyCollectionMemory{
 }
 
 type  BaseUpgrader = Creep & {
-    memory: baseUpgraderMemory;
+    memory: UpgraderMemory;
 }
 
 

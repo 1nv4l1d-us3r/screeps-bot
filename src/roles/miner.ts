@@ -1,22 +1,12 @@
-import { collectEnergy, EnergyCollectionMemory } from "../actions/energyCollection";
+import { ResourceMiningMemory } from "../actions/resourceMining";
 import { WorkerRoles } from "./base";
 
-import { mineResource, ResourceMiningMemory } from "../actions/miningEnergy";
+export interface MinerMemory extends  ResourceMiningMemory {
 
-interface BaseMinerMemory extends  ResourceMiningMemory {
-
-}
-
-interface MinerMemory extends BaseMinerMemory{
-    role: WorkerRoles.MINER;
-}
-
-export type Miner = Creep & {
-    memory: MinerMemory;
 }
 
 type  BaseMiner = Creep & {
-    memory: BaseMinerMemory;
+    memory: MinerMemory;
 }
 
 export const minerRole = (creep: BaseMiner) => {

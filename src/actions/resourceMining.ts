@@ -1,20 +1,16 @@
 
-import { WorkerRoles } from "../roles/base";
-import { Worker } from "../roles";
-
 
 
 export interface ResourceMiningMemory{
-    role: WorkerRoles;
     isMiningResource?:boolean;
     miningResourceId?: Id<Source|Mineral>;
 }
 
-type ResourceMiningWorker = Creep & {
+type ResourceMiningCreep = Creep & {
     memory: ResourceMiningMemory;
 }
 
-export const mineResource = (creep: ResourceMiningWorker) => {
+export const mineResource = (creep: ResourceMiningCreep) => {
 
     if(!creep.memory.miningResourceId) {
         const miningSpots: (Source|Mineral)[] = [];
@@ -31,7 +27,7 @@ export const mineResource = (creep: ResourceMiningWorker) => {
         }
         else {
             const roomMiningCreeps = creep.room.find(FIND_MY_CREEPS, {
-                filter: (c:Worker) => c.memory.miningResourceId !== undefined
+                filter: (c) => c.memory.miningResourceId !== undefined
             }) 
             
         }
