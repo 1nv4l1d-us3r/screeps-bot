@@ -1,6 +1,27 @@
 const MIN_GRID_INDEX = 0;
 const MAX_GRID_INDEX = 49;
 
+export const findCenter = (positions: RoomPosition[]) => {
+    const firstPosition = positions[0];
+    if(positions.length === 1) {
+        return firstPosition;
+    }
+    const centerX = positions.reduce((acc, pos) => acc + pos.x, 0) / positions.length;
+    const centerY = positions.reduce((acc, pos) => acc + pos.y, 0) / positions.length;
+    return new RoomPosition(centerX, centerY, firstPosition.roomName);
+
+}
+
+export const getFullGridPositions = (room: Room) => {
+    const grid: RoomPosition[] = [];
+    for(let x = MIN_GRID_INDEX; x <= MAX_GRID_INDEX; x++) {
+        for(let y = MIN_GRID_INDEX; y <= MAX_GRID_INDEX; y++) {
+            grid.push(new RoomPosition(x, y, room.name));
+        }
+    }
+    return grid;
+}
+
 export const getGridAroundPosition = (position: RoomPosition, size: number) => {
     const grid: RoomPosition[] = [];
     const topLeft = new RoomPosition(position.x - size, position.y - size, position.roomName);

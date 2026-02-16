@@ -7,6 +7,7 @@ import { collectEnergy } from "./actions/energyCollection";
 import { mineResource } from "./actions/resourceMining";
 import { handleIntrusionDetection } from "./roomDefence/intrusionDetection";
 import { handleRoomTowerDefence } from "./roomDefence/towerDefence";
+import { constructStructuresInRoom } from "./roomDesign/constructStructures";
 
 export const loop = () => {
 
@@ -43,6 +44,12 @@ export const loop = () => {
     if (Game.time % 5 === 0) {
         myRooms.forEach(room => {
             handleIntrusionDetection(room);
+        });
+    }
+
+    if (Game.time % 20 === 0) {
+        myRooms.forEach(room => {
+            constructStructuresInRoom(room);
         });
     }
 
