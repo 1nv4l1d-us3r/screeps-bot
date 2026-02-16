@@ -3,7 +3,7 @@ export interface RoomDefenceMemory{
     hostileCreepsPresent?:boolean;
 }
 
-export const HarmfulCreepBodyParts:BodyPartConstant[]= [ATTACK, RANGED_ATTACK,CLAIM];
+export const HarmfulCreepBodyParts:BodyPartConstant[]= [ATTACK, RANGED_ATTACK, CLAIM, WORK];
 
 
 
