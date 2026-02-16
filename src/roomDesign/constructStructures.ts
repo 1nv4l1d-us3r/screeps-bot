@@ -85,13 +85,17 @@ const constructTowersInRoom = (params: ConstructTowersInRoomParams) => {
         constructionCount 
     } = params;
 
+    console.log('constructing towers in room', room.name);
+
 
     const roomTerrain=room.getTerrain();
+    console.log('finding center of base');
     const baseCenter = findCenter(spawns.map(spawn => spawn.pos));
-
+    console.log('baseCenter', baseCenter.toString());
 
     const maxDistanceFromBase = 20;
     const positionsAroundBase = getGridAroundPosition(baseCenter, maxDistanceFromBase);
+    console.log('positionsAroundBase', positionsAroundBase.length);
 
     let validTowerConstructionPositions = positionsAroundBase.filter(pos => {
         return roomTerrain.get(pos.x, pos.y) !== TERRAIN_MASK_WALL;
