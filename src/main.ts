@@ -9,6 +9,8 @@ import { handleIntrusionDetection } from "./roomDefence/intrusionDetection";
 import { handleRoomTowerDefence } from "./roomDefence/towerDefence";
 import { constructStructuresInRoom } from "./roomDesign/constructStructures";
 
+import { testScript } from "./testScript";
+
 export const loop = () => {
 
     const myCreeps = Object.values(Game.creeps).filter(creep => creep.my);
@@ -32,6 +34,11 @@ export const loop = () => {
         if(room.memory.hostileCreepsPresent) {
             handleRoomTowerDefence(room);
         }
+    }
+
+    if(Memory.testScript) {
+        testScript();
+        delete Memory.testScript;
     }
 
 

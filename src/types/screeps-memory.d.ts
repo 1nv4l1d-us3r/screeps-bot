@@ -13,6 +13,9 @@ declare global {
   interface RoomMemory extends RoomDefenceMemory {
     
   }
+  interface Memory {
+    testScript?: boolean;
+  }
 }
 
 export {};
