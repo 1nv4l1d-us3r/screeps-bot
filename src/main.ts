@@ -1,12 +1,12 @@
 
-import { WorkerRoles } from "./roles/base";
 import { getWorkerHandler } from "./roles";
 import { handleRoomSpawning } from "./spawning/RoomSpawning";
 import { clearDeadCreepMemory } from "./cleanup";
 
 import { collectEnergy } from "./actions/energyCollection";
 import { mineResource } from "./actions/resourceMining";
-
+import { handleIntrusionDetection } from "./roomDefence/intrusionDetection";
+import { handleRoomTowerDefence } from "./roomDefence/towerDefence";
 
 export const loop = () => {
 
@@ -24,10 +24,25 @@ export const loop = () => {
         const workerHandler = getWorkerHandler(creep);
         workerHandler(creep);
     });
+
+    const myRooms = Object.values(Game.rooms).filter(room => room.controller?.my);
+
+    for(const room of myRooms) {
+        if(room.memory.hostileCreepsPresent) {
+            handleRoomTowerDefence(room);
+        }
+    }
+
+
     if (Game.time % 10 === 0) {
-        const myRooms = Object.values(Game.rooms).filter(room => room.controller?.my);
         myRooms.forEach(room => {
             handleRoomSpawning(room);
+        });
+    }
+
+    if (Game.time % 5 === 0) {
+        myRooms.forEach(room => {
+            handleIntrusionDetection(room);
         });
     }
 

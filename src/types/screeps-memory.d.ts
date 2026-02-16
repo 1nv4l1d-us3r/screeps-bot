@@ -4,10 +4,14 @@
  */
 
 import { WorkerCreepMemory } from "../roles";
+import { RoomDefenceMemory } from "../roomDefence/base";
 
 declare global {
   interface CreepMemory extends WorkerCreepMemory {
 
+  }
+  interface RoomMemory extends RoomDefenceMemory {
+    
   }
 }
 
