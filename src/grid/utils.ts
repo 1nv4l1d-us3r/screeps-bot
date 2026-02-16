@@ -24,8 +24,8 @@ export const getFullGridPositions = (room: Room) => {
 
 export const getGridAroundPosition = (position: RoomPosition, size: number) => {
     const grid: RoomPosition[] = [];
-    const topLeft = new RoomPosition(position.x - size, position.y - size, position.roomName);
-    const bottomRight = new RoomPosition(position.x + size, position.y + size, position.roomName);
+    const topLeft = {x:position.x - size, y:position.y - size};
+    const bottomRight = {x:position.x + size, y:position.y + size};
 
     for(let x = topLeft.x; x <= bottomRight.x; x++) {
         for(let y = topLeft.y; y <= bottomRight.y; y++) {
@@ -47,27 +47,36 @@ export const getGridAroundPosition = (position: RoomPosition, size: number) => {
     return grid;
 }
 
+const isValidGridPosition = (x: number, y: number) => {
+    return x>=MIN_GRID_INDEX 
+        && x<=MAX_GRID_INDEX 
+        && y>=MIN_GRID_INDEX 
+        && y<=MAX_GRID_INDEX;
+}
+
+const createPositionIfValid = (x: number, y: number, roomName: string) => {
+    if(isValidGridPosition(x, y)) {
+        return new RoomPosition(x, y, roomName);
+    }
+    return undefined;
+}
+
 export const getAdjacentPositions = (position: RoomPosition) => {
 
-    const topLeft = new RoomPosition(position.x - 1, position.y - 1, position.roomName);
-    const top = new RoomPosition(position.x, position.y - 1, position.roomName);
-    const topRight = new RoomPosition(position.x + 1, position.y - 1, position.roomName);
+    const topLeft = createPositionIfValid(position.x - 1, position.y - 1, position.roomName);
+    const top = createPositionIfValid(position.x, position.y - 1, position.roomName);
+    const topRight = createPositionIfValid(position.x + 1, position.y - 1, position.roomName);
 
-    const left = new RoomPosition(position.x - 1, position.y, position.roomName);
-    const right = new RoomPosition(position.x + 1, position.y, position.roomName);
+    const left = createPositionIfValid(position.x - 1, position.y, position.roomName);
+    const right = createPositionIfValid(position.x + 1, position.y, position.roomName);
 
-    const bottomLeft = new RoomPosition(position.x - 1, position.y + 1, position.roomName);
-    const bottom = new RoomPosition(position.x, position.y + 1, position.roomName);
-    const bottomRight = new RoomPosition(position.x + 1, position.y + 1, position.roomName);
+    const bottomLeft = createPositionIfValid(position.x - 1, position.y + 1, position.roomName);
+    const bottom = createPositionIfValid(position.x, position.y + 1, position.roomName);
+    const bottomRight = createPositionIfValid(position.x + 1, position.y + 1, position.roomName);
 
     const adjacentPositions = [topLeft, top, topRight, left, right, bottomLeft, bottom, bottomRight]
 
-    const filtered= adjacentPositions.filter(pos => {
-        return pos.x>=MIN_GRID_INDEX 
-            && pos.x<=MAX_GRID_INDEX 
-            && pos.y>=MIN_GRID_INDEX 
-            && pos.y<=MAX_GRID_INDEX;
-    });
+    const filtered= adjacentPositions.filter(pos => pos !== undefined);
     return filtered;
 
 }
