@@ -70,15 +70,22 @@ const testSpiralPositionsGenerator = () => {
         return;
     }
 
+    
     const spiralPositions:RoomPosition[] = [];
-
+    
+    // accept only alternate positions or spiral positions
+    let yieldIndex=0;
     const yieldFunction = (pos: RoomPosition) => {
+        yieldIndex++;
+        if(yieldIndex%2!==0) {
+            return false;
+        }
+        
         spiralPositions.push(pos);
         return spiralPositions.length>=50;
     }
     spiralPositionsGenerator({
         center,
-        stepSize:1,
         yieldFunction,
     });
     

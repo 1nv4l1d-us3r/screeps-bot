@@ -2,7 +2,6 @@ const MIN_GRID_INDEX = 0;
 const MAX_GRID_INDEX = 49;
 
 
-
 interface FindMaxDistanceParams {
     targetPosition:RoomPosition
     testPositions:RoomPosition[]
@@ -113,14 +112,16 @@ export const getAdjacentPositions = (position: RoomPosition) => {
 
 interface SpiralPositionsGeneratorParams {
     center: RoomPosition;
-    stepSize:number;
+    spiralStepSize?:number;
+    cellStepSize?:number;
     yieldFunction: (position: RoomPosition) => (boolean|undefined);
 }
 
 export const spiralPositionsGenerator = (params: SpiralPositionsGeneratorParams) => {
     const {
         center,
-        stepSize = 1,
+        spiralStepSize=1,
+        cellStepSize=1,
         yieldFunction,
     } = params;
     const roomName = center.roomName;
@@ -130,7 +131,10 @@ export const spiralPositionsGenerator = (params: SpiralPositionsGeneratorParams)
     const bottomLeft=new RoomPosition(MIN_GRID_INDEX,MAX_GRID_INDEX,roomName);
     const bottomRight=new RoomPosition(MAX_GRID_INDEX,MAX_GRID_INDEX,roomName);
 
-    const {maxDistance:maxRangeFromCenter}=findMaxDistance({targetPosition:center,testPositions:[topLeft,topRight,bottomLeft,bottomRight]})
+    const {maxDistance:maxRangeFromCenter}=findMaxDistance({
+        targetPosition:center,
+        testPositions:[topLeft,topRight,bottomLeft,bottomRight]
+    })
 
     
     let x = center.x;
@@ -156,42 +160,39 @@ export const spiralPositionsGenerator = (params: SpiralPositionsGeneratorParams)
         }
     };
 
-    yieldIfValidPosition(x, y);
-
     while (!stopSignal) {
 
         // right
         for (let i = 0; i < step; i++) {
-            x += stepSize;
+            x += cellStepSize;
             yieldIfValidPosition(x, y);
             if (stopSignal) return;
         }
 
         // down
         for (let i = 0; i < step; i++) {
-            y += stepSize;
+            y += cellStepSize;
             yieldIfValidPosition(x, y);
             if (stopSignal) return;
         }
 
-        step += stepSize;
+        step += spiralStepSize;
 
         // left
         for (let i = 0; i < step; i++) {
-            x -= stepSize;
+            x -= cellStepSize;
             yieldIfValidPosition(x, y);
             if (stopSignal) return;
         }
 
         // up
         for (let i = 0; i < step; i++) {
-            y -= stepSize;
+            y -= cellStepSize;
             yieldIfValidPosition(x, y);
             if (stopSignal) return;
         }
 
-        step += stepSize;
+        step += spiralStepSize;
 
-        const lastPo = createPositionIfValid(x, y, roomName);
     }
 };
