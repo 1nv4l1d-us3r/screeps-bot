@@ -4,7 +4,7 @@ import { builderRole } from "./builder";
 
 
 export interface HarvesterMemory extends EnergyCollectionMemory{
-    energyFillingStructureId?: Id<Structure>;
+    energyFillingStructureId?: Id<StructureContainer|StructureExtension|StructureTower|StructureSpawn>;
 }
 
 // other creeps can inherit from this memory
@@ -17,7 +17,7 @@ type BaseHarvester = Creep & {
 export const harvesterRole = (creep:BaseHarvester) => {
 
     if (!creep.memory.energyFillingStructureId) {
-        const energyFillingStructure = creep.pos.findClosestByRange(
+        const energyFillingStructure: StructureSpawn|StructureExtension|StructureTower|null = creep.pos.findClosestByRange(
             FIND_MY_STRUCTURES,
             {
                 filter: (st) =>
@@ -36,9 +36,15 @@ export const harvesterRole = (creep:BaseHarvester) => {
             return;
         }
     }
+
     if(creep.memory.energyFillingStructureId) {
         const energyFillingStructure = Game.getObjectById(creep.memory.energyFillingStructureId);
         if(energyFillingStructure) {
+            // check if already full
+            if(energyFillingStructure.store.energy === energyFillingStructure.store.getCapacity('energy')) {
+                creep.memory.energyFillingStructureId = undefined;
+                return;
+            }
             const fillResult = creep.transfer(energyFillingStructure, RESOURCE_ENERGY);
             if(fillResult === ERR_NOT_IN_RANGE) {
                 creep.moveTo(energyFillingStructure);

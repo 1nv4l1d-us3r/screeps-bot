@@ -54,7 +54,7 @@ export const loop = () => {
         });
     }
 
-    if (Game.time % 20 === 0) {
+    if (Game.time % 50 === 0) {
         myRooms.forEach(room => {
             constructStructuresInRoom(room);
         });

@@ -2,6 +2,9 @@
 import { findCenter, getGridAroundPosition, spiralPositionsGenerator } from "./grid/utils";
 import { getBestTowerConstructionPosition } from './roomDesign/towers';
 
+import { MAX_EXTENSIONS_BY_LEVEL } from "./gameConstanst";
+import { constructStructuresInRoom } from "./roomDesign/constructStructures";
+
 const testTowerPlacement = () => {
     const room=Game.rooms['E28S12'];
 
@@ -94,8 +97,75 @@ const testSpiralPositionsGenerator = () => {
     }
 }
 
+
+const testExtensionBuilding = () => {
+
+    const room=Game.rooms['E28S12'];
+    if(!room) {
+        console.log('Room E28S12 not found');
+        return;
+    }
+    const roomLevel = room.controller?.level || 0;
+    const sturctures=room.find(FIND_STRUCTURES);
+    const constructionSites=room.find(FIND_CONSTRUCTION_SITES);
+    const occupiedPositions=[...sturctures,...constructionSites].map(st => st.pos);
+
+    const spawns=sturctures.filter(st => st.structureType === STRUCTURE_SPAWN);
+
+    const spawn=spawns[0];
+
+    if(!spawn) {
+        console.log('Spawn not found');
+        return;
+    }
+
+    const currentExtension=sturctures.filter(st => st.structureType === STRUCTURE_EXTENSION);
+
+    const currentExtensionsCount=currentExtension.length;
+    const maxExtensionsCount=MAX_EXTENSIONS_BY_LEVEL[roomLevel];
+
+    if(currentExtensionsCount < maxExtensionsCount) {
+        const neededExtensionsCount=maxExtensionsCount-currentExtensionsCount;
+        console.log('neededExtensionsCount', neededExtensionsCount);
+
+        const positionsFound:RoomPosition[] = [];
+        let yieldIndex=0;
+        const yieldFunction = (pos: RoomPosition) => {
+            yieldIndex++;
+            if(yieldIndex%2!==0) {
+                return false;
+            }
+            if(occupiedPositions.some(occupiedPos => occupiedPos.isEqualTo(pos))) {
+                return false;
+            }
+            positionsFound.push(pos);
+            occupiedPositions.push(pos);
+            return positionsFound.length>=neededExtensionsCount;
+        }
+
+        
+        spiralPositionsGenerator({
+            center:spawn.pos,
+            yieldFunction,
+        });
+
+        console.log('positionsFound', positionsFound.length);
+        console.log('positionsFound', JSON.stringify(positionsFound, null, 2));
+
+        positionsFound.forEach((pos, index) => {
+            pos.createConstructionSite(STRUCTURE_EXTENSION);
+        });
+    }
+}
+
+
+
+
 const testScript = () => {
-    testSpiralPositionsGenerator();
+
+    Object.values(Game.rooms).forEach(room => {
+        constructStructuresInRoom(room);
+    });
 }
 
 
