@@ -1,6 +1,34 @@
 const MIN_GRID_INDEX = 0;
 const MAX_GRID_INDEX = 49;
 
+
+
+interface FindMaxDistanceParams {
+    targetPosition:RoomPosition
+    testPositions:RoomPosition[]
+}
+
+interface FindMaxDistanceResult {
+    maxDistance:number
+    maxPosition:RoomPosition
+}
+
+export const findMaxDistance = (params:FindMaxDistanceParams):FindMaxDistanceResult => {
+    const {targetPosition,testPositions}=params
+
+    const firstTestPos=testPositions[0]
+    let maxPosition=firstTestPos
+    let maxDistance=0
+    for(const testPos of testPositions){
+        const distance=targetPosition.getRangeTo(testPos)
+        if(distance>maxDistance){
+            maxDistance=distance
+            maxPosition=testPos
+        }
+    }
+    return {maxDistance,maxPosition}
+}
+
 export const findCenter = (positions: RoomPosition[]) => {
     const firstPosition = positions[0];
     if(positions.length === 1) {
@@ -80,3 +108,90 @@ export const getAdjacentPositions = (position: RoomPosition) => {
     return filtered;
 
 }
+
+
+
+interface SpiralPositionsGeneratorParams {
+    center: RoomPosition;
+    stepSize:number;
+    yieldFunction: (position: RoomPosition) => (boolean|undefined);
+}
+
+export const spiralPositionsGenerator = (params: SpiralPositionsGeneratorParams) => {
+    const {
+        center,
+        stepSize = 1,
+        yieldFunction,
+    } = params;
+    const roomName = center.roomName;
+
+    const topLeft=new RoomPosition(MIN_GRID_INDEX,MIN_GRID_INDEX,roomName);
+    const topRight=new RoomPosition(MAX_GRID_INDEX,MIN_GRID_INDEX,roomName);
+    const bottomLeft=new RoomPosition(MIN_GRID_INDEX,MAX_GRID_INDEX,roomName);
+    const bottomRight=new RoomPosition(MAX_GRID_INDEX,MAX_GRID_INDEX,roomName);
+
+    const {maxDistance:maxRangeFromCenter}=findMaxDistance({targetPosition:center,testPositions:[topLeft,topRight,bottomLeft,bottomRight]})
+
+    
+    let x = center.x;
+    let y = center.y;
+
+    let step = 1;
+    let stopSignal = false;
+
+    const yieldIfValidPosition = (x: number, y: number) => {
+        const cellPos = createPositionIfValid(x, y, roomName);
+        if (cellPos) {
+            const shouldStop = yieldFunction(cellPos);
+            if (shouldStop) stopSignal = true;
+        }
+        else{
+            const deltaX=Math.abs(x-center.x)
+            const deltaY=Math.abs(y-center.y)
+            const distanceFromCenter=Math.max(deltaX,deltaY)
+            if(distanceFromCenter>maxRangeFromCenter){
+                // stop searching when range is too far from center
+                stopSignal=true
+            }
+        }
+    };
+
+    yieldIfValidPosition(x, y);
+
+    while (!stopSignal) {
+
+        // right
+        for (let i = 0; i < step; i++) {
+            x += stepSize;
+            yieldIfValidPosition(x, y);
+            if (stopSignal) return;
+        }
+
+        // down
+        for (let i = 0; i < step; i++) {
+            y += stepSize;
+            yieldIfValidPosition(x, y);
+            if (stopSignal) return;
+        }
+
+        step += stepSize;
+
+        // left
+        for (let i = 0; i < step; i++) {
+            x -= stepSize;
+            yieldIfValidPosition(x, y);
+            if (stopSignal) return;
+        }
+
+        // up
+        for (let i = 0; i < step; i++) {
+            y -= stepSize;
+            yieldIfValidPosition(x, y);
+            if (stopSignal) return;
+        }
+
+        step += stepSize;
+
+        const lastPo = createPositionIfValid(x, y, roomName);
+    }
+};
