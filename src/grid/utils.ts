@@ -39,6 +39,11 @@ export const findCenter = (positions: RoomPosition[]) => {
 
 }
 
+/**
+ * Get all positions in a room
+ * @param room 
+ * @returns RoomPosition[]
+ */
 export const getFullGridPositions = (room: Room) => {
     const grid: RoomPosition[] = [];
     for(let x = MIN_GRID_INDEX; x <= MAX_GRID_INDEX; x++) {

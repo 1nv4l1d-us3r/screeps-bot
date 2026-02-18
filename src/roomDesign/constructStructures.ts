@@ -1,18 +1,51 @@
+import { getMaxExtensionsByLevel, getMaxTowersByLevel } from "../gameConstants";
 
-import { MAX_EXTENSIONS_BY_LEVEL, MAX_TOWERS_BY_LEVEL } from "../gameConstanst";
+import {getFullGridPositions} from "../grid/utils";
 import { getBestTowerConstructionPosition } from "./towers";
 
-import { spiralPositionsGenerator, findCenter} from "../grid/utils";
+import { spiralPositionsGenerator, findCenter, getAdjacentPositions} from "../grid/utils";
 
+
+const isPositionReachable = (pos: RoomPosition, inValidBuiltPositions: Set<string>) => {
+
+    const adjacentPositions = getAdjacentPositions(pos);
+    const isReachable=adjacentPositions.some(
+        adj=>!inValidBuiltPositions.has(adj.toString())
+    );
+    return isReachable;
+
+}
 
 
 export const constructStructuresInRoom = (room: Room) => {
 
-    const roomTerrain = room.getTerrain();
     const roomLevel = room.controller?.level || 0;
+    const roomTerrain = room.getTerrain();
+    
     const roomStructures = room.find(FIND_STRUCTURES);
     const roomConstructionsSites=room.find(FIND_CONSTRUCTION_SITES);
-    const occupiedPositions=[...roomStructures,...roomConstructionsSites].map(st => st.pos);
+    
+    const occupiedPositions = [
+        ...roomStructures,
+        ...roomConstructionsSites
+    ].map(st => st.pos);
+
+
+    const roomTerrainWallPositions=getFullGridPositions(room).filter(
+        (pos) =>{
+            return roomTerrain.get(pos.x, pos.y) === TERRAIN_MASK_WALL;
+        }
+    );
+
+    const inValidBuiltPositions = new Set<string>()
+
+    roomTerrainWallPositions.forEach(pos => {
+        inValidBuiltPositions.add(pos.toString());
+    });
+
+    occupiedPositions.forEach(pos => {
+        inValidBuiltPositions.add(pos.toString());
+    });
 
     const spawns=roomStructures.filter(st => st.structureType === STRUCTURE_SPAWN);
 
@@ -20,12 +53,12 @@ export const constructStructuresInRoom = (room: Room) => {
     const constructingExtensions=roomConstructionsSites.filter(cs => cs.structureType === STRUCTURE_EXTENSION)
 
     const totalExtensionsCount=existingExtensions.length+constructingExtensions.length;
-    const maxExtensionsCount=MAX_EXTENSIONS_BY_LEVEL[roomLevel];
+    const maxExtensionsCount=getMaxExtensionsByLevel(roomLevel);
 
     if(totalExtensionsCount < maxExtensionsCount) {
         const extensionsNeededCount=maxExtensionsCount-totalExtensionsCount;
         console.log(`need to construct ${extensionsNeededCount} extensions in room ${room.name}`);
-        const spawn=spawns.at(0);
+        const spawn=spawns[0];
         if(!spawn) {
             console.log(`Room ${room.name}: no spawn found, skipping extension construction`);
             return;
@@ -39,10 +72,11 @@ export const constructStructuresInRoom = (room: Room) => {
             if(yieldIndex%2!==0) {
                 return false;
             }
-            if(roomTerrain.get(pos.x, pos.y) === TERRAIN_MASK_WALL) {
+            if(inValidBuiltPositions.has(pos.toString())) {
                 return false;
             }
-            if(occupiedPositions.some(occupiedPos => occupiedPos.isEqualTo(pos))) {
+            if(!isPositionReachable(pos, inValidBuiltPositions)) {
+                inValidBuiltPositions.add(pos.toString());
                 return false;
             }
             positionsFound.push(pos);
@@ -72,7 +106,7 @@ export const constructStructuresInRoom = (room: Room) => {
     const constructingTowers=roomConstructionsSites.filter(cs => cs.structureType === STRUCTURE_TOWER);
 
     const totalTowersCount=existingTowers.length+constructingTowers.length;
-    const maxTowersCount=MAX_TOWERS_BY_LEVEL[roomLevel];
+    const maxTowersCount=getMaxTowersByLevel(roomLevel);
     
     if(totalTowersCount < maxTowersCount && false) {
         const baseCenter = findCenter(spawns.map(spawn => spawn.pos));

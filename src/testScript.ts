@@ -2,7 +2,7 @@
 import { findCenter, getGridAroundPosition, spiralPositionsGenerator } from "./grid/utils";
 import { getBestTowerConstructionPosition } from './roomDesign/towers';
 
-import { MAX_EXTENSIONS_BY_LEVEL } from "./gameConstanst";
+import { getMaxExtensionsByLevel } from "./gameConstants";
 import { constructStructuresInRoom } from "./roomDesign/constructStructures";
 
 const testTowerPlacement = () => {
@@ -122,7 +122,7 @@ const testExtensionBuilding = () => {
     const currentExtension=sturctures.filter(st => st.structureType === STRUCTURE_EXTENSION);
 
     const currentExtensionsCount=currentExtension.length;
-    const maxExtensionsCount=MAX_EXTENSIONS_BY_LEVEL[roomLevel];
+    const maxExtensionsCount=getMaxExtensionsByLevel(roomLevel);
 
     if(currentExtensionsCount < maxExtensionsCount) {
         const neededExtensionsCount=maxExtensionsCount-currentExtensionsCount;
