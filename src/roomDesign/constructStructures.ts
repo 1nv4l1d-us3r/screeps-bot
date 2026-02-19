@@ -6,11 +6,11 @@ import { getBestTowerConstructionPosition } from "./towers";
 import { spiralPositionsGenerator, findCenter, getAdjacentPositions} from "../grid/utils";
 
 
-const isPositionReachable = (pos: RoomPosition, inValidBuiltPositions: Set<string>) => {
+const isPositionReachable = (pos: RoomPosition, inValidBuildPositions: Set<string>) => {
 
     const adjacentPositions = getAdjacentPositions(pos);
     const isReachable=adjacentPositions.some(
-        adj=>!inValidBuiltPositions.has(adj.toString())
+        adj=>!inValidBuildPositions.has(adj.toString())
     );
     return isReachable;
 
@@ -31,20 +31,10 @@ export const constructStructuresInRoom = (room: Room) => {
     ].map(st => st.pos);
 
 
-    const roomTerrainWallPositions=getFullGridPositions(room).filter(
-        (pos) =>{
-            return roomTerrain.get(pos.x, pos.y) === TERRAIN_MASK_WALL;
-        }
-    );
-
-    const inValidBuiltPositions = new Set<string>()
-
-    roomTerrainWallPositions.forEach(pos => {
-        inValidBuiltPositions.add(pos.toString());
-    });
+    const inValidBuildPositions = new Set<string>()
 
     occupiedPositions.forEach(pos => {
-        inValidBuiltPositions.add(pos.toString());
+        inValidBuildPositions.add(pos.toString());
     });
 
     const spawns=roomStructures.filter(st => st.structureType === STRUCTURE_SPAWN);
@@ -72,11 +62,15 @@ export const constructStructuresInRoom = (room: Room) => {
             if(yieldIndex%2!==0) {
                 return false;
             }
-            if(inValidBuiltPositions.has(pos.toString())) {
+            if(inValidBuildPositions.has(pos.toString())) {
                 return false;
             }
-            if(!isPositionReachable(pos, inValidBuiltPositions)) {
-                inValidBuiltPositions.add(pos.toString());
+            if(roomTerrain.get(pos.x, pos.y) === TERRAIN_MASK_WALL) {
+                inValidBuildPositions.add(pos.toString());
+                return false;
+            }
+            if(!isPositionReachable(pos, inValidBuildPositions)) {
+                inValidBuildPositions.add(pos.toString());
                 return false;
             }
             positionsFound.push(pos);
