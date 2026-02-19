@@ -1,46 +1,39 @@
-import { EnergyCollectionMemory } from "../actions/energyCollection";
-import { WorkerRoles } from "./base";
 import { upgraderRole } from "./upgrader";
+import { BaseWorker, BuilderMemory } from "../types/worker";
 
 
-export interface BuilderMemory extends EnergyCollectionMemory{
-    targetConstructionSiteId?: Id<ConstructionSite>;
-}
-
-type BaseBuilder = Creep & {
-    memory: BuilderMemory
-}
+type BaseBuilder = BaseWorker<BuilderMemory>;
 
 
-export const builderRole = (creep: BaseBuilder) => {
+export const builderRole = (worker: BaseBuilder) => {
 
-    if(!creep.memory.targetConstructionSiteId) {
-        const closestConstructionSite = creep.pos.findClosestByRange(FIND_MY_CONSTRUCTION_SITES);
+    if(!worker.memory.targetConstructionSiteId) {
+        const closestConstructionSite = worker.pos.findClosestByRange(FIND_MY_CONSTRUCTION_SITES);
         if(closestConstructionSite) {
-            creep.memory.targetConstructionSiteId = closestConstructionSite.id;
+            worker.memory.targetConstructionSiteId = closestConstructionSite.id;
         }
         else {
-            upgraderRole(creep);
+            upgraderRole(worker);
             return;
         }
     }
 
-    if(creep.memory.targetConstructionSiteId) {
-        const constructionSite = Game.getObjectById(creep.memory.targetConstructionSiteId);
+    if(worker.memory.targetConstructionSiteId) {
+        const constructionSite = Game.getObjectById(worker.memory.targetConstructionSiteId);
         if(!constructionSite) {
-            creep.memory.targetConstructionSiteId = undefined;
+            worker.memory.targetConstructionSiteId = undefined;
             return;
         }
         if(constructionSite) {
-            const buildResult = creep.build(constructionSite);
+            const buildResult = worker.build(constructionSite);
             if(buildResult === ERR_NOT_IN_RANGE) {
-                creep.moveTo(constructionSite);
+                worker.moveTo(constructionSite);
             }
             else if(buildResult === ERR_INVALID_TARGET) {
-                creep.memory.targetConstructionSiteId = undefined;
+                worker.memory.targetConstructionSiteId = undefined;
             }
             else if(buildResult === ERR_NOT_ENOUGH_RESOURCES) {
-                creep.memory.isCollectingEnergy = true;
+                worker.memory.isCollectingEnergy = true;
             }
         }
     }

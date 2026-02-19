@@ -3,15 +3,14 @@
  * No need to cast or use custom Creep & { memory: X } types.
  */
 
-import { WorkerCreepMemory } from "../roles";
-import { RoomDefenceMemory } from "../roomDefence/base";
+import { WorkerMemory } from "./worker";
+import { CustomRoomMemory } from "./room";
 
 declare global {
-  interface CreepMemory extends WorkerCreepMemory {
+  interface CreepMemory extends WorkerMemory {
 
   }
-  interface RoomMemory extends RoomDefenceMemory {
-    
+  interface RoomMemory extends CustomRoomMemory {
   }
   interface Memory {
     testScript?: boolean;

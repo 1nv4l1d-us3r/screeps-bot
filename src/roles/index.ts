@@ -1,26 +1,46 @@
-import { WorkerRoles } from "./base";
-import { harvesterRole,HarvesterMemory } from "./harvester";
-import { upgraderRole,UpgraderMemory } from "./upgrader";
-import { builderRole,BuilderMemory } from "./builder";
-import { minerRole,MinerMemory } from "./miner";
+
+import { harvesterRole } from "./harvester";
+import { upgraderRole, } from "./upgrader";
+import { builderRole} from "./builder";
+import { minerRole } from "./miner";
+
+import { WorkerRoles, WorkersConfig, Worker } from "../types/worker";
 
 
-export interface WorkerCreepMemory extends HarvesterMemory,UpgraderMemory,BuilderMemory,MinerMemory {
-    role:WorkerRoles
+
+export const WorkerSpawnOrder:Record<WorkerRoles, number> = {
+    [WorkerRoles.MINER]: 0,
+    [WorkerRoles.HARVESTER]: 1,
+    [WorkerRoles.UPGRADER]: 2,
+    [WorkerRoles.BUILDER]: 3,
 }
 
 
 
+const workersConfig:WorkersConfig = {
+    [WorkerRoles.MINER]: {
+        role: WorkerRoles.MINER,
+        spawnPriority: 0,
+        roleHandler: minerRole,
+    },
+    [WorkerRoles.HARVESTER]: {
+        role: WorkerRoles.HARVESTER,
+        spawnPriority: 1,
+        roleHandler: harvesterRole,
+    },
+    [WorkerRoles.UPGRADER]: {
+        role: WorkerRoles.UPGRADER,
+        spawnPriority: 2,
+        roleHandler: upgraderRole,
+    },
+    [WorkerRoles.BUILDER]: {
+        role: WorkerRoles.BUILDER,
+        spawnPriority: 3,
+        roleHandler: builderRole,
+    },
+}
 
-export const getWorkerHandler = (creep: Creep) => {
-    switch(creep.memory.role) {
-        case WorkerRoles.HARVESTER:
-            return harvesterRole
-        case WorkerRoles.UPGRADER:
-            return upgraderRole;
-        case WorkerRoles.BUILDER:
-            return builderRole;
-        case WorkerRoles.MINER:
-            return minerRole;
-    }
+export const getWorkerHandler = (worker:Worker) => {
+    const role = worker.memory.role;
+    return workersConfig[role].roleHandler;
 }

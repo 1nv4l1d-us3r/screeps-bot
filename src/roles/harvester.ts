@@ -1,23 +1,16 @@
-import { EnergyCollectionMemory } from "../actions/energyCollection";
-import { WorkerRoles } from "./base";
+
 import { builderRole } from "./builder";
-
-
-export interface HarvesterMemory extends EnergyCollectionMemory{
-    energyFillingStructureId?: Id<StructureContainer|StructureExtension|StructureTower|StructureSpawn>;
-}
+import { BaseWorker, HarvesterMemory, RefillingStructure } from "../types/worker";
 
 // other creeps can inherit from this memory
-type BaseHarvester = Creep & {
-    memory: HarvesterMemory;
-}
+type BaseHarvester = BaseWorker<HarvesterMemory>;
 
 
 
-export const harvesterRole = (creep:BaseHarvester) => {
+export const harvesterRole = (worker:BaseHarvester) => {
 
-    if (!creep.memory.energyFillingStructureId) {
-        const energyFillingStructure: StructureSpawn|StructureExtension|StructureTower|null = creep.pos.findClosestByRange(
+    if (!worker.memory.energyFillingStructureId) {
+        const energyFillingStructure: RefillingStructure|null = worker.pos.findClosestByRange(
             FIND_MY_STRUCTURES,
             {
                 filter: (st) =>
@@ -29,32 +22,35 @@ export const harvesterRole = (creep:BaseHarvester) => {
             }
         );
         if(energyFillingStructure) {
-            creep.memory.energyFillingStructureId = energyFillingStructure.id;
+            worker.memory.energyFillingStructureId = energyFillingStructure.id;
         }
         else {
-            builderRole(creep);
+            builderRole(worker);
             return;
         }
     }
 
-    if(creep.memory.energyFillingStructureId) {
-        const energyFillingStructure = Game.getObjectById(creep.memory.energyFillingStructureId);
-        if(energyFillingStructure) {
-            // check if already full
-            if(energyFillingStructure.store.energy === energyFillingStructure.store.getCapacity('energy')) {
-                creep.memory.energyFillingStructureId = undefined;
-                return;
-            }
-            const fillResult = creep.transfer(energyFillingStructure, RESOURCE_ENERGY);
-            if(fillResult === ERR_NOT_IN_RANGE) {
-                creep.moveTo(energyFillingStructure);
-            }
-            else if(fillResult === ERR_NOT_ENOUGH_RESOURCES) {
-                creep.memory.isCollectingEnergy = true;
-            }
-            else if(fillResult === ERR_FULL || fillResult ==ERR_INVALID_TARGET) {
-                creep.memory.energyFillingStructureId = undefined;
-            }
+    if(!worker.memory.isCollectingEnergy) {
+        const energyFillingStructure = Game.getObjectById(worker.memory.energyFillingStructureId);
+        if(!energyFillingStructure) {
+            worker.memory.energyFillingStructureId = undefined;
+            return;
+        }
+        if(energyFillingStructure.store.energy === energyFillingStructure.store.getCapacity('energy')) {
+            worker.memory.energyFillingStructureId = undefined;
+            return;
+        }
+
+        const fillResult = worker.transfer(energyFillingStructure, RESOURCE_ENERGY);
+        worker.say(`res:${fillResult}`);
+        if(fillResult === ERR_NOT_IN_RANGE) {
+            worker.moveTo(energyFillingStructure);
+        }
+        else if(fillResult === ERR_NOT_ENOUGH_RESOURCES) {
+            worker.memory.isCollectingEnergy = true;
+        }
+        else if(fillResult === ERR_FULL || fillResult ==ERR_INVALID_TARGET) {
+            worker.memory.energyFillingStructureId = undefined;
         }
     }
 

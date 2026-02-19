@@ -11,11 +11,11 @@ export const handleIntrusionDetection = (room: Room) => {
     else {
         const hostileCreeps = findHostileCreepsInRoom(room);
         if (hostileCreeps.length < 1) {
-            room.memory.hostileCreepsPresent = false;
+            room.memory.hasHostileCreeps = false;
             return;
         }
         else {
-            room.memory.hostileCreepsPresent = true;
+            room.memory.hasHostileCreeps = true;
             return;
         }
     }

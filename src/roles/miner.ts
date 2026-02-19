@@ -1,35 +1,28 @@
-import { ResourceMiningMemory } from "../actions/resourceMining";
-import { WorkerRoles } from "./base";
 
 import { getGridAroundPosition, getAdjacentPositions } from "../grid/utils";
-export interface MinerMemory extends  ResourceMiningMemory {
-    useStorageStructure?: boolean;
-    storageStructureId?: Id<StructureContainer | StructureLink>;
+
+import {  MinerMemory, BaseWorker } from "../types/worker";
 
 
-}
+type  BaseMiner = BaseWorker<MinerMemory>;
 
-type  BaseMiner = Creep & {
-    memory: MinerMemory;
-}
+export const minerRole = (worker: BaseMiner) => {
 
-export const minerRole = (creep: BaseMiner) => {
-
-    if(!creep.memory.miningResourceId) {
+    if(!worker.memory.miningResourceId) {
         const miningSpots: (Source|Mineral)[] = [];
 
-        const energySources = creep.room.find(FIND_SOURCES);
+        const energySources = worker.room.find(FIND_SOURCES);
         miningSpots.push(...energySources);
 
         if(!miningSpots){
-            creep.say('no mining spots found');
+            worker.say('no mining spots found');
             return;
         }
         else if(miningSpots.length == 1) {
-            creep.memory.miningResourceId = miningSpots[0].id;
+            worker.memory.miningResourceId = miningSpots[0].id;
         }
         else {
-            const roomMiningCreeps = creep.room.find(FIND_MY_CREEPS, {
+            const roomMiningCreeps = worker.room.find(FIND_MY_CREEPS, {
                 filter: (c) => c.memory.miningResourceId !== undefined
             })
             const firstMiningSpot = miningSpots[0];
@@ -47,20 +40,20 @@ export const minerRole = (creep: BaseMiner) => {
             }
             console.log('selectedMiningSpot', selectedMiningSpot.id);
             console.log('leastTrafic', leastTrafic);
-            creep.memory.miningResourceId = selectedMiningSpot.id;
-            const roomLevel = creep.room.controller?.level || 0;
+            worker.memory.miningResourceId = selectedMiningSpot.id;
+            const roomLevel = worker.room.controller?.level || 0;
             if(roomLevel > 1) {
-                creep.memory.useStorageStructure = true;
+                worker.memory.useStorageStructure = true;
             }
         }
     }
 
 
     // find the closest storage structure to store the mined resource
-    if(!creep.memory.storageStructureId && creep.memory.useStorageStructure) {
-        const miningResource = Game.getObjectById(creep.memory.miningResourceId);
+    if(!worker.memory.storageStructureId && worker.memory.useStorageStructure) {
+        const miningResource = Game.getObjectById(worker.memory.miningResourceId);
         if(!miningResource) {
-            creep.memory.miningResourceId = undefined;
+            worker.memory.miningResourceId = undefined;
             return;
         }
         const storageStructure = miningResource.pos.findInRange(FIND_STRUCTURES, 2, {
@@ -69,25 +62,25 @@ export const minerRole = (creep: BaseMiner) => {
                 ) 
         })
         if(storageStructure.length > 0) {
-            creep.memory.storageStructureId = storageStructure[0].id;
+            worker.memory.storageStructureId = storageStructure[0].id;
         }
         else {
             const containerSpot = findContainerBuildingSpotNearMiningSpot(miningResource);
             if(!containerSpot) {
-                creep.memory.useStorageStructure = false;
+                worker.memory.useStorageStructure = false;
                 return;
             }
             const existingConstructionSite =containerSpot.lookFor(LOOK_CONSTRUCTION_SITES);
             if(existingConstructionSite.length > 0) {
                 // will be used by the next miner
-                creep.memory.useStorageStructure = false;
+                worker.memory.useStorageStructure = false;
                 return;
             }
 
             const buildingResult = containerSpot.createConstructionSite(STRUCTURE_CONTAINER);
             if(buildingResult === OK ) {
                 // will be used by the next miner
-                creep.memory.useStorageStructure =false;
+                worker.memory.useStorageStructure =false;
                 return 
             }
             console.log('failed to build container near mining spot', miningResource.id);
@@ -100,28 +93,28 @@ export const minerRole = (creep: BaseMiner) => {
     }
 
     
-    if(!creep.memory.isMiningResource) {
+    if(!worker.memory.isMiningResource) {
 
-        if(!creep.memory.useStorageStructure || !creep.memory.storageStructureId) {
-            creep.drop(RESOURCE_ENERGY);
-            creep.memory.isMiningResource = true;
+        if(!worker.memory.useStorageStructure || !worker.memory.storageStructureId) {
+            worker.drop(RESOURCE_ENERGY);
+            worker.memory.isMiningResource = true;
         }
         else {
-            const resourceStorageStructure = Game.getObjectById(creep.memory.storageStructureId);
+            const resourceStorageStructure = Game.getObjectById(worker.memory.storageStructureId);
             if(!resourceStorageStructure) {
-                creep.memory.storageStructureId = undefined;
+                worker.memory.storageStructureId = undefined;
                 return;
             }
-            const transferResult = creep.transfer(resourceStorageStructure, RESOURCE_ENERGY);
+            const transferResult = worker.transfer(resourceStorageStructure, RESOURCE_ENERGY);
             if(transferResult === ERR_NOT_IN_RANGE) {
-                creep.moveTo(resourceStorageStructure);
+                worker.moveTo(resourceStorageStructure);
             }
             else if(transferResult === ERR_INVALID_TARGET) {
-                creep.memory.storageStructureId = undefined;
+                worker.memory.storageStructureId = undefined;
                 return;
             }
             else if(transferResult === ERR_NOT_ENOUGH_RESOURCES) {
-                creep.memory.isMiningResource = true;
+                worker.memory.isMiningResource = true;
             }
         }
     }

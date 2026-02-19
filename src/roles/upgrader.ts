@@ -1,30 +1,26 @@
 import { collectEnergy, EnergyCollectionMemory } from "../actions/energyCollection";
-import { WorkerRoles } from "./base";
+import { BaseWorker, UpgraderMemory } from "../types/worker";
 
 
-export interface UpgraderMemory extends EnergyCollectionMemory{
-}
-
-type  BaseUpgrader = Creep & {
-    memory: UpgraderMemory;
-}
+type  BaseUpgrader = BaseWorker<UpgraderMemory>;
 
 
-export const upgraderRole = (creep: BaseUpgrader) => {
+export const upgraderRole = (worker: BaseUpgrader) => {
 
-    const roomController=creep.room.controller
-
+    const roomController=worker.room.controller
     if(!roomController){
         return 
     }
 
-    const upgradeResult = creep.upgradeController(roomController);
+    const upgradeResult = worker.upgradeController(roomController);
+
+    console.log('upgradeResult', upgradeResult);
 
     if(upgradeResult==ERR_NOT_IN_RANGE){
-        creep.moveTo(roomController)
+        worker.moveTo(roomController)
     }
     if(upgradeResult==ERR_NOT_ENOUGH_RESOURCES){
-        creep.memory.isCollectingEnergy=true
+        worker.memory.isCollectingEnergy=true
     }
     
 }

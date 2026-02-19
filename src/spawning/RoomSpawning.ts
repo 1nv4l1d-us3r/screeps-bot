@@ -1,5 +1,5 @@
-import { WorkerRoles, WorkerSpawnOrder } from "../roles/base"; 
-import { WorkerCreepMemory } from "../roles";
+import { WorkerSpawnOrder } from "../roles"; 
+import { WorkerRoles, WorkerMemory } from "../types/worker";
 
 
 interface WorkerBodyPartsConfig {
@@ -75,10 +75,10 @@ const getDesiredWorkerCountForRoom = (room: Room):RoomWorkerCounts => {
 const getRoomWorkerPopulationForRoom = (room: Room):RoomWorkerCounts=> {
     const roomWorkerCount: RoomWorkerCounts = {};
 
-    const roomCreeps = Object.values(Game.creeps).filter(creep => creep.my && creep.room.name === room.name) 
+    const roomWorkers = Object.values(Game.creeps).filter(worker => worker.my && worker.room.name === room.name) 
 
-    roomCreeps.forEach(creep => {
-        roomWorkerCount[creep.memory.role] = (roomWorkerCount[creep.memory.role] || 0) + 1;
+    roomWorkers.forEach(worker => {
+        roomWorkerCount[worker.memory.role] = (roomWorkerCount[worker.memory.role] || 0) + 1;
     });
     return roomWorkerCount;
 }
@@ -117,7 +117,7 @@ const spawnWorker = (role: WorkerRoles,spawn:StructureSpawn,budget:number) => {
     }
 
     const newCreepName = `worker-${role}-${Game.time}`;
-    const newCreepMemory:WorkerCreepMemory = {
+    const newCreepMemory:WorkerMemory = {
         role: role         
     }
     const spawnResult=spawn.spawnCreep(

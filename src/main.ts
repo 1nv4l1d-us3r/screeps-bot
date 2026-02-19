@@ -13,44 +13,46 @@ import { testScript } from "./testScript";
 
 export const loop = () => {
 
-    const myCreeps = Object.values(Game.creeps).filter(creep => creep.my);
-    myCreeps.forEach(creep => {
-        if (creep.memory.isCollectingEnergy) {
-            collectEnergy(creep);
+
+
+    // ------------ Worker Task Handling ------------//
+  
+    const myWorkers = Object.values(Game.creeps).filter(worker => worker.my);
+    myWorkers.forEach(worker => {
+        if (worker.memory.isCollectingEnergy) {
+            collectEnergy(worker);
             return;
         }
-        if (creep.memory.isMiningResource) {
-            mineResource(creep);
+        if (worker.memory.isMiningResource) {
+            mineResource(worker);
             return;
         }
-        const workerRole = creep.memory.role;
-        const workerHandler = getWorkerHandler(creep);
-        workerHandler(creep);
+
+        const workerHandler = getWorkerHandler(worker);
+        workerHandler(worker);
     });
 
+
+
+    // ------------ Room Task  Handling ------------//
     const myRooms = Object.values(Game.rooms).filter(room => room.controller?.my);
 
-    for(const room of myRooms) {
-        if(room.memory.hostileCreepsPresent) {
+
+    myRooms.forEach(room => {
+        if(room.memory.hasHostileCreeps) {
             handleRoomTowerDefence(room);
         }
-    }
-
-    if(Memory.testScript) {
-        testScript();
-        delete Memory.testScript;
-    }
-
-
-    if (Game.time % 10 === 0) {
-        myRooms.forEach(room => {
-            handleRoomSpawning(room);
-        });
-    }
+    });
 
     if (Game.time % 5 === 0) {
         myRooms.forEach(room => {
             handleIntrusionDetection(room);
+        });
+    }
+
+    if (Game.time % 10 === 0) {
+        myRooms.forEach(room => {
+            handleRoomSpawning(room);
         });
     }
 
@@ -60,9 +62,17 @@ export const loop = () => {
         });
     }
 
-    // clean ups 
+    // ------------ Clean Ups ------------//
     if (Game.time % 50 === 0) {
         clearDeadCreepMemory();
     }
+
+
+    // ------------ Test Script / Debugging ------------//
+    if(Memory.testScript) {
+        testScript();
+        delete Memory.testScript;
+    }
+
     console.log(`Tick: ${Game.time}`);
 }
