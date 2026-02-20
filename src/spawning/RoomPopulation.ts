@@ -82,7 +82,7 @@ const getHarvestersSpawnDetails = (room: Room) => {
     const roomLevel = room.controller?.level || 0;
     const harvesterCount = roomLevel == 1 ? 6 : 4;
     const roomSpawnBudget = room.energyCapacityAvailable;
-    const harvesterBody=roomLevel==1 ?[WORK,CARRY,MOVE,MOVE]:getAutoScaledBodyParts([WORK,CARRY,MOVE],roomSpawnBudget);
+    const harvesterBody=roomLevel==1 ?[WORK,CARRY,MOVE,MOVE]:getAutoScaledBodyParts([WORK,CARRY,MOVE],roomSpawnBudget,15);
     const harvesterSpawnDetails = getSimpleWorkerSpawnConfig({
         room,
         bodyParts: harvesterBody,
@@ -100,7 +100,7 @@ const getUpgradersSpawnDetails = (room: Room) => {
     const roomLevel = room.controller?.level || 0;
     let upgraderCount = roomLevel == 1 ? 1 : Math.min(1,roomLevel);
     const roomSpawnBudget = room.energyCapacityAvailable;
-    const upgraderBody=roomLevel==1 ?[WORK,CARRY,MOVE,MOVE]:getAutoScaledBodyParts([WORK,CARRY,MOVE],roomSpawnBudget);
+    const upgraderBody=roomLevel==1 ?[WORK,CARRY,MOVE,MOVE]:getAutoScaledBodyParts([WORK,CARRY,MOVE],roomSpawnBudget,15);
     const upgraderSpawnDetails = getSimpleWorkerSpawnConfig({
         room,
         bodyParts: upgraderBody,
@@ -119,7 +119,7 @@ const getBuildersSpawnDetails = (room: Room) => {
     const roomLevel = room.controller?.level || 0;
     let builderCount = roomLevel == 1 ? 1 : Math.min(1,roomLevel);
     const roomSpawnBudget = room.energyCapacityAvailable;
-    const builderBody=roomLevel==1 ?[WORK,CARRY,MOVE,MOVE]:getAutoScaledBodyParts([WORK,CARRY,MOVE],roomSpawnBudget);
+    const builderBody=roomLevel==1 ?[WORK,CARRY,MOVE,MOVE]:getAutoScaledBodyParts([WORK,CARRY,MOVE],roomSpawnBudget,15);
     const builderSpawnDetails = getSimpleWorkerSpawnConfig({
         room,
         bodyParts: builderBody,

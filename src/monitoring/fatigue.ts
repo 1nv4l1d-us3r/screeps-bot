@@ -9,6 +9,10 @@ export const updateFatigueHeatMap = (room:Room,position:RoomPosition,amount:numb
         const newValue = prevValue + amount;
         room.memory.fatigueHeatMap[coordinateString] = newValue;
     }
+    else {
+        room.memory.fatigueHeatMap = {};
+        room.memory.fatigueHeatMap[coordinateString] = amount;
+    }
 }
 
 export const getFatigueHeatMap = (room:Room) => {

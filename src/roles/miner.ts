@@ -81,6 +81,13 @@ export const minerRole = (worker: BaseMiner) => {
                 worker.memory.storageStructureId = undefined;
                 return;
             }
+            // makes sure the miner is in the container is storage structure is a container
+            if(resourceStorageStructure.structureType==STRUCTURE_CONTAINER){
+                if(worker.pos.isEqualTo(resourceStorageStructure.pos)) {
+                    worker.moveTo(resourceStorageStructure);
+                    return;
+                }
+            }
             const transferResult = worker.transfer(resourceStorageStructure, RESOURCE_ENERGY);
             if(transferResult === ERR_NOT_IN_RANGE) {
                 worker.moveTo(resourceStorageStructure);
