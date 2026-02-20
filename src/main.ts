@@ -10,6 +10,10 @@ import { handleRoomTowerDefence } from "./roomDefence/towerDefence";
 import { constructStructuresInRoom } from "./roomDesign/constructStructures";
 
 import { testScript } from "./testScript";
+import { initializeOverrides } from "./overrides";
+
+// Initialize prototype overrides once at module load
+initializeOverrides();
 
 export const loop = () => {
 
