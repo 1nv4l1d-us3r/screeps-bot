@@ -1,15 +1,26 @@
 // global way of test Scripts execution
 
 import { testRoomPopulation } from "../tests/test";
+import { testWorkerSpawning } from "../tests/test";
+
+
+const testMainFunction = () => {
+
+    testWorkerSpawning();
+
+
+}
+
+
 
 
 const testScript = () => {
-    const cpuUsageStart = Game.cpu.getUsed();
+    const cpuUsageTestStart = Game.cpu.getUsed();
 
-    testRoomPopulation();
-    const cpuUsageEnd = Game.cpu.getUsed();
-    const cpuUsage = cpuUsageEnd - cpuUsageStart;
-    console.log(`Test Script CPU Usage: ${cpuUsage}`);
+    testMainFunction();
+    const cpuUsageTestEnd = Game.cpu.getUsed();
+    const cpuUsageTest = Math.round((cpuUsageTestEnd - cpuUsageTestStart)*100)/100;
+    console.log(`Test Script CPU Usage: ${cpuUsageTest}`);
 }
 
 

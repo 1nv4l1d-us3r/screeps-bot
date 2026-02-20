@@ -11,6 +11,7 @@ import { constructStructuresInRoom } from "./roomDesign/constructStructures";
 
 import { testScript } from "./testScript";
 import { initializeOverrides } from "./overrides";
+import { updateWorkerPopulation } from "./spawning/RoomPopulation";
 
 // Initialize prototype overrides once at module load
 initializeOverrides();
@@ -55,18 +56,21 @@ export const loop = () => {
         });
     }
 
-    // if (Game.time % 10 === 0) {
-    //     handleWorkerSpawning();
-    // }
+    if (Game.time % 10 === 0) {
+        handleWorkerSpawning();
+    }
 
-    if (Game.time % 50 === 0) {
+    if (Game.time % 100 === 0) {
         myRooms.forEach(room => {
             constructStructuresInRoom(room);
         });
     }
+    if(Game.time % 100 === 0) {
+        updateWorkerPopulation(myRooms);
+    }
 
     // ------------ Clean Ups ------------//
-    if (Game.time % 50 === 0) {
+    if (Game.time % 100 === 0) {
         clearDeadCreepMemory();
     }
 
@@ -78,5 +82,6 @@ export const loop = () => {
     }
 
     const cpuUsageTickEnd = Game.cpu.getUsed();
-    console.log(`Tick: ${Game.time} CPU Usage: ${cpuUsageTickEnd - cpuUsageTickStart}`);
+    const cpuUsage=Math.round((cpuUsageTickEnd - cpuUsageTickStart)*100)/100;
+    console.log(`Tick: ${Game.time} CPU Usage: ${cpuUsage}`);
 }

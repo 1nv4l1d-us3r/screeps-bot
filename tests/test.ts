@@ -1,12 +1,16 @@
 import { getRoomPopulation } from "../src/spawning/RoomPopulation";
 
+import { handleWorkerSpawning } from "../src/spawning/RoomSpawning";
 
-
-const testRoomPopulation = () => {
+export const testRoomPopulation = () => {
     const room = Game.rooms['E28S12'];
     const roomPopulation = getRoomPopulation(room);
     console.log(JSON.stringify(roomPopulation, null, 2));
     Memory.testData = roomPopulation;
 }
 
-export { testRoomPopulation };
+
+export const testWorkerSpawning = () => {
+    handleWorkerSpawning();
+}
+

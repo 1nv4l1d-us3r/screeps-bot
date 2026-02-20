@@ -8,6 +8,15 @@ import { getMaxLinksByLevel } from "../gameConstants";
 import { RoomPopulation, WorkerSpawnConfig } from "../types/room";
 
 
+export const updateWorkerPopulation = (myRooms: Room[]) => {
+
+    myRooms.forEach(room => {
+        const roomPopulation = getRoomPopulation(room);
+        room.memory.roomPopulation = roomPopulation;
+    });
+
+}
+
 
 
 export const getRoomPopulation = (room: Room) => {
@@ -89,7 +98,7 @@ const getHarvestersSpawnDetails = (room: Room) => {
 
 const getUpgradersSpawnDetails = (room: Room) => {
     const roomLevel = room.controller?.level || 0;
-    let upgraderCount = roomLevel == 1 ? 1 : Math.min(3,roomLevel);
+    let upgraderCount = roomLevel == 1 ? 1 : Math.min(1,roomLevel);
     const roomSpawnBudget = room.energyCapacityAvailable;
     const upgraderBody=roomLevel==1 ?[WORK,CARRY,MOVE,MOVE]:getAutoScaledBodyParts([WORK,CARRY,MOVE],roomSpawnBudget);
     const upgraderSpawnDetails = getSimpleWorkerSpawnConfig({
@@ -108,7 +117,7 @@ const getUpgradersSpawnDetails = (room: Room) => {
 
 const getBuildersSpawnDetails = (room: Room) => {
     const roomLevel = room.controller?.level || 0;
-    let builderCount = roomLevel == 1 ? 1 : Math.min(3,roomLevel);
+    let builderCount = roomLevel == 1 ? 1 : Math.min(1,roomLevel);
     const roomSpawnBudget = room.energyCapacityAvailable;
     const builderBody=roomLevel==1 ?[WORK,CARRY,MOVE,MOVE]:getAutoScaledBodyParts([WORK,CARRY,MOVE],roomSpawnBudget);
     const builderSpawnDetails = getSimpleWorkerSpawnConfig({
