@@ -50,7 +50,7 @@ interface GetSimpleWorkerSpawnDetailsParams {
 const getSimpleWorkerSpawnConfig=(params: GetSimpleWorkerSpawnDetailsParams) => {
 
     const {room,bodyParts,memory,workerCount} = params;
-    return Array(workerCount).map((_,index)=>{
+    return Array(workerCount).fill(0).map((_,index)=>{
         const workerId = `${memory.role}-${room.name}-${index}` as Id<Worker>;
         return {
             workerId: workerId,

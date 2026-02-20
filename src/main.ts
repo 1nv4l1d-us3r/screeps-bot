@@ -16,6 +16,7 @@ import { initializeOverrides } from "./overrides";
 initializeOverrides();
 
 export const loop = () => {
+    const cpuUsageTickStart = Game.cpu.getUsed();
 
 
 
@@ -54,9 +55,9 @@ export const loop = () => {
         });
     }
 
-    if (Game.time % 10 === 0) {
-        handleWorkerSpawning();
-    }
+    // if (Game.time % 10 === 0) {
+    //     handleWorkerSpawning();
+    // }
 
     if (Game.time % 50 === 0) {
         myRooms.forEach(room => {
@@ -76,5 +77,6 @@ export const loop = () => {
         delete Memory.testScript;
     }
 
-    console.log(`Tick: ${Game.time}`);
+    const cpuUsageTickEnd = Game.cpu.getUsed();
+    console.log(`Tick: ${Game.time} CPU Usage: ${cpuUsageTickEnd - cpuUsageTickStart}`);
 }
