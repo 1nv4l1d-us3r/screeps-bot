@@ -33,7 +33,7 @@ export type UpgraderMemory = EnergyCollectionMemory;
 
 // -------------- Miner Memory --------------//
 export interface MinerMemory extends  ResourceMiningMemory {
-    useStorageStructure?: boolean;
+    storageStructureType?: STRUCTURE_CONTAINER | STRUCTURE_LINK;
     storageStructureId?: Id<StructureContainer | StructureLink>;
 }
 
