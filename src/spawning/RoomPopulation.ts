@@ -188,7 +188,6 @@ const getMinersSpawnDetails = (room: Room) => {
         const minerMemory: WorkerMemory = {
             role: WorkerRoles.MINER,
             workerId: minerWorkerId,
-            isMiningResource: true,
             miningResourceId: miningResourceId,
             storageStructureType: minerStorageType,
         }
