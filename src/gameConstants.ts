@@ -38,3 +38,15 @@ export const getMaxTowersByLevel = (rcl: number) => {
 
     return 0;
 }
+
+
+
+
+export const getMaxLinksByLevel = (rcl: number) => {
+    if(rcl<5)
+        return 0;
+    else if( rcl>=5 && rcl<=8)
+        return rcl-3; // 5:2, 6:3, 7:4, 8:6
+    else
+        return 0;
+    }

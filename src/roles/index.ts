@@ -8,13 +8,6 @@ import { WorkerRoles, WorkersConfig, Worker } from "../types/worker";
 
 
 
-export const WorkerSpawnOrder:Record<WorkerRoles, number> = {
-    [WorkerRoles.MINER]: 0,
-    [WorkerRoles.HARVESTER]: 1,
-    [WorkerRoles.UPGRADER]: 2,
-    [WorkerRoles.BUILDER]: 3,
-}
-
 
 
 const workersConfig:WorkersConfig = {
@@ -43,4 +36,9 @@ const workersConfig:WorkersConfig = {
 export const getWorkerHandler = (worker:Worker) => {
     const role = worker.memory.role;
     return workersConfig[role].roleHandler;
+}
+
+
+export const getWorkerSpawnPriority = (role: WorkerRoles) => {
+    return workersConfig[role]?.spawnPriority || Infinity;
 }

@@ -48,6 +48,7 @@ export interface WorkerMemory
         UpgraderMemory 
     {
         role: WorkerRoles;
+        workerId: string;
     }
 
 

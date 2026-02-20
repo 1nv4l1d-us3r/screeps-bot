@@ -1,6 +1,6 @@
 
 import { getWorkerHandler } from "./roles";
-import { handleRoomSpawning } from "./spawning/RoomSpawning";
+import { handleWorkerSpawning } from "./spawning/RoomSpawning";
 import { clearDeadCreepMemory } from "./cleanup";
 
 import { collectEnergy } from "./actions/energyCollection";
@@ -55,9 +55,7 @@ export const loop = () => {
     }
 
     if (Game.time % 10 === 0) {
-        myRooms.forEach(room => {
-            handleRoomSpawning(room);
-        });
+        handleWorkerSpawning();
     }
 
     if (Game.time % 50 === 0) {

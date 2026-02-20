@@ -102,33 +102,33 @@ export const constructStructuresInRoom = (room: Room) => {
     const totalTowersCount=existingTowers.length+constructingTowers.length;
     const maxTowersCount=getMaxTowersByLevel(roomLevel);
     
-    if(totalTowersCount < maxTowersCount && false) {
-        const baseCenter = findCenter(spawns.map(spawn => spawn.pos));
-        const newTowersNeededCount=maxTowersCount-totalTowersCount;
+    if(totalTowersCount < maxTowersCount ) {
+        // const baseCenter = findCenter(spawns.map(spawn => spawn.pos));
+        // const newTowersNeededCount=maxTowersCount-totalTowersCount;
 
 
-        for(let i=0; i<newTowersNeededCount; i++) {
-            const newTowerConstPos=getBestTowerConstructionPosition({
-                room,
-                baseCenter,
-                existingTowerPositions:existingTowers.map(tower => tower.pos),
-                excludePositions:occupiedPositions
-            });
-            if(!newTowerConstPos) {
-                console.log(`Room ${room.name}: no valid tower construction position found`);
-                break;
-            }
-            const constructionResult=room.createConstructionSite(newTowerConstPos, STRUCTURE_TOWER);
-            if(constructionResult ==OK) {
-                occupiedPositions.push(newTowerConstPos);
-            }
-            if(constructionResult !== OK) {
-                console.log(`Room ${room.name}: failed to construct tower at ${newTowerConstPos.toString()}`);
-                console.log('constructionResult', constructionResult);
-                break;
-            }
-            room.createConstructionSite(newTowerConstPos, STRUCTURE_TOWER);
-        }
+        // for(let i=0; i<newTowersNeededCount; i++) {
+        //     const newTowerConstPos=getBestTowerConstructionPosition({
+        //         room,
+        //         baseCenter,
+        //         existingTowerPositions:existingTowers.map(tower => tower.pos),
+        //         excludePositions:occupiedPositions
+        //     });
+        //     if(!newTowerConstPos) {
+        //         console.log(`Room ${room.name}: no valid tower construction position found`);
+        //         break;
+        //     }
+        //     const constructionResult=room.createConstructionSite(newTowerConstPos, STRUCTURE_TOWER);
+        //     if(constructionResult ==OK) {
+        //         occupiedPositions.push(newTowerConstPos);
+        //     }
+        //     if(constructionResult !== OK) {
+        //         console.log(`Room ${room.name}: failed to construct tower at ${newTowerConstPos.toString()}`);
+        //         console.log('constructionResult', constructionResult);
+        //         break;
+        //     }
+        //     room.createConstructionSite(newTowerConstPos, STRUCTURE_TOWER);
+        // }
 
 
             

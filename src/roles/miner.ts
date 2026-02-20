@@ -12,25 +12,8 @@ type  BaseMiner = BaseWorker<MinerMemory>;
 export const minerRole = (worker: BaseMiner) => {
 
     if(!worker.memory.miningResourceId) {
-        const leastTraficMiningSpot = findMiningSpotWithLeastTrafic(worker.room);
-        if(!leastTraficMiningSpot) {
-            worker.say('no mining spots found, miner is idle');
-            return;
-        }
-        worker.memory.miningResourceId = leastTraficMiningSpot.id;
-        
-        const roomLevel = worker.room.controller?.level || 0;
-        if(roomLevel == 1) {
-            worker.memory.storageStructureType = undefined;
-        }
-        else if(roomLevel<5){
-            worker.memory.storageStructureType = STRUCTURE_CONTAINER;
-        }
-        else {
-            // worker.memory.storageStructureType = STRUCTURE_LINK;
-            worker.memory.storageStructureType = STRUCTURE_CONTAINER;
-            // TODO: add logic to find if link is required
-        }
+        worker.say('no mining resource id , miner is idle');
+        return;
     }
 
 
@@ -142,16 +125,20 @@ const findMiningSpotWithLeastTrafic = (room: Room) => {
                 });
             const walkablePositionsCount= walkablePositions.length;
             miningSpotMaxMinerMap.set(spot.id, walkablePositionsCount);
+            console.log('spot', spot.id, 'walkablePositionsCount', walkablePositionsCount);
+            console.log('spotMinerCount', spotMinerCount);
         });
 
-        miningSpots.forEach(spot => {
-            const spotMinerCount = miningSpotTrafficMap.get(spot.id) || 0;
-            const spotMaxMinerCount = miningSpotMaxMinerMap.get(spot.id) || 0;
-
-            if(spotMinerCount < spotMaxMinerCount) {
-                return spot;
+        miningSpots.sort((a, b) => {return (miningSpotTrafficMap.get(a.id)||0) - (miningSpotTrafficMap.get(b.id)||0)});
+        for(let miningSpot of miningSpots) {
+            const spotMinerCount = miningSpotTrafficMap.get(miningSpot.id) || 0;
+            const spotMaxMinerCount = miningSpotMaxMinerMap.get(miningSpot.id) || 0;
+            console.log('spot', miningSpot.id, 'spotMinerCount', spotMinerCount, 'spotMaxMinerCount', spotMaxMinerCount);
+            if(spotMinerCount+1 <= spotMaxMinerCount) {
+                return miningSpot;
             }
-        });
+        }
+
     }
 
 }

@@ -1,92 +1,12 @@
-import { WorkerSpawnOrder } from "../roles"; 
-import { WorkerRoles, WorkerMemory } from "../types/worker";
+ import { RoomPopulation,  } from "../types/room";
+import { Worker} from "../types/worker";
+
+import { getRoomPopulation } from "./RoomPopulation";
+import { getWorkerSpawnPriority } from "../roles";
 
 
-interface WorkerBodyPartsConfig {
-    repeatingParts: BodyPartConstant[];
-    fixedParts?: BodyPartConstant[];
-}
-
-const WorkerBodyPartsConfig: Record<WorkerRoles, WorkerBodyPartsConfig> = {
-    [WorkerRoles.HARVESTER]: { 
-        repeatingParts: [WORK, CARRY, MOVE, MOVE] 
-    },
-    [WorkerRoles.UPGRADER]: { 
-        repeatingParts: [WORK, CARRY, MOVE, MOVE] 
-    },
-    [WorkerRoles.BUILDER]: { 
-        repeatingParts: [WORK, CARRY, MOVE, MOVE] 
-    },
-    [WorkerRoles.MINER]: { 
-        repeatingParts: [WORK, MOVE], fixedParts: [CARRY] 
-    },
-}
-
-
-
-const getWorkerBodyParts = (budget: number,bodyParts: BodyPartConstant[]) => {
-
-    const bodyPartsSetCost = bodyParts.reduce((acc, part) => acc + BODYPART_COST[part], 0);
-
-    const affordableSetCount = Math.floor(budget / bodyPartsSetCost);
-
-    console.log(`Affordable Set Count: ${affordableSetCount}`);
-    console.log(`Body Parts Set Cost: ${bodyPartsSetCost}`);
-    console.log(`Budget: ${budget}`);
-    console.log(`Body Parts: ${bodyParts.join(', ')}`);
-    
-
-    let bodyArray: BodyPartConstant[]=[];
-
-    if(affordableSetCount <=1) {
-        bodyArray = bodyParts
-    }
-    else {
-        for(let i = 0; i < affordableSetCount; i++) {
-            bodyArray.push(...bodyParts);
-        }
-    }
-    return bodyArray;
-}
-
-
-
-
-type RoomWorkerCounts = Partial<Record<WorkerRoles, number>>;
-
-const getDesiredWorkerCountForRoom = (room: Room):RoomWorkerCounts => {
-
-    const roomWorkerCount: RoomWorkerCounts = {};
-    const roomLevel = room.controller?.level || 0;
-
-    if(roomLevel ==1) {
-      roomWorkerCount[WorkerRoles.HARVESTER] = 6;
-    }
-    else {
-        const sources=room.find(FIND_SOURCES)
-        roomWorkerCount[WorkerRoles.HARVESTER] = 4;
-        roomWorkerCount[WorkerRoles.UPGRADER] = 1;
-        roomWorkerCount[WorkerRoles.BUILDER] = 1;
-        roomWorkerCount[WorkerRoles.MINER] = sources.length;
-    }
-    return roomWorkerCount;
-}
-
-const getRoomWorkerPopulationForRoom = (room: Room):RoomWorkerCounts=> {
-    const roomWorkerCount: RoomWorkerCounts = {};
-
-    const roomWorkers = Object.values(Game.creeps).filter(worker => worker.my && worker.room.name === room.name) 
-
-    roomWorkers.forEach(worker => {
-        roomWorkerCount[worker.memory.role] = (roomWorkerCount[worker.memory.role] || 0) + 1;
-    });
-    return roomWorkerCount;
-}
-
-
-
-
-const getRoomSpawns = (room: Room) => {
+// -------------- Helper Functions --------------//
+const getRoomSpawn = (room: Room) => {
     const freeSpawns = room.find(FIND_MY_SPAWNS).filter(spawn => spawn.spawning === null);
     if(!freeSpawns.length) {
         return null;
@@ -96,74 +16,61 @@ const getRoomSpawns = (room: Room) => {
 }
 
 
-const spawnWorker = (role: WorkerRoles,spawn:StructureSpawn,budget:number) => {
-    const creepBodyConfig=WorkerBodyPartsConfig[role];
+const getRoomWorkers=(room: Room)=> {
+    return Object.values(Game.creeps).filter(creep => creep.my && creep.room.name === room.name);
+}
 
-    const repeatingParts = creepBodyConfig.repeatingParts;
-    const fixedParts = creepBodyConfig.fixedParts || [];
 
-    const creepParts: BodyPartConstant[] = [];
-    let remainingBudget = budget;
-    
-    if(fixedParts.length > 0) {
-        creepParts.push(...fixedParts);
-        const fixedPartsCost = fixedParts.reduce((acc, part) => acc + BODYPART_COST[part], 0);
-        remainingBudget -= fixedPartsCost;
-    }
-    const AutoScaledRepeatingParts = getWorkerBodyParts(remainingBudget, repeatingParts);
+// -------------- Main Functions --------------//
 
-    if(AutoScaledRepeatingParts.length > 0) {
-        creepParts.push(...AutoScaledRepeatingParts);
-    }
 
-    const newCreepName = `worker-${role}-${Game.time}`;
-    const newCreepMemory:WorkerMemory = {
-        role: role         
-    }
-    const spawnResult=spawn.spawnCreep(
-        creepParts, 
-        newCreepName, 
-        {
-            memory: newCreepMemory  
-        }
+interface HandleRoomWorkerSpawningParams {
+    room: Room;
+    roomWorkers: Worker[];
+    roomPopulation: RoomPopulation;
+}
+
+const handleRoomWorkerSpawning = (params: HandleRoomWorkerSpawningParams) => {
+    const {room, roomWorkers, roomPopulation} = params;
+
+    const aliveWorkerIds=new Set(roomWorkers.map(worker => worker.id));
+
+    const toBeSpawnedWorkerConfigs=roomPopulation.workerSpawnConfigs.filter(
+        spawnConfig => !aliveWorkerIds.has(spawnConfig.workerId)
     );
-    return spawnResult;
-}
 
+    toBeSpawnedWorkerConfigs.sort((a, b) => getWorkerSpawnPriority(a.memory.role) - getWorkerSpawnPriority(b.memory.role));
 
-
-
-export const handleRoomSpawning = (room: Room) => {
-    const desiredWorkerCount = getDesiredWorkerCountForRoom(room);
-    const roomWorkerPopulation = getRoomWorkerPopulationForRoom(room);
-    const desiredWorkerCountTotal = Object.values(desiredWorkerCount).reduce((acc, count) => acc + count, 0);
-    const roomWorkerPopulationTotal = Object.values(roomWorkerPopulation).reduce((acc, count) => acc + count, 0);
-
-    if(roomWorkerPopulationTotal < desiredWorkerCountTotal) {
-        const RolesToSpawn = Object.keys(desiredWorkerCount)
-            .sort((a, b) => WorkerSpawnOrder[a as WorkerRoles] - WorkerSpawnOrder[b as WorkerRoles]
-        ) as WorkerRoles[];
-
-        for (const role of RolesToSpawn) {
-            const desiredCount = desiredWorkerCount[role] || 0;
-            const presentCount = roomWorkerPopulation[role] || 0;
-
-            if(presentCount < desiredCount) {
-                const spawn = getRoomSpawns(room);
-                if(!spawn) {
-                    return 
-                }
-                const spawnBudget = spawn.room.energyCapacityAvailable;
-                const spawnResult = spawnWorker(role, spawn, spawnBudget);
-                if(spawnResult ==OK) {
-                    return;
-                }
-                if(spawnResult === ERR_NOT_ENOUGH_ENERGY) {
-                    return;
-                }
-            }
+    for(const spawnConfig of toBeSpawnedWorkerConfigs) {
+        const spawn=getRoomSpawn(room);
+        if(!spawn) {
+            return;
+        }
+        const spawnResult = spawn.spawnCreep(spawnConfig.bodyParts, spawnConfig.workerId, {memory: spawnConfig.memory});
+        if(spawnResult === OK) {
+            continue;
+        }
+        if(spawnResult === ERR_NOT_ENOUGH_ENERGY) {
+            return;
         }
     }
-
-   
 }
+
+
+export const handleWorkerSpawning = () => {
+
+
+    for(const room of Object.values(Game.rooms)) {
+        if(!room.controller?.my) {continue;}
+        let roomPopulation=room.memory.roomPopulation;
+        if(!roomPopulation) {
+            roomPopulation=getRoomPopulation(room);
+            room.memory.roomPopulation = roomPopulation;
+        }
+        const roomWorkers=getRoomWorkers(room);
+        if(roomWorkers.length<roomPopulation.totalWorkers) {
+            handleRoomWorkerSpawning({room, roomWorkers, roomPopulation});
+        }
+    }
+}
+
