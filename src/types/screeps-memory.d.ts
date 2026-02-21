@@ -13,7 +13,7 @@ declare global {
   interface RoomMemory extends CustomRoomMemory {
   }
   interface Memory {
-    testScript?: boolean;
+    testScript?: string;
   }
 }
 

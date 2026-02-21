@@ -9,7 +9,7 @@ import { handleIntrusionDetection } from "./roomDefence/intrusionDetection";
 import { handleRoomTowerDefence } from "./roomDefence/towerDefence";
 import { constructStructuresInRoom } from "./roomDesign/constructStructures";
 
-import { testScript } from "./testScript";
+import { testScriptRunner } from "./testScriptRunner";
 import { initializeOverrides } from "./overrides";
 import { updateWorkerPopulation } from "./spawning/RoomPopulation";
 
@@ -77,7 +77,7 @@ export const loop = () => {
 
     // ------------ Test Script / Debugging ------------//
     if(Memory.testScript) {
-        testScript();
+        testScriptRunner();
         delete Memory.testScript;
     }
 
