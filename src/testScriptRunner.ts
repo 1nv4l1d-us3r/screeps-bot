@@ -38,6 +38,7 @@ const testScripts:Record<string, () => void> = {
 
 
 
+// Memory.testScript='roomfindBenchmark';
 
 
 

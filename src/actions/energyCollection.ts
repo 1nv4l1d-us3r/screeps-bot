@@ -124,7 +124,7 @@ export const collectEnergy = (creep: EnergyCollectingCreep) => {
         if(withdrawResult === ERR_NOT_IN_RANGE) {
             creep.moveTo(energyStorageStructure);
         }
-        else if(withdrawResult === ERR_INVALID_TARGET || withdrawResult === ERR_NOT_ENOUGH_RESOURCES) {
+        else if(withdrawResult === ERR_INVALID_TARGET || energyStorageStructure.store.energy < 50) {
             creep.memory.energyStorageStructureId = undefined;
             return;
         }
