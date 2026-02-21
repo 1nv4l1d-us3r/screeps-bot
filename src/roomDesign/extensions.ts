@@ -1,34 +1,25 @@
-import {isPositionReachable, spiralPositionsGenerator} from "../grid/utils";
+import { spiralPositionsGenerator, isPositionReachable } from "../grid/utils";
 
 
 
 
-interface GetBestTowerConstructionPositionParams {
+interface GetExtensionsConstructionPositionsParams {
     baseCenter: RoomPosition;
     inValidBuildPositions: Set<string>;
     roomTerrain: RoomTerrain;
-    existingTowerPositions: RoomPosition[];
-    towersNeededCount: number;
+    extensionsNeededCount: number;
 }
 
-
-
-export const getTowerConstructionPositions = (params: GetBestTowerConstructionPositionParams) => {
-
-    const {
-        baseCenter,
+export const getExtensionsConstructionPositions= (params: GetExtensionsConstructionPositionsParams) => {
+    const { 
+        baseCenter, 
         inValidBuildPositions,
-        roomTerrain,
-        existingTowerPositions,
-        towersNeededCount,
+        roomTerrain, 
+        extensionsNeededCount
     } = params;
 
 
-    const minDistanceBetweenTowers = 10;
-
-
     const positionsFound:RoomPosition[] = [];
-    
     let yieldIndex=0;
     const yieldFunction = (pos: RoomPosition) => {
         yieldIndex++;
@@ -46,22 +37,12 @@ export const getTowerConstructionPositions = (params: GetBestTowerConstructionPo
             inValidBuildPositions.add(pos.toString());
             return false;
         }
-        const existingTowerDistances=existingTowerPositions.map(
-            existingTowerPos => pos.getRangeTo(existingTowerPos)
-        );
-        const closestExistingTowerDistance = Math.min(...existingTowerDistances);
-        if(closestExistingTowerDistance < minDistanceBetweenTowers) {
-            return false;
-        }
         positionsFound.push(pos);
-        return positionsFound.length>=towersNeededCount;
+        return positionsFound.length>=extensionsNeededCount;
     }
-
-
     spiralPositionsGenerator({
         center:baseCenter,
         yieldFunction,
-        spiralStepSize:3, // sparse search
     });
     return positionsFound;
 }

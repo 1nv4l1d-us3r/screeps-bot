@@ -201,3 +201,14 @@ export const spiralPositionsGenerator = (params: SpiralPositionsGeneratorParams)
 
     }
 };
+
+
+export const isPositionReachable = (pos: RoomPosition, inValidBuildPositions: Set<string>) => {
+
+    const adjacentPositions = getAdjacentPositions(pos);
+    const isReachable=adjacentPositions.some(
+        adj=>!inValidBuildPositions.has(adj.toString())
+    );
+    return isReachable;
+
+}

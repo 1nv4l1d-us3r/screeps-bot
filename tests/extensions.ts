@@ -1,4 +1,4 @@
-import { isPositionReachable } from "../src/roomDesign/constructStructures";
+import { isPositionReachable } from "../src/grid/utils";
 import { spiralPositionsGenerator } from "../src/grid/utils";
 import { getMaxExtensionsByLevel } from "../src/gameConstants";
 

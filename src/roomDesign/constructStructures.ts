@@ -1,20 +1,11 @@
 import { getMaxExtensionsByLevel, getMaxTowersByLevel } from "../gameConstants";
 
-import {getFullGridPositions} from "../grid/utils";
-import { getBestTowerConstructionPosition } from "./towers";
 
-import { spiralPositionsGenerator, findCenter, getAdjacentPositions} from "../grid/utils";
+import { getExtensionsConstructionPositions } from "./extensions";
+import { getTowerConstructionPositions } from "./towers";
+import { findCenter } from "../grid/utils";
+import { getFirstSpawnConstructionPosition } from "./spawn";
 
-
-export const isPositionReachable = (pos: RoomPosition, inValidBuildPositions: Set<string>) => {
-
-    const adjacentPositions = getAdjacentPositions(pos);
-    const isReachable=adjacentPositions.some(
-        adj=>!inValidBuildPositions.has(adj.toString())
-    );
-    return isReachable;
-
-}
 
 
 export const constructStructuresInRoom = (room: Room) => {
@@ -39,6 +30,27 @@ export const constructStructuresInRoom = (room: Room) => {
 
     const spawns=roomStructures.filter(st => st.structureType === STRUCTURE_SPAWN);
 
+    if(spawns.length === 0) {
+        const firstSpawnConstructionPosition=getFirstSpawnConstructionPosition({
+            room,
+            roomTerrain,
+            inValidBuildPositions,
+        });
+        if(!firstSpawnConstructionPosition) {
+            console.log(`Room ${room.name}: no first spawn construction position found`);
+            return;
+        }
+        const constructionResult=room.createConstructionSite(firstSpawnConstructionPosition, STRUCTURE_SPAWN);
+        if(constructionResult === OK) {
+            return;
+        }
+        console.log(`Room ${room.name}: failed to construct first spawn at ${firstSpawnConstructionPosition.toString()}`);
+        return;
+    }
+    const baseCenter=findCenter(spawns.map(spawn => spawn.pos));
+
+
+
     const existingExtensions=roomStructures.filter(st => st.structureType === STRUCTURE_EXTENSION)
     const constructingExtensions=roomConstructionsSites.filter(cs => cs.structureType === STRUCTURE_EXTENSION)
 
@@ -48,51 +60,24 @@ export const constructStructuresInRoom = (room: Room) => {
     if(totalExtensionsCount < maxExtensionsCount) {
         const extensionsNeededCount=maxExtensionsCount-totalExtensionsCount;
         console.log(`need to construct ${extensionsNeededCount} extensions in room ${room.name}`);
-        const spawn=spawns[0];
-        if(!spawn) {
-            console.log(`Room ${room.name}: no spawn found, skipping extension construction`);
-            return;
-        }
 
 
-        const positionsFound:RoomPosition[] = [];
-        let yieldIndex=0;
-        const yieldFunction = (pos: RoomPosition) => {
-            yieldIndex++;
-            if(yieldIndex%2!==0) {
-                return false;
-            }
-            if(inValidBuildPositions.has(pos.toString())) {
-                return false;
-            }
-            if(roomTerrain.get(pos.x, pos.y) === TERRAIN_MASK_WALL) {
-                inValidBuildPositions.add(pos.toString());
-                return false;
-            }
-            if(!isPositionReachable(pos, inValidBuildPositions)) {
-                inValidBuildPositions.add(pos.toString());
-                return false;
-            }
-            positionsFound.push(pos);
-            return positionsFound.length>=extensionsNeededCount;
-        }
-        spiralPositionsGenerator({
-            center:spawns[0].pos,
-            yieldFunction,
+        const extensionsConstructionPositions=getExtensionsConstructionPositions({
+            baseCenter,
+            inValidBuildPositions,
+            roomTerrain,
+            extensionsNeededCount,
         });
 
-        console.log(`found ${positionsFound.length} extension construction positions in room ${room.name}`);
-
-        positionsFound.forEach(pos => {
+        extensionsConstructionPositions.forEach(pos => {
             const constructionResult=room.createConstructionSite(pos, STRUCTURE_EXTENSION);
             if(constructionResult === OK) {
                 occupiedPositions.push(pos);
             }
-            else {
-                console.log(`Room ${room.name}: failed to construct extension at ${pos.toString()}`);
-                console.log('constructionResult', constructionResult);
-            }
         });
+
+        
+
     }
 
 
@@ -103,35 +88,26 @@ export const constructStructuresInRoom = (room: Room) => {
     const maxTowersCount=getMaxTowersByLevel(roomLevel);
     
     if(totalTowersCount < maxTowersCount ) {
-        // const baseCenter = findCenter(spawns.map(spawn => spawn.pos));
-        // const newTowersNeededCount=maxTowersCount-totalTowersCount;
+        const towersNeededCount=maxTowersCount-totalTowersCount;
 
 
-        // for(let i=0; i<newTowersNeededCount; i++) {
-        //     const newTowerConstPos=getBestTowerConstructionPosition({
-        //         room,
-        //         baseCenter,
-        //         existingTowerPositions:existingTowers.map(tower => tower.pos),
-        //         excludePositions:occupiedPositions
-        //     });
-        //     if(!newTowerConstPos) {
-        //         console.log(`Room ${room.name}: no valid tower construction position found`);
-        //         break;
-        //     }
-        //     const constructionResult=room.createConstructionSite(newTowerConstPos, STRUCTURE_TOWER);
-        //     if(constructionResult ==OK) {
-        //         occupiedPositions.push(newTowerConstPos);
-        //     }
-        //     if(constructionResult !== OK) {
-        //         console.log(`Room ${room.name}: failed to construct tower at ${newTowerConstPos.toString()}`);
-        //         console.log('constructionResult', constructionResult);
-        //         break;
-        //     }
-        //     room.createConstructionSite(newTowerConstPos, STRUCTURE_TOWER);
-        // }
+        const existingTowerPositions=[...existingTowers,...constructingTowers].map(tower => tower.pos);
 
+        const towersConstructionPositions=getTowerConstructionPositions({
+            baseCenter,
+            inValidBuildPositions,
+            roomTerrain,
+            existingTowerPositions,
+            towersNeededCount,
+        });
 
-            
+        towersConstructionPositions.forEach(pos => {
+            const constructionResult=room.createConstructionSite(pos, STRUCTURE_TOWER);
+            if(constructionResult === OK) {
+                occupiedPositions.push(pos);
+            }
+        });
+
     }
 }
 
