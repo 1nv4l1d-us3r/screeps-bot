@@ -5,6 +5,7 @@ import { testWorkerSpawning } from "../tests/test";
 import { testExtensionsConstruction } from "../tests/extensions";
 import { logCpuUsage } from "./cpuUsage";
 import { testCoordinateFormats } from "../tests/coordinateBenchmark";
+import { roomfindBenchmark } from "../tests/roomfindBenchmark";
 
 
 
@@ -31,6 +32,7 @@ const testScripts:Record<string, () => void> = {
     'roomPopulation': testRoomPopulation,
     'workerSpawning': testWorkerSpawning,
     'coordinateBenchmark': testCoordinateFormats,
+    'roomfindBenchmark': roomfindBenchmark,
 }
 
 

@@ -40,7 +40,7 @@ const findLeastTraficSource = (room: Room) => {
 
 const findLeastTraficEnergyStorageStructure = (room: Room) => {
     const storageStructures: StructureContainer[] = room.find(FIND_STRUCTURES, {
-        filter: (s) => s.structureType === STRUCTURE_CONTAINER && s.store.energy > 0
+        filter: (s) => s.structureType === STRUCTURE_CONTAINER && s.store.energy > 50
     })
     if(!storageStructures.length) {
         return;
