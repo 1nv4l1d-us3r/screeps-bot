@@ -6,7 +6,7 @@ import { getBestTowerConstructionPosition } from "./towers";
 import { spiralPositionsGenerator, findCenter, getAdjacentPositions} from "../grid/utils";
 
 
-const isPositionReachable = (pos: RoomPosition, inValidBuildPositions: Set<string>) => {
+export const isPositionReachable = (pos: RoomPosition, inValidBuildPositions: Set<string>) => {
 
     const adjacentPositions = getAdjacentPositions(pos);
     const isReachable=adjacentPositions.some(

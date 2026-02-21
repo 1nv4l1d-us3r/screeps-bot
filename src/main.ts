@@ -83,5 +83,6 @@ export const loop = () => {
 
     const cpuUsageTickEnd = Game.cpu.getUsed();
     const cpuUsage=Math.round((cpuUsageTickEnd - cpuUsageTickStart)*100)/100;
-    console.log(`Tick: ${Game.time} CPU Usage: ${cpuUsage}`);
+    
+    // console.log(`Tick: ${Game.time} CPU Usage: ${cpuUsage}`);
 }

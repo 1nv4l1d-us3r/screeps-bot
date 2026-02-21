@@ -2,29 +2,36 @@
 
 import { testRoomPopulation } from "../tests/test";
 import { testWorkerSpawning } from "../tests/test";
-
-
-const testMainFunction = () => {
-
-    testWorkerSpawning();
-
-
-}
-
-
+import { testExtensionsConstruction } from "../tests/extensions";
+import { logCpuUsage } from "./cpuUsage";
 
 
 const testScript = () => {
-    const cpuUsageTestStart = Game.cpu.getUsed();
-
-    testMainFunction();
-    const cpuUsageTestEnd = Game.cpu.getUsed();
-    const cpuUsageTest = Math.round((cpuUsageTestEnd - cpuUsageTestStart)*100)/100;
-    console.log(`Test Script CPU Usage: ${cpuUsageTest}`);
+    logCpuUsage({
+        name: 'testScript',
+        func: () => {
+            testMainFunction();
+        }
+    });
 }
-
-
 
 export { 
     testScript 
 };
+
+
+
+
+
+const testMainFunction = () => {
+
+    testExtensionsConstruction();
+
+
+}
+
+
+
+
+
+
