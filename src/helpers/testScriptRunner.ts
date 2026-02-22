@@ -1,11 +1,11 @@
 // global way of test Scripts execution
 
-import { testRoomPopulation } from "../tests/test";
-import { testWorkerSpawning } from "../tests/test";
-import { testExtensionsConstruction } from "../tests/extensions";
-import { logCpuUsage } from "./cpuUsage";
-import { testCoordinateFormats } from "../tests/coordinateBenchmark";
-import { roomfindBenchmark } from "../tests/roomfindBenchmark";
+import { testRoomPopulation } from "../../tests/test";
+import { testWorkerSpawning } from "../../tests/test";
+import { testExtensionsConstruction } from "../../tests/extensions";
+import { CpuProfiler } from "./cpuProfiler";
+import { testCoordinateFormats } from "../../tests/coordinateBenchmark";
+import { roomfindBenchmark } from "../../tests/roomfindBenchmark";
 
 
 
@@ -20,11 +20,13 @@ export const testScriptRunner = () => {
         return 
     }
 
-    logCpuUsage({
-        name: `testScript ${testScriptName} run`,
-        func: testFunction,
-    });
-
+    CpuProfiler.profileFunction(
+        {
+            name: `testScript ${testScriptName} run`, 
+            func: testFunction
+        }
+        
+    );
 }
 
 const testScripts:Record<string, () => void> = {
@@ -38,7 +40,11 @@ const testScripts:Record<string, () => void> = {
 
 
 
-// Memory.testScript='roomfindBenchmark';
+/*
+
+Memory.testScript='extensions'
+
+*/
 
 
 

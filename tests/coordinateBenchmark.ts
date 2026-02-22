@@ -1,4 +1,5 @@
-import { logCpuUsage } from "../src/cpuUsage";
+import { CpuProfiler } from "../src/helpers/cpuProfiler";
+
 
 const SIZE = 50;
 const ITERATIONS = 3000;
@@ -7,7 +8,7 @@ const ROOM = "E28S12";
 export const testCoordinateFormats = () => {
 
   // 🔢 Packed number keys
-  logCpuUsage({
+  CpuProfiler.profileFunction({
     name: "Packed numeric key (x*50+y)",
     func: () => {
       const map = new Map<number, number>();
@@ -21,7 +22,7 @@ export const testCoordinateFormats = () => {
   });
 
   // 🧵 String keys
-  logCpuUsage({
+  CpuProfiler.profileFunction({
     name: "String key 'x,y'",
     func: () => {
       const map = new Map<string, number>();
@@ -35,7 +36,7 @@ export const testCoordinateFormats = () => {
   });
 
   // 📍 RoomPosition objects
-  logCpuUsage({
+  CpuProfiler.profileFunction({
     name: "RoomPosition objects",
     func: () => {
       const map = new Map<RoomPosition, number>();
@@ -49,7 +50,7 @@ export const testCoordinateFormats = () => {
   });
 
   // 📦 Plain objects
-  logCpuUsage({
+  CpuProfiler.profileFunction({
     name: "{x,y} object keys",
     func: () => {
       const arr: {x:number,y:number}[] = [];
@@ -62,7 +63,7 @@ export const testCoordinateFormats = () => {
   });
 
   // 🚀 Typed array (baseline fastest)
-  logCpuUsage({
+  CpuProfiler.profileFunction({
     name: "Typed array index",
     func: () => {
       const grid = new Uint8Array(SIZE * SIZE);

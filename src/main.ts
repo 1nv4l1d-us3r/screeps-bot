@@ -1,7 +1,7 @@
 
 import { getWorkerHandler } from "./roles";
 import { handleWorkerSpawning } from "./spawning/RoomSpawning";
-import { clearDeadCreepMemory } from "./cleanup";
+import { clearDeadCreepMemory } from "./helpers/cleanup";
 
 import { collectEnergy } from "./actions/energyCollection";
 import { mineResource } from "./actions/resourceMining";
@@ -9,15 +9,18 @@ import { handleIntrusionDetection } from "./roomDefence/intrusionDetection";
 import { handleRoomTowerDefence } from "./roomDefence/towerDefence";
 import { constructStructuresInRoom } from "./roomDesign/constructStructures";
 
-import { testScriptRunner } from "./testScriptRunner";
+import { testScriptRunner } from "./helpers/testScriptRunner";
 import { initializeOverrides } from "./overrides";
 import { updateWorkerPopulation } from "./spawning/RoomPopulation";
+import { CpuProfiler } from "./helpers/cpuProfiler";
 
 // Initialize prototype overrides once at module load
 initializeOverrides();
 
 export const loop = () => {
-    const cpuUsageTickStart = Game.cpu.getUsed();
+    if(Memory.logCpuUsage) {
+        CpuProfiler.log("Main Loop");
+    }
 
 
 
@@ -81,8 +84,7 @@ export const loop = () => {
         delete Memory.testScript;
     }
 
-    const cpuUsageTickEnd = Game.cpu.getUsed();
-    const cpuUsage=Math.round((cpuUsageTickEnd - cpuUsageTickStart)*100)/100;
-    
-    // console.log(`Tick: ${Game.time} CPU Usage: ${cpuUsage}`);
+    if(Memory.logCpuUsage) {
+        CpuProfiler.logEnd("Main Loop");
+    }
 }

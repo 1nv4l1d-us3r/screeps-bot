@@ -1,7 +1,7 @@
 import { findCenterCoord, isCoordReachable, packCoord, spiralCordsGenerator } from "../src/geometry";
 import { getMaxExtensionsByLevel } from "../src/gameConstants";
 import { Coord, PackedCoord } from "../src/types/geometry";
-
+import { CpuProfiler } from "../src/helpers/cpuProfiler";
 export const testExtensionsConstruction = () => {
 
     const room=Game.rooms['E28S12'];
@@ -12,9 +12,11 @@ export const testExtensionsConstruction = () => {
     const roomLevel = room.controller?.level || 0;
     const roomTerrain = room.getTerrain();
     
+
+    CpuProfiler.log("finding structures and construction sites");
     const roomStructures = room.find(FIND_STRUCTURES);
     const roomConstructionsSites=room.find(FIND_CONSTRUCTION_SITES);
-
+    CpuProfiler.logEnd("finding structures and construction sites");
 
     const existingStructures=[...roomStructures, ...roomConstructionsSites];
     
@@ -25,10 +27,12 @@ export const testExtensionsConstruction = () => {
 
 
 
+    CpuProfiler.log("filtering structures and construction sites");
     const spawns=roomStructures.filter(st => st.structureType === STRUCTURE_SPAWN);
 
     const existingExtensions=roomStructures.filter(st => st.structureType === STRUCTURE_EXTENSION)
     const constructingExtensions=roomConstructionsSites.filter(cs => cs.structureType === STRUCTURE_EXTENSION)
+    CpuProfiler.logEnd("filtering structures and construction sites");
 
     const totalExtensionsCount=0
     const maxExtensionsCount=getMaxExtensionsByLevel(roomLevel);
@@ -64,16 +68,21 @@ export const testExtensionsConstruction = () => {
             foundCoords.push(coord);
             return foundCoords.length>=extensionsNeededCount;
         }
+        CpuProfiler.log("running spiral cords generator");
         spiralCordsGenerator({
             center:baseCenter,
             yieldFunction,
         });
+        CpuProfiler.logEnd("running spiral cords generator");
 
         console.log(`found ${foundCoords.length} extension construction positions in room ${room.name}`);
 
+        CpuProfiler.log("visualizing extension positions");
+        const visual=room.visual;
         foundCoords.forEach(coord => {
-            room.createFlag(coord.x, coord.y,undefined, COLOR_YELLOW);
+            visual.circle(coord.x, coord.y,{fill:'yellow', radius:0.5});
         });
+        CpuProfiler.logEnd("visualizing extension positions");
     }
 }
 

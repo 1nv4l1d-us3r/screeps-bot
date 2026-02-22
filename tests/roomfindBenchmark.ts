@@ -1,4 +1,4 @@
-import { logCpuUsage } from "../src/cpuUsage";
+import { CpuProfiler } from "../src/helpers/cpuProfiler";
 
 const ROOM = "E28S12";
 const ITERATIONS = 50;
@@ -10,7 +10,7 @@ export const roomfindBenchmark = () => {
         console.log('Room not found');
         return;
     }
-    logCpuUsage({
+    CpuProfiler.profileFunction({
         name: "Room Finding",
         func: () => {
             for(let i = 0; i < ITERATIONS; i++) {
@@ -18,7 +18,7 @@ export const roomfindBenchmark = () => {
             }
         }
     });
-    logCpuUsage({
+    CpuProfiler.profileFunction({
         name: "Room Finding with filter",
         func: () => {
             for(let i = 0; i < ITERATIONS; i++) {
@@ -26,7 +26,7 @@ export const roomfindBenchmark = () => {
             }
         }
     });
-    logCpuUsage({
+    CpuProfiler.profileFunction({
         name: "Room Finding with distance filter",
         func: () => {
             for(let i = 0; i < ITERATIONS; i++) {
@@ -36,7 +36,7 @@ export const roomfindBenchmark = () => {
         }
     });
 
-    logCpuUsage({
+    CpuProfiler.profileFunction({
         name: "getting terrain",
         func: () => {
             for(let i = 0; i < ITERATIONS; i++) {
@@ -44,7 +44,7 @@ export const roomfindBenchmark = () => {
             }
         }
     });
-    logCpuUsage({
+    CpuProfiler.profileFunction({
         name: "getting data from terrain",
         func: () => {
             for(let i = 0; i < ITERATIONS; i++) {
