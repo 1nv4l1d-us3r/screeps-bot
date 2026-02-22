@@ -1,48 +1,53 @@
-import { spiralPositionsGenerator, isPositionReachable } from "../grid/utils";
+
+import { 
+    packCoord, 
+    spiralCordsGenerator, 
+    isCoordReachable 
+} from "../geometry";
+
+import { Coord, PackedCoord } from "../types/geometry";
 
 
 
-
-interface GetExtensionsConstructionPositionsParams {
-    baseCenter: RoomPosition;
-    inValidBuildPositions: Set<string>;
+interface GetExtensionsConstructionsCoordsParams {
+    baseCenter: Coord;
+    occupiedPackedCoordsSet: Set<PackedCoord>;
     roomTerrain: RoomTerrain;
     extensionsNeededCount: number;
 }
 
-export const getExtensionsConstructionPositions= (params: GetExtensionsConstructionPositionsParams) => {
+export const getExtensionsConstructionsCoords= (params: GetExtensionsConstructionsCoordsParams) => {
     const { 
         baseCenter, 
-        inValidBuildPositions,
+        occupiedPackedCoordsSet,
         roomTerrain, 
         extensionsNeededCount
     } = params;
 
 
-    const positionsFound:RoomPosition[] = [];
-    let yieldIndex=0;
-    const yieldFunction = (pos: RoomPosition) => {
-        yieldIndex++;
-        if(yieldIndex%2!==0) {
+    const foundCoords:Coord[] = [];
+
+    const yieldFunction = (coord: Coord,index: number) => {
+        if(index%2!==0) {
             return false;
         }
-        if(inValidBuildPositions.has(pos.toString())) {
+        if(occupiedPackedCoordsSet.has(packCoord(coord))) {
             return false;
         }
-        if(roomTerrain.get(pos.x, pos.y) === TERRAIN_MASK_WALL) {
-            inValidBuildPositions.add(pos.toString());
+        if(roomTerrain.get(coord.x, coord.y) === TERRAIN_MASK_WALL) {
+            occupiedPackedCoordsSet.add(packCoord(coord));
             return false;
         }
-        if(!isPositionReachable(pos, inValidBuildPositions)) {
-            inValidBuildPositions.add(pos.toString());
+        if(!isCoordReachable({ coord, occupiedPackedCoordsSet })) {
+            occupiedPackedCoordsSet.add(packCoord(coord));
             return false;
         }
-        positionsFound.push(pos);
-        return positionsFound.length>=extensionsNeededCount;
+        foundCoords.push(coord);
+        return foundCoords.length>=extensionsNeededCount;
     }
-    spiralPositionsGenerator({
-        center:baseCenter,
+    spiralCordsGenerator({
+        center: baseCenter,
         yieldFunction,
     });
-    return positionsFound;
+    return foundCoords;
 }

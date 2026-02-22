@@ -1,5 +1,6 @@
 import { ROOM_SIZE } from "../gameConstants";
-import type { Coord } from "../types/geometry";
+import type { Coord, PackedCoord } from "../types/geometry";
+import { packCoord } from "./packedCords";
 
 
 export const isValidCoordAxis = (x: number) => {
@@ -24,30 +25,7 @@ export const getCoordDistance = (a: Coord, b: Coord) => {
     return distance;
 }
 
-interface FindMaxDistanceCoordParams {
-    center: Coord;
-    targets: Coord[];
-}
-interface FindMaxDistanceCoordResult {
-    maxDistance: number;
-    maxDistanceCoord: Coord;
-}
 
-export const findMaxDistanceCoord=(params: FindMaxDistanceCoordParams):FindMaxDistanceCoordResult => {
-    const { center, targets } = params;
-    const firstTarget = targets[0];
-    let maxDistance = getCoordDistance(center, firstTarget);
-    let maxDistanceCoord:Coord = firstTarget;
-    for(let i = 1; i < targets.length; i++) {
-        const target = targets[i];
-        const distance = getCoordDistance(center, target);
-        if(distance > maxDistance) {
-            maxDistance = distance;
-            maxDistanceCoord = target;
-        }
-    }
-    return { maxDistance, maxDistanceCoord };
-}
 
 export const findCenterCoord=(targets: Coord[]):Coord => {
 
@@ -102,4 +80,76 @@ export const getCoordsInRange=(params: GetCoordsInRangeParams):Coord[] => {
         return filteredCoords;
     }
     return coords;
+}
+
+
+
+interface IsCoordReachableParams {
+    coord: Coord;
+    occupiedPackedCoordsSet: Set<PackedCoord>;
+}
+
+export const isCoordReachable = (params: IsCoordReachableParams) => {
+    const { coord, occupiedPackedCoordsSet } = params;
+    const adjacentCoords = getAdjacentCoords(coord);
+
+    return adjacentCoords.some(adjacentCoord => {
+        return !occupiedPackedCoordsSet.has(packCoord(adjacentCoord))
+    });
+}
+
+
+
+
+
+//------------ Distance functions ------------//
+
+interface FindMaxDistanceCoordParams {
+    center: Coord;
+    targets: Coord[];
+}
+interface FindMaxDistanceCoordResult {
+    maxDistance: number;
+    maxDistanceCoord: Coord;
+}
+
+export const findMaxDistanceCoord=(params: FindMaxDistanceCoordParams):FindMaxDistanceCoordResult => {
+    const { center, targets } = params;
+    const firstTarget = targets[0];
+    let maxDistance = getCoordDistance(center, firstTarget);
+    let maxDistanceCoord:Coord = firstTarget;
+    for(let i = 1; i < targets.length; i++) {
+        const target = targets[i];
+        const distance = getCoordDistance(center, target);
+        if(distance > maxDistance) {
+            maxDistance = distance;
+            maxDistanceCoord = target;
+        }
+    }
+    return { maxDistance, maxDistanceCoord };
+}
+
+interface getMinDistanceCoordParams {
+    center: Coord;
+    targets: Coord[];
+}
+interface getMinDistanceCoordResult {
+    minDistance: number;
+    minDistanceCoord: Coord;
+}
+
+export const getMinDistanceCoord=(params: getMinDistanceCoordParams):getMinDistanceCoordResult => {
+    const { center, targets } = params;
+    const firstTarget = targets[0];
+    let minDistance = getCoordDistance(center, firstTarget);
+    let minDistanceCoord = firstTarget;
+    for(let i = 1; i < targets.length; i++) {
+        const target = targets[i];
+        const distance = getCoordDistance(center, target);
+        if(distance < minDistance) {
+            minDistance = distance;
+            minDistanceCoord = target;
+        }
+    }
+    return { minDistance, minDistanceCoord };
 }

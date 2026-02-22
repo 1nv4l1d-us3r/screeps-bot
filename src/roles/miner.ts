@@ -1,5 +1,5 @@
 
-import { getGridAroundPosition, getAdjacentPositions } from "../grid/utils";
+import { getAdjacentCoords } from "../geometry";
 
 import {  MinerMemory, BaseWorker } from "../types/worker";
 
@@ -24,14 +24,14 @@ export const minerRole = (worker: BaseMiner) => {
             worker.memory.miningResourceId = undefined;
             return;
         }
-        const storageSpot = findStorageSpotNearMiningSpot(miningResource);
-        if(!storageSpot) {
+        const storageCoord = findStorageSpotNearMiningSpot(miningResource);
+        if(!storageCoord) {
             console.log('no storage spot found near mining spot, miner is dropping resource', miningResource.id);
             worker.memory.storageStructureType = undefined;
             return;
         }
         
-        const existingStructures = storageSpot.lookFor(LOOK_STRUCTURES)
+        const existingStructures = worker.room.lookForAt(LOOK_STRUCTURES, storageCoord.x, storageCoord.y);
 
         const storageStructure = existingStructures.find((st: Structure<StructureConstant>) => {
             return st.structureType === worker.memory.storageStructureType;
@@ -51,12 +51,12 @@ export const minerRole = (worker: BaseMiner) => {
 
         if(!storageStructure) {
         
-            const existingConstructionSite = storageSpot.lookFor(LOOK_CONSTRUCTION_SITES);
+            const existingConstructionSite = worker.room.lookForAt(LOOK_CONSTRUCTION_SITES, storageCoord.x, storageCoord.y);
             if(existingConstructionSite.length > 0) {
                 worker.memory.storageStructureType = undefined;
                 return;
             }
-            const buildingResult = storageSpot.createConstructionSite(worker.memory.storageStructureType);
+            const buildingResult = worker.room.createConstructionSite(storageCoord.x, storageCoord.y, worker.memory.storageStructureType);
             if(buildingResult === OK) {
                 worker.memory.storageStructureType = undefined;
                 return;
@@ -123,14 +123,15 @@ const findMiningSpotWithLeastTrafic = (room: Room) => {
         const roomMiningCreeps = Object.values(Game.creeps).filter(c => c.memory.miningResourceId !== undefined);
         const miningSpotTrafficMap=new Map<Id<Source|Mineral>, number>();
         const miningSpotMaxMinerMap=new Map<Id<Source|Mineral>, number>();
+        const terrain = room.getTerrain();
         miningSpots.forEach(spot => {
             const spotMiners = roomMiningCreeps.filter(creep => creep.memory.miningResourceId == spot.id)
             const spotMinerCount = spotMiners.length;
             miningSpotTrafficMap.set(spot.id, spotMinerCount);
 
-            const walkablePositions = getAdjacentPositions(spot.pos)
-                .filter(pos => {
-                    return room.getTerrain().get(pos.x, pos.y) != TERRAIN_MASK_WALL;
+            const walkablePositions = getAdjacentCoords(spot.pos)
+                .filter(coord => {
+                    return terrain.get(coord.x, coord.y) != TERRAIN_MASK_WALL;
                 });
             const walkablePositionsCount= walkablePositions.length;
             miningSpotMaxMinerMap.set(spot.id, walkablePositionsCount);
@@ -160,25 +161,25 @@ const findStorageSpotNearMiningSpot = (miningSpot: Source|Mineral) => {
     }
     const terrain= room.getTerrain();
 
-    const storagePositions = getAdjacentPositions(miningSpot.pos)
-        .filter(pos => {
-            return room.getTerrain().get(pos.x, pos.y) != TERRAIN_MASK_WALL;
+    const storageCoords = getAdjacentCoords(miningSpot.pos)
+        .filter(coord => {
+            return terrain.get(coord.x, coord.y) != TERRAIN_MASK_WALL;
         }
     );
 
-    if(!storagePositions.length) {
+    if(!storageCoords.length) {
         return;
     }
-    if(storagePositions.length == 1) {
-        return storagePositions[0];
+    if(storageCoords.length == 1) {
+        return storageCoords[0];
     }
     else {
         let maxWalkablePositions = 0;
-        let bestSpot = storagePositions[0];
-        for(const storageSpot of storagePositions) {
-            const walkablePositions = getAdjacentPositions(storageSpot)
-                .filter(pos => {
-                    return terrain.get(pos.x, pos.y) != TERRAIN_MASK_WALL;
+        let bestSpot = storageCoords[0];
+        for(const storageSpot of storageCoords) {
+            const walkablePositions = getAdjacentCoords(storageSpot)
+                .filter(coord => {
+                    return terrain.get(coord.x, coord.y) != TERRAIN_MASK_WALL;
                 }
             );
             const walkablePositionsCount = walkablePositions.length;

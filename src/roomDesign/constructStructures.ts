@@ -1,10 +1,12 @@
 import { getMaxExtensionsByLevel, getMaxTowersByLevel } from "../gameConstants";
 
 
-import { getExtensionsConstructionPositions } from "./extensions";
-import { getTowerConstructionPositions } from "./towers";
-import { findCenter } from "../grid/utils";
-import { getFirstSpawnConstructionPosition } from "./spawn";
+import { getExtensionsConstructionsCoords } from "./extensions";
+import { getTowerConstructionsCoords } from "./towers";
+import { findCenterCoord, packCoord } from "../geometry";
+import { getFirstSpawnConstructionCoord } from "./spawn";
+import { Coord, PackedCoord } from "../types/geometry";
+import { constructStructuresAtCoords } from "./common";
 
 
 
@@ -15,39 +17,54 @@ export const constructStructuresInRoom = (room: Room) => {
     
     const roomStructures = room.find(FIND_STRUCTURES);
     const roomConstructionsSites=room.find(FIND_CONSTRUCTION_SITES);
+
+    const existingStructures=[...roomStructures, ...roomConstructionsSites];
+
     
-    const occupiedPositions = [
-        ...roomStructures,
-        ...roomConstructionsSites
-    ].map(st => st.pos);
 
 
-    const inValidBuildPositions = new Set<string>()
-
-    occupiedPositions.forEach(pos => {
-        inValidBuildPositions.add(pos.toString());
+    const occupiedPackedCoordsSet = new Set<PackedCoord>()
+    
+    existingStructures.forEach(st => {
+        occupiedPackedCoordsSet.add(packCoord({x:st.pos.x, y:st.pos.y}));
     });
+
+    
+
 
     const spawns=roomStructures.filter(st => st.structureType === STRUCTURE_SPAWN);
 
     if(spawns.length === 0) {
-        const firstSpawnConstructionPosition=getFirstSpawnConstructionPosition({
+        const firstSpawnCoord=getFirstSpawnConstructionCoord({
             room,
             roomTerrain,
-            inValidBuildPositions,
+            occupiedPackedCoordsSet,
         });
-        if(!firstSpawnConstructionPosition) {
+        if(!firstSpawnCoord) {
             console.log(`Room ${room.name}: no first spawn construction position found`);
             return;
         }
-        const constructionResult=room.createConstructionSite(firstSpawnConstructionPosition, STRUCTURE_SPAWN);
-        if(constructionResult === OK) {
+
+        let failure=false;
+        constructStructuresAtCoords({
+            room,
+            constructionCoords:[firstSpawnCoord],
+            structureType:STRUCTURE_SPAWN,
+            onSuccess:(successCoord) => {
+                occupiedPackedCoordsSet.add(packCoord(successCoord));
+            },
+            onFailure:(failureCoord) => {
+                console.log(`Room ${room.name}: failed to construct first spawn at ${failureCoord.x},${failureCoord.y}`);
+                failure=true;
+            }
+        });
+        if(failure) {
             return;
         }
-        console.log(`Room ${room.name}: failed to construct first spawn at ${firstSpawnConstructionPosition.toString()}`);
-        return;
     }
-    const baseCenter=findCenter(spawns.map(spawn => spawn.pos));
+
+    const spawnCoords=spawns.map(spawn => ({x:spawn.pos.x, y:spawn.pos.y}) as Coord);
+    const baseCenter=findCenterCoord(spawnCoords);
 
 
 
@@ -62,17 +79,19 @@ export const constructStructuresInRoom = (room: Room) => {
         console.log(`need to construct ${extensionsNeededCount} extensions in room ${room.name}`);
 
 
-        const extensionsConstructionPositions=getExtensionsConstructionPositions({
+        const extensionsConstructionCoords=getExtensionsConstructionsCoords({
             baseCenter,
-            inValidBuildPositions,
+            occupiedPackedCoordsSet,
             roomTerrain,
             extensionsNeededCount,
         });
 
-        extensionsConstructionPositions.forEach(pos => {
-            const constructionResult=room.createConstructionSite(pos, STRUCTURE_EXTENSION);
-            if(constructionResult === OK) {
-                occupiedPositions.push(pos);
+        constructStructuresAtCoords({
+            room,
+            constructionCoords:extensionsConstructionCoords,
+            structureType:STRUCTURE_EXTENSION,
+            onSuccess:(successCoord) => {
+                occupiedPackedCoordsSet.add(packCoord(successCoord));
             }
         });
 
@@ -91,22 +110,27 @@ export const constructStructuresInRoom = (room: Room) => {
         const towersNeededCount=maxTowersCount-totalTowersCount;
 
 
-        const existingTowerPositions=[...existingTowers,...constructingTowers].map(tower => tower.pos);
+        const assumedTowerSites=[...existingTowers,...constructingTowers];
+        const assumedTowersCoords=assumedTowerSites.map(tower => ({x:tower.pos.x, y:tower.pos.y}) as Coord);
 
-        const towersConstructionPositions=getTowerConstructionPositions({
+        const towersConstructionCoords=getTowerConstructionsCoords({
             baseCenter,
-            inValidBuildPositions,
+            occupiedPackedCoordsSet,
             roomTerrain,
-            existingTowerPositions,
+            existingTowerCoords:assumedTowersCoords,
             towersNeededCount,
         });
 
-        towersConstructionPositions.forEach(pos => {
-            const constructionResult=room.createConstructionSite(pos, STRUCTURE_TOWER);
-            if(constructionResult === OK) {
-                occupiedPositions.push(pos);
+        constructStructuresAtCoords({
+            room,
+            constructionCoords:towersConstructionCoords,
+            structureType:STRUCTURE_TOWER,
+            onSuccess:(successCoord) => {
+                occupiedPackedCoordsSet.add(packCoord(successCoord));
             }
         });
+
+
 
     }
 }

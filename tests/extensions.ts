@@ -1,6 +1,6 @@
-import { isPositionReachable } from "../src/grid/utils";
-import { spiralPositionsGenerator } from "../src/grid/utils";
+import { findCenterCoord, isCoordReachable, packCoord, spiralCordsGenerator } from "../src/geometry";
 import { getMaxExtensionsByLevel } from "../src/gameConstants";
+import { Coord, PackedCoord } from "../src/types/geometry";
 
 export const testExtensionsConstruction = () => {
 
@@ -14,18 +14,16 @@ export const testExtensionsConstruction = () => {
     
     const roomStructures = room.find(FIND_STRUCTURES);
     const roomConstructionsSites=room.find(FIND_CONSTRUCTION_SITES);
+
+
+    const existingStructures=[...roomStructures, ...roomConstructionsSites];
     
-    const occupiedPositions = [
-        ...roomStructures,
-        ...roomConstructionsSites
-    ].map(st => st.pos);
-
-
-    const inValidBuildPositions = new Set<string>()
-
-    occupiedPositions.forEach(pos => {
-        inValidBuildPositions.add(pos.toString());
+    const occupiedPackedCoordsSet = new Set<PackedCoord>()
+    existingStructures.forEach(st => {
+        occupiedPackedCoordsSet.add(packCoord({x:st.pos.x, y:st.pos.y}));
     });
+
+
 
     const spawns=roomStructures.filter(st => st.structureType === STRUCTURE_SPAWN);
 
@@ -34,6 +32,8 @@ export const testExtensionsConstruction = () => {
 
     const totalExtensionsCount=0
     const maxExtensionsCount=getMaxExtensionsByLevel(roomLevel);
+
+    const baseCenter=findCenterCoord(spawns.map(spawn => ({x:spawn.pos.x, y:spawn.pos.y}) as Coord));
 
     if(totalExtensionsCount < maxExtensionsCount) {
         const extensionsNeededCount=maxExtensionsCount-totalExtensionsCount;
@@ -45,36 +45,35 @@ export const testExtensionsConstruction = () => {
         }
 
 
-        const positionsFound:RoomPosition[] = [];
-        let yieldIndex=0;
-        const yieldFunction = (pos: RoomPosition) => {
-            yieldIndex++;
-            if(yieldIndex%2!==0) {
+        const foundCoords:Coord[] = [];
+        const yieldFunction = (coord: Coord, index: number) => {
+            if(index%2!==0) {
                 return false;
             }
-            if(inValidBuildPositions.has(pos.toString())) {
+            if(roomTerrain.get(coord.x, coord.y) === TERRAIN_MASK_WALL) {
+                occupiedPackedCoordsSet.add(packCoord(coord));
                 return false;
             }
-            if(roomTerrain.get(pos.x, pos.y) === TERRAIN_MASK_WALL) {
-                inValidBuildPositions.add(pos.toString());
+            if(occupiedPackedCoordsSet.has(packCoord(coord))) {
                 return false;
             }
-            if(!isPositionReachable(pos, inValidBuildPositions)) {
-                inValidBuildPositions.add(pos.toString());
+            if(!isCoordReachable({coord, occupiedPackedCoordsSet})) {
+                occupiedPackedCoordsSet.add(packCoord(coord));
                 return false;
             }
-            positionsFound.push(pos);
-            return positionsFound.length>=extensionsNeededCount;
+            foundCoords.push(coord);
+            return foundCoords.length>=extensionsNeededCount;
         }
-        spiralPositionsGenerator({
-            center:spawns[0].pos,
+        spiralCordsGenerator({
+            center:baseCenter,
             yieldFunction,
         });
 
-        console.log(`found ${positionsFound.length} extension construction positions in room ${room.name}`);
+        console.log(`found ${foundCoords.length} extension construction positions in room ${room.name}`);
 
-        positionsFound.forEach(pos => {
-            pos.createFlag(undefined,COLOR_YELLOW)
+        foundCoords.forEach(coord => {
+            room.createFlag(coord.x, coord.y,undefined, COLOR_YELLOW);
         });
     }
 }
+

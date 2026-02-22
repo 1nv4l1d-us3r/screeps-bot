@@ -1,15 +1,20 @@
-import { findCenter, isPositionReachable, spiralPositionsGenerator } from "../grid/utils";
+import { 
+    createCoordIfValid, 
+    findCenterCoord,
+    isCoordReachable,
+    packCoord,
+    spiralCordsGenerator
+ } from "../geometry";
+import { Coord, PackedCoord } from "../types/geometry";
 
-
-
-interface GetFirstSpawnConstructionPositionParams {
+interface GetFirstSpawnConstructionCoordParams {
     room: Room;
     roomTerrain: RoomTerrain;
-    inValidBuildPositions: Set<string>;
+    occupiedPackedCoordsSet: Set<PackedCoord>;
 }
-export const getFirstSpawnConstructionPosition = (params: GetFirstSpawnConstructionPositionParams) => {
+export const getFirstSpawnConstructionCoord = (params: GetFirstSpawnConstructionCoordParams) => {
 
-    const {room, roomTerrain, inValidBuildPositions} = params;
+    const {room, roomTerrain, occupiedPackedCoordsSet} = params;
 
     const controller=room.controller;
     if(!controller) {
@@ -18,31 +23,34 @@ export const getFirstSpawnConstructionPosition = (params: GetFirstSpawnConstruct
     
     const sources=room.find(FIND_SOURCES);
 
-    const criticalPositions=[...sources,controller].map(st => st.pos);
+    const criticalStructures=[...sources,controller];
+    const criticalStructuresCoords=criticalStructures.map(st => ({x:st.pos.x, y:st.pos.y}) as Coord);
 
-    const center=findCenter(criticalPositions);
+    const center=findCenterCoord(criticalStructuresCoords);
 
-    let foundPosition:RoomPosition|undefined;
 
-    const yieldFunction = (pos: RoomPosition) => {
-        if(inValidBuildPositions.has(pos.toString())) {
+    let foundCoord:Coord|undefined;
+
+    const yieldFunction = (coord: Coord) => {
+     
+        if(occupiedPackedCoordsSet.has(packCoord(coord))) {
             return false;
         }
-        if(roomTerrain.get(pos.x, pos.y) === TERRAIN_MASK_WALL) {
-            inValidBuildPositions.add(pos.toString());
+        if(roomTerrain.get(coord.x, coord.y) === TERRAIN_MASK_WALL) {
+            occupiedPackedCoordsSet.add(packCoord(coord));
             return false;
         }
-        if(!isPositionReachable(pos, inValidBuildPositions)) {
-            inValidBuildPositions.add(pos.toString());
+        if(!isCoordReachable({ coord, occupiedPackedCoordsSet })) {
+            occupiedPackedCoordsSet.add(packCoord(coord));
             return false;
         }
-        foundPosition=pos;
+        foundCoord=coord;
         return true;
     }
 
-    spiralPositionsGenerator({
+    spiralCordsGenerator({
         center,
         yieldFunction,
     });
-    return foundPosition;
+    return foundCoord;
 }

@@ -1,4 +1,5 @@
-import { findCenter } from "../grid/utils";
+
+import { findCenterCoord, getCoordDistance } from "../geometry";
 import { WorkerRoles, WorkerMemory, Worker } from "../types/worker";
 import { getAutoScaledBodyParts, getBodyPartsCost } from "./common";
 
@@ -6,6 +7,7 @@ import { getMaxLinksByLevel } from "../gameConstants";
 
 
 import { RoomPopulation, WorkerSpawnConfig } from "../types/room";
+import { Coord } from "../types/geometry";
 
 
 export const updateWorkerPopulation = (myRooms: Room[]) => {
@@ -138,26 +140,26 @@ const getMinersSpawnDetails = (room: Room) => {
         return [];
     }
 
-    let basePosition:RoomPosition
+    let baseCenterCoord:Coord
 
     const roomStorage=room.storage;
     if(roomStorage) {
-        basePosition=roomStorage.pos;
+        baseCenterCoord={x:roomStorage.pos.x, y:roomStorage.pos.y};
     }
     else {
         const roomSpawns=room.find(FIND_MY_SPAWNS);
-        const center=findCenter(roomSpawns.map(spawn => spawn.pos));
-        basePosition=center;
+        const roomSpawnsCoords=roomSpawns.map(spawn => ({x:spawn.pos.x, y:spawn.pos.y}) as Coord);
+        baseCenterCoord=findCenterCoord(roomSpawnsCoords);
     }
 
-    const maxLinksCount=getMaxLinksByLevel(roomLevel);
-    let linksAvailable=maxLinksCount-1  // 1 link is reserved for the base reciever
+   
     const sources=room.find(FIND_SOURCES);
 
     const sourceDistanceMap=new Map<Id<Source>, number>();
     
     sources.forEach(source => {
-        const distanceToBase=source.pos.getRangeTo(basePosition);
+        const sourceCoord={x:source.pos.x, y:source.pos.y} as Coord;
+        const distanceToBase=getCoordDistance(sourceCoord, baseCenterCoord);
         sourceDistanceMap.set(source.id, distanceToBase);
     });
     sources.sort((a,b)=>{return (sourceDistanceMap.get(a.id)||0) - (sourceDistanceMap.get(b.id)||0)});
@@ -165,6 +167,8 @@ const getMinersSpawnDetails = (room: Room) => {
     const energyMinersSpawnConfigs: WorkerSpawnConfig[] = [];
     const roomSpawnBudget = room.energyCapacityAvailable;
 
+    const maxLinksCount=getMaxLinksByLevel(roomLevel);
+    let linksAvailable=maxLinksCount-1  // 1 link is reserved for the base reciever
 
     sources.forEach(source => {
         const distanceToBase=sourceDistanceMap.get(source.id)||0;

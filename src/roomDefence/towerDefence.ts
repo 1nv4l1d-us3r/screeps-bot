@@ -41,7 +41,7 @@ export const handleRoomTowerDefence = (room: Room) => {
 
     const hostileCreeps=findHostileCreepsInRoom(room);
     if(!hostileCreeps.length) {
-        room.memory.hostileCreepsPresent = false;
+        room.memory.hasHostileCreeps = false;
         return;
     }
 

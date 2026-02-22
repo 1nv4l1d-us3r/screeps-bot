@@ -1,25 +1,34 @@
-import {isPositionReachable, spiralPositionsGenerator} from "../grid/utils";
+
+import { 
+    spiralCordsGenerator,
+    isCoordReachable,
+    packCoord,
+    getCoordDistance,
+    getMinDistanceCoord,
+ } from "../geometry";
+import { Coord, PackedCoord } from "../types/geometry";
+
 
 
 
 
 interface GetBestTowerConstructionPositionParams {
-    baseCenter: RoomPosition;
-    inValidBuildPositions: Set<string>;
+    baseCenter: Coord;
     roomTerrain: RoomTerrain;
-    existingTowerPositions: RoomPosition[];
+    occupiedPackedCoordsSet: Set<PackedCoord>;
+    existingTowerCoords: Coord[];
     towersNeededCount: number;
 }
 
 
 
-export const getTowerConstructionPositions = (params: GetBestTowerConstructionPositionParams) => {
+export const getTowerConstructionsCoords = (params: GetBestTowerConstructionPositionParams) => {
 
     const {
         baseCenter,
-        inValidBuildPositions,
         roomTerrain,
-        existingTowerPositions,
+        occupiedPackedCoordsSet,
+        existingTowerCoords,
         towersNeededCount,
     } = params;
 
@@ -27,41 +36,36 @@ export const getTowerConstructionPositions = (params: GetBestTowerConstructionPo
     const minDistanceBetweenTowers = 10;
 
 
-    const positionsFound:RoomPosition[] = [];
+    const foundCoords:Coord[] = [];
     
-    let yieldIndex=0;
-    const yieldFunction = (pos: RoomPosition) => {
-        yieldIndex++;
-        if(yieldIndex%2!==0) {
+    const yieldFunction = (coord: Coord, index: number) => {
+        if(index%2!==0) {
             return false;
         }
-        if(inValidBuildPositions.has(pos.toString())) {
+        if(occupiedPackedCoordsSet.has(packCoord(coord))) {
             return false;
         }
-        if(roomTerrain.get(pos.x, pos.y) === TERRAIN_MASK_WALL) {
-            inValidBuildPositions.add(pos.toString());
+        if(roomTerrain.get(coord.x, coord.y) === TERRAIN_MASK_WALL) {
+            occupiedPackedCoordsSet.add(packCoord(coord));
             return false;
         }
-        if(!isPositionReachable(pos, inValidBuildPositions)) {
-            inValidBuildPositions.add(pos.toString());
-            return false;
-        }
-        const existingTowerDistances=existingTowerPositions.map(
-            existingTowerPos => pos.getRangeTo(existingTowerPos)
-        );
-        const closestExistingTowerDistance = Math.min(...existingTowerDistances);
+
+        const { minDistance: closestExistingTowerDistance } = getMinDistanceCoord({ center: coord, targets: existingTowerCoords });
         if(closestExistingTowerDistance < minDistanceBetweenTowers) {
             return false;
         }
-        positionsFound.push(pos);
-        return positionsFound.length>=towersNeededCount;
+        if(!isCoordReachable({ coord, occupiedPackedCoordsSet })) {
+            occupiedPackedCoordsSet.add(packCoord(coord));
+            return false;
+        }
+        foundCoords.push(coord);
+        return foundCoords.length>=towersNeededCount;
     }
 
-
-    spiralPositionsGenerator({
+    spiralCordsGenerator({
         center:baseCenter,
         yieldFunction,
         spiralStepSize:3, // sparse search
     });
-    return positionsFound;
+    return foundCoords;
 }
