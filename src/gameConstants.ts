@@ -1,3 +1,4 @@
+export const ROOM_SIZE = 50;
 
 export const getMaxSpawnsByLevel = (rcl: number) => {
     if(rcl >= 1 && rcl <= 6) 
