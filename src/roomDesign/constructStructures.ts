@@ -7,7 +7,8 @@ import { findCenterCoord, packCoord } from "../geometry";
 import { getFirstSpawnConstructionCoord } from "./spawn";
 import { Coord, PackedCoord } from "../types/geometry";
 import { constructStructuresAtCoords } from "./common";
-
+import { getStorageStructureConfig } from "./storage";
+import { getMiningStorageStructureConfigs } from "./miningStorage";
 
 
 export const constructStructuresInRoom = (room: Room) => {
@@ -32,6 +33,7 @@ export const constructStructuresInRoom = (room: Room) => {
     
 
 
+    // --------------- Spawns Construction ---------------//
     const spawns=roomStructures.filter(st => st.structureType === STRUCTURE_SPAWN);
 
     if(spawns.length === 0) {
@@ -71,6 +73,7 @@ export const constructStructuresInRoom = (room: Room) => {
 
 
 
+    // --------------- Extensions Construction ---------------//
     const existingExtensions=roomStructures.filter(st => st.structureType === STRUCTURE_EXTENSION)
     const constructingExtensions=roomConstructionsSites.filter(cs => cs.structureType === STRUCTURE_EXTENSION)
 
@@ -103,6 +106,7 @@ export const constructStructuresInRoom = (room: Room) => {
     }
 
 
+    // --------------- Towers Construction ---------------//
     const existingTowers=roomStructures.filter(st => st.structureType === STRUCTURE_TOWER);
     const constructingTowers=roomConstructionsSites.filter(cs => cs.structureType === STRUCTURE_TOWER);
 
@@ -133,9 +137,76 @@ export const constructStructuresInRoom = (room: Room) => {
             }
         });
 
-
-
     }
+
+
+
+    // --------------- Storage Construction ---------------//
+
+    const roomStorage=room.storage
+
+    if(!roomStorage && roomLevel >4) {
+        const storageConntructionConfig=getStorageStructureConfig({
+            room,
+            spawns,
+            roomTerrain,
+            occupiedPackedCoordsSet,
+        });
+        if(storageConntructionConfig) {
+        constructStructuresAtCoords({
+            room,
+            constructionCoords:storageConntructionConfig.coord,
+            structureType:storageConntructionConfig.structureType,
+            force:true,
+            onSuccess:(successCoord) => {
+                occupiedPackedCoordsSet.add(packCoord(successCoord));
+            },
+            onFailure:(failureCoord) => {
+                console.log(`Room ${room.name}: failed to construct storage at ${failureCoord.x},${failureCoord.y}`);
+            }
+        });
+        }
+    }
+
+    // --------------- Mining Storage Construction ---------------//
+
+    const miningStorageStructureConfigs=getMiningStorageStructureConfigs({
+        room,
+        baseCenter,
+        roomTerrain,
+        occupiedPackedCoordsSet,
+    });
+
+    if(miningStorageStructureConfigs.length > 0) {
+
+        miningStorageStructureConfigs.forEach(constructionConfig => {
+
+            const {coord, structureType}=constructionConfig;
+
+            const alreadyConstructed=existingStructures.some(st => st.pos.x === coord.x && st.pos.y === coord.y && st.structureType === structureType);
+            if(alreadyConstructed) {
+                return;
+            }
+
+            const isBeingConstructed=roomConstructionsSites.some(cs => cs.pos.x === coord.x && cs.pos.y === coord.y && cs.structureType === structureType);
+            if(isBeingConstructed) {
+                return;
+            }
+
+            constructStructuresAtCoords({
+                room,
+                constructionCoords:coord,
+                structureType,
+                onSuccess:(successCoord) => {
+                    occupiedPackedCoordsSet.add(packCoord(successCoord));
+                },
+                onFailure:(failureCoord) => {
+                    console.log(`Room ${room.name}: failed to construct mining storage at ${failureCoord.x},${failureCoord.y}`);
+                }
+            });
+        });
+    }
+    
 }
 
 
