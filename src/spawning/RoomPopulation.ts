@@ -54,18 +54,20 @@ creates a array of worker configs for the given number of workers.
 interface GetSimpleWorkerSpawnDetailsParams {
     room:Room
     bodyParts: BodyPartConstant[]
+    optimalBodyParts: BodyPartConstant[]
     memory: WorkerMemoryWithoutId
     workerCount: number
 }
 
 const getSimpleWorkerSpawnConfig=(params: GetSimpleWorkerSpawnDetailsParams) => {
 
-    const {room,bodyParts,memory,workerCount} = params;
+    const {room,bodyParts,optimalBodyParts,memory,workerCount} = params;
     return Array(workerCount).fill(0).map((_,index)=>{
         const workerId = `${memory.role}-${room.name}-${index}` as Id<Worker>;
         return {
             workerId: workerId,
             bodyParts: bodyParts,
+            optimalBodyParts: optimalBodyParts,
             memory: {
                 ...memory,
                 workerId: workerId
@@ -84,10 +86,13 @@ const getHarvestersSpawnDetails = (room: Room) => {
     const roomLevel = room.controller?.level || 0;
     const harvesterCount = roomLevel == 1 ? 6 : 4;
     const roomSpawnBudget = room.energyCapacityAvailable;
-    const harvesterBody=roomLevel==1 ?[WORK,CARRY,MOVE,MOVE]:getAutoScaledBodyParts([WORK,CARRY,MOVE],roomSpawnBudget,15);
+    const harvesterOptimalBodyParts=[WORK,CARRY,MOVE,MOVE];
+    const harvesterAutoScaleBodyParts=[WORK,CARRY,MOVE];
+    const harvesterBody=roomLevel==1 ?harvesterOptimalBodyParts:getAutoScaledBodyParts(harvesterAutoScaleBodyParts,roomSpawnBudget,15);
     const harvesterSpawnDetails = getSimpleWorkerSpawnConfig({
         room,
         bodyParts: harvesterBody,
+        optimalBodyParts: harvesterBody,
         memory: {
             role: WorkerRoles.HARVESTER
         },
@@ -102,10 +107,13 @@ const getUpgradersSpawnDetails = (room: Room) => {
     const roomLevel = room.controller?.level || 0;
     let upgraderCount = roomLevel == 1 ? 1 : Math.min(1,roomLevel);
     const roomSpawnBudget = room.energyCapacityAvailable;
-    const upgraderBody=roomLevel==1 ?[WORK,CARRY,MOVE,MOVE]:getAutoScaledBodyParts([WORK,CARRY,MOVE],roomSpawnBudget,15);
+    const upgraderOptimalBodyParts=[WORK,CARRY,MOVE,MOVE];
+    const upgraderAutoScaleBodyParts=[WORK,CARRY,MOVE];
+    const upgraderBody=roomLevel==1 ?upgraderOptimalBodyParts:getAutoScaledBodyParts(upgraderAutoScaleBodyParts,roomSpawnBudget,15);
     const upgraderSpawnDetails = getSimpleWorkerSpawnConfig({
         room,
         bodyParts: upgraderBody,
+        optimalBodyParts: upgraderBody,
         memory: {
             role: WorkerRoles.UPGRADER
         },
@@ -121,10 +129,13 @@ const getBuildersSpawnDetails = (room: Room) => {
     const roomLevel = room.controller?.level || 0;
     let builderCount = roomLevel == 1 ? 1 : Math.min(1,roomLevel);
     const roomSpawnBudget = room.energyCapacityAvailable;
-    const builderBody=roomLevel==1 ?[WORK,CARRY,MOVE,MOVE]:getAutoScaledBodyParts([WORK,CARRY,MOVE],roomSpawnBudget,15);
+    const builderOptimalBodyParts=[WORK,CARRY,MOVE,MOVE];
+    const builderAutoScaleBodyParts=[WORK,CARRY,MOVE];
+    const builderBody=roomLevel==1 ?builderOptimalBodyParts:getAutoScaledBodyParts(builderAutoScaleBodyParts,roomSpawnBudget,15);
     const builderSpawnDetails = getSimpleWorkerSpawnConfig({
         room,
         bodyParts: builderBody,
+        optimalBodyParts: builderBody,
         memory: {
             role: WorkerRoles.BUILDER
         },
@@ -139,6 +150,10 @@ const getMinersSpawnDetails = (room: Room) => {
     if(roomLevel<2) {
         return [];
     }
+
+    const minerOptimalBodyParts=[WORK,WORK,MOVE];
+    const minerFixedBodyParts=[MOVE];
+    const minerAutoScaleBodyParts=[WORK];
 
     let baseCenterCoord:Coord
 
@@ -198,6 +213,7 @@ const getMinersSpawnDetails = (room: Room) => {
         energyMinersSpawnConfigs.push({
             workerId: minerWorkerId,
             bodyParts: minerBodyParts,
+            optimalBodyParts: minerOptimalBodyParts,
             memory: minerMemory
         });
     });

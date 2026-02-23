@@ -4,6 +4,7 @@ import { Worker, WorkerMemory } from "./worker";
 export interface WorkerSpawnConfig {
     workerId:Id<Worker>;
     bodyParts: BodyPartConstant[];
+    optimalBodyParts: BodyPartConstant[];
     memory: WorkerMemory;
 }
 

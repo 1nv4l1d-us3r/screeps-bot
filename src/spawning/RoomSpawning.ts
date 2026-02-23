@@ -35,6 +35,10 @@ const handleRoomWorkerSpawning = (params: HandleRoomWorkerSpawningParams) => {
 
     const aliveWorkerIds=new Set(roomWorkers.map(worker => worker.id));
 
+    const isWorkerCountBelowOptimal=aliveWorkerIds.size<roomPopulation.totalWorkers/4;
+    const isRoomEnergyLow=room.energyAvailable<room.energyCapacityAvailable/4;
+    const isRoomStruggling=isWorkerCountBelowOptimal && isRoomEnergyLow;
+
     const toBeSpawnedWorkerConfigs=roomPopulation.workerSpawnConfigs.filter(
         spawnConfig => !aliveWorkerIds.has(spawnConfig.workerId)
     );
@@ -46,7 +50,10 @@ const handleRoomWorkerSpawning = (params: HandleRoomWorkerSpawningParams) => {
         if(!spawn) {
             return;
         }
-        const spawnResult = spawn.spawnCreep(spawnConfig.bodyParts, spawnConfig.workerId, {memory: spawnConfig.memory});
+        const workerName=spawnConfig.workerId
+        const workerMemory=spawnConfig.memory;
+        const workerBodyParts=isRoomStruggling?spawnConfig.optimalBodyParts:spawnConfig.bodyParts;
+        const spawnResult = spawn.spawnCreep(workerBodyParts, workerName, {memory: workerMemory});
         if(spawnResult === OK) {
             continue;
         }

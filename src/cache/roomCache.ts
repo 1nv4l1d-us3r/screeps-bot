@@ -69,3 +69,10 @@ class RoomCache {
     }
 
 }
+
+
+interface RoomCacheFindParams {
+    room: Room;
+    findConstant: FindConstant;
+    filter?: () => boolean;
+}
