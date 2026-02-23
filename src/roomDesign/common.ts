@@ -4,10 +4,10 @@ import { Coord } from "../types/geometry";
 
 interface ConstructStructureInRoomParams {
     room: Room;
-    constructionCoords: Coord[];
+    constructionCoords: Coord|Coord[];
     structureType: BuildableStructureConstant;
-    onSuccess?:(successCoord:Coord) => void;
-    onFailure?:(failureCoord:Coord) => void;
+    onSuccess?:(Coord:Coord) => void;
+    onFailure?:(Coords:Coord) => void;
 }
 
 export const constructStructuresAtCoords = (params: ConstructStructureInRoomParams) => {
@@ -19,8 +19,10 @@ export const constructStructuresAtCoords = (params: ConstructStructureInRoomPara
         onFailure 
     } = params;
 
+    const constructionCoordsList=Array.isArray(constructionCoords)?constructionCoords:[constructionCoords];
 
-    constructionCoords.forEach(coord => {
+
+    constructionCoordsList.forEach(coord => {
         const constructionResult = room.createConstructionSite(coord.x, coord.y, structureType);
         if(constructionResult === OK) {
             onSuccess?.(coord);

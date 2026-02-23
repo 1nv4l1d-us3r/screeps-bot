@@ -35,6 +35,12 @@ export const constructStructuresInRoom = (room: Room) => {
     const spawns=roomStructures.filter(st => st.structureType === STRUCTURE_SPAWN);
 
     if(spawns.length === 0) {
+        const isFirstSpawnBeingConstructed=roomConstructionsSites.some(cs => cs.structureType === STRUCTURE_SPAWN);
+        if(isFirstSpawnBeingConstructed) {
+            console.log(`Room ${room.name}: first spawn is being constructed, skipping construction`);
+            return;
+        }
+
         const firstSpawnCoord=getFirstSpawnConstructionCoord({
             room,
             roomTerrain,
@@ -45,22 +51,19 @@ export const constructStructuresInRoom = (room: Room) => {
             return;
         }
 
-        let failure=false;
         constructStructuresAtCoords({
             room,
-            constructionCoords:[firstSpawnCoord],
+            constructionCoords:firstSpawnCoord,
             structureType:STRUCTURE_SPAWN,
             onSuccess:(successCoord) => {
                 occupiedPackedCoordsSet.add(packCoord(successCoord));
             },
             onFailure:(failureCoord) => {
                 console.log(`Room ${room.name}: failed to construct first spawn at ${failureCoord.x},${failureCoord.y}`);
-                failure=true;
             }
         });
-        if(failure) {
-            return;
-        }
+        
+        return;
     }
 
     const spawnCoords=spawns.map(spawn => ({x:spawn.pos.x, y:spawn.pos.y}) as Coord);
