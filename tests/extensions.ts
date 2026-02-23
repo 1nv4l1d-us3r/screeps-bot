@@ -1,5 +1,5 @@
 import { findCenterCoord, isCoordReachable, packCoord, spiralCordsGenerator } from "../src/geometry";
-import { getMaxExtensionsByLevel } from "../src/gameConstants";
+import { getMaxBuildableStructuresByLevel } from "../src/gameConstants";
 import { Coord, PackedCoord } from "../src/types/geometry";
 import { CpuProfiler } from "../src/helpers/cpuProfiler";
 export const testExtensionsConstruction = () => {
@@ -35,7 +35,7 @@ export const testExtensionsConstruction = () => {
     CpuProfiler.logEnd("filtering structures and construction sites");
 
     const totalExtensionsCount=0
-    const maxExtensionsCount=getMaxExtensionsByLevel(roomLevel);
+    const maxExtensionsCount=getMaxBuildableStructuresByLevel(STRUCTURE_EXTENSION, roomLevel);
 
     const baseCenter=findCenterCoord(spawns.map(spawn => ({x:spawn.pos.x, y:spawn.pos.y}) as Coord));
 

@@ -3,7 +3,7 @@ import { findCenterCoord, getCoordDistance } from "../geometry";
 import { WorkerRoles, WorkerMemory, Worker } from "../types/worker";
 import { getAutoScaledBodyParts, getBodyPartsCost } from "./common";
 
-import { getMaxLinksByLevel } from "../gameConstants";
+import { getMaxBuildableStructuresByLevel } from "../gameConstants";
 
 
 import { RoomPopulation, WorkerSpawnConfig } from "../types/room";
@@ -182,7 +182,7 @@ const getMinersSpawnDetails = (room: Room) => {
     const energyMinersSpawnConfigs: WorkerSpawnConfig[] = [];
     const roomSpawnBudget = room.energyCapacityAvailable;
 
-    const maxLinksCount=getMaxLinksByLevel(roomLevel);
+    const maxLinksCount=getMaxBuildableStructuresByLevel(STRUCTURE_LINK, roomLevel);
     let linksAvailable=maxLinksCount-1  // 1 link is reserved for the base reciever
 
     sources.forEach(source => {

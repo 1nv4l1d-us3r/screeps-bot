@@ -1,4 +1,4 @@
-import { getMaxExtensionsByLevel, getMaxTowersByLevel } from "../gameConstants";
+import { getMaxBuildableStructuresByLevel } from "../gameConstants";
 
 
 import { getExtensionsConstructionsCoords } from "./extensions";
@@ -72,7 +72,7 @@ export const constructStructuresInRoom = (room: Room) => {
     const constructingExtensions=roomConstructionsSites.filter(cs => cs.structureType === STRUCTURE_EXTENSION)
 
     const totalExtensionsCount=existingExtensions.length+constructingExtensions.length;
-    const maxExtensionsCount=getMaxExtensionsByLevel(roomLevel);
+    const maxExtensionsCount=getMaxBuildableStructuresByLevel(STRUCTURE_EXTENSION, roomLevel);
 
     if(totalExtensionsCount < maxExtensionsCount) {
         const extensionsNeededCount=maxExtensionsCount-totalExtensionsCount;
@@ -104,7 +104,7 @@ export const constructStructuresInRoom = (room: Room) => {
     const constructingTowers=roomConstructionsSites.filter(cs => cs.structureType === STRUCTURE_TOWER);
 
     const totalTowersCount=existingTowers.length+constructingTowers.length;
-    const maxTowersCount=getMaxTowersByLevel(roomLevel);
+    const maxTowersCount=getMaxBuildableStructuresByLevel(STRUCTURE_TOWER, roomLevel);
     
     if(totalTowersCount < maxTowersCount ) {
         const towersNeededCount=maxTowersCount-totalTowersCount;

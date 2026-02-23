@@ -1,4 +1,4 @@
-
+CONTROLLER_STRUCTURES
 import { 
     spiralCordsGenerator,
     isCoordReachable,
