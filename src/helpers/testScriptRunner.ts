@@ -7,6 +7,7 @@ import { CpuProfiler } from "./cpuProfiler";
 import { testCoordinateFormats } from "../../tests/coordinateBenchmark";
 import { roomfindBenchmark } from "../../tests/roomfindBenchmark";
 import { testSpawnConstruction } from "../../tests/testSpawnConstruction";
+import { testRoomDesign } from "../../tests/roomDesign";
 
 
 export const testScriptRunner = () => {
@@ -36,6 +37,7 @@ const testScripts:Record<string, () => void> = {
     'coordinateBenchmark': testCoordinateFormats,
     'roomfindBenchmark': roomfindBenchmark,
     'spawnConstruction': testSpawnConstruction,
+    'roomDesign': testRoomDesign,
 }
 
 
@@ -43,7 +45,7 @@ const testScripts:Record<string, () => void> = {
 
 /*
 
-Memory.testScript='extensions'
+Memory.testScript='roomDesign'
 
 */
 

@@ -247,7 +247,7 @@ export const getReachableNeighborCoords=(params: GetReachableNeighborsParams):Co
             return roomTerrain.get(coord.x, coord.y) != TERRAIN_MASK_WALL;
         }
     }
-    const reachableNeighborCoords = adjacentCoords.filter(filterFunc);
+    const reachableNeighborCoords = adjacentCoords.filter(coord => filterFunc(coord));
     return reachableNeighborCoords;
 }
 

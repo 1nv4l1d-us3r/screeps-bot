@@ -23,7 +23,7 @@ export const getStorageStructureConfig = (params: GetStorageStructureConfigsPara
     if(adjToFirstSpawnCoord) {
         const storageConfig: StructureConstructionConfig = {
             coord: adjToFirstSpawnCoord,
-            structureType: STRUCTURE_CONTAINER
+            structureType: STRUCTURE_STORAGE
         }
         return storageConfig;
     }
@@ -64,7 +64,7 @@ export const getStorageStructureConfig = (params: GetStorageStructureConfigsPara
     if(storageCoord) {
         const storageConfig: StructureConstructionConfig = {
             coord: storageCoord,
-            structureType: STRUCTURE_CONTAINER
+            structureType: STRUCTURE_STORAGE
         }
         return storageConfig;
     }

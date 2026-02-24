@@ -8,7 +8,7 @@ interface ConstructStructureInRoomParams {
     structureType: BuildableStructureConstant;
     force?: boolean;
     onSuccess?:(Coord:Coord) => void;
-    onFailure?:(Coords:Coord) => void;
+    onFailure?:(Coords:Coord,errorCode:ScreepsReturnCode) => void;
 }
 
 export const constructStructuresAtCoords = (params: ConstructStructureInRoomParams) => {
@@ -29,7 +29,7 @@ export const constructStructuresAtCoords = (params: ConstructStructureInRoomPara
         if(constructionResult === OK) {
             onSuccess?.(coord);
         }
-        else if(force && constructionResult === ERR_INVALID_TARGET) {
+        else if(force==true && constructionResult === ERR_INVALID_TARGET) {
             const existingStructure = room.lookForAt(LOOK_STRUCTURES, coord.x, coord.y);
             const destoryStructures = existingStructure.filter((st=>st.structureType!=STRUCTURE_RAMPART))
             destoryStructures.forEach(st=>st.destroy())
@@ -40,11 +40,12 @@ export const constructStructuresAtCoords = (params: ConstructStructureInRoomPara
                 onSuccess?.(coord);
             }
             else {
-                onFailure?.(coord);
+                console.log(`failed to construct structure ${structureType} even after destroying existing structure at ${coord.x},${coord.y}`);
+                onFailure?.(coord,retryConstructionResult);
             }
         }
         else {
-            onFailure?.(coord);
+            onFailure?.(coord,constructionResult);
         }
     })
 }

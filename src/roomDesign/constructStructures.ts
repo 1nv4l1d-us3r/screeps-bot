@@ -60,8 +60,10 @@ export const constructStructuresInRoom = (room: Room) => {
             onSuccess:(successCoord) => {
                 occupiedPackedCoordsSet.add(packCoord(successCoord));
             },
-            onFailure:(failureCoord) => {
-                console.log(`Room ${room.name}: failed to construct first spawn at ${failureCoord.x},${failureCoord.y}`);
+            onFailure:(failureCoord,errorCode) => {
+                console.log(`Room ${room.name}: failed to construct first spawn at ${failureCoord.x},${failureCoord.y} 
+                        with error code ${errorCode}`
+                );
             }
         });
         
@@ -70,6 +72,38 @@ export const constructStructuresInRoom = (room: Room) => {
 
     const spawnCoords=spawns.map(spawn => ({x:spawn.pos.x, y:spawn.pos.y}) as Coord);
     const baseCenter=findCenterCoord(spawnCoords);
+
+
+
+    
+    // --------------- Storage Construction ---------------//
+
+    const roomStorage=room.storage
+
+    if(!roomStorage && roomLevel >4) {
+        const storageConntructionConfig=getStorageStructureConfig({
+            room,
+            spawns,
+            roomTerrain,
+            occupiedPackedCoordsSet,
+        });
+        if(storageConntructionConfig) {
+        constructStructuresAtCoords({
+            room,
+            constructionCoords:storageConntructionConfig.coord,
+            structureType:storageConntructionConfig.structureType,
+            force:true,
+            onSuccess:(successCoord) => {
+                occupiedPackedCoordsSet.add(packCoord(successCoord));
+            },
+            onFailure:(failureCoord,errorCode) => {
+                console.log(`Room ${room.name}: failed to construct storage at ${failureCoord.x},${failureCoord.y} 
+                        with error code ${errorCode}`
+                );
+            }
+        });
+        }
+    }
 
 
 
@@ -141,32 +175,7 @@ export const constructStructuresInRoom = (room: Room) => {
 
 
 
-    // --------------- Storage Construction ---------------//
-
-    const roomStorage=room.storage
-
-    if(!roomStorage && roomLevel >4) {
-        const storageConntructionConfig=getStorageStructureConfig({
-            room,
-            spawns,
-            roomTerrain,
-            occupiedPackedCoordsSet,
-        });
-        if(storageConntructionConfig) {
-        constructStructuresAtCoords({
-            room,
-            constructionCoords:storageConntructionConfig.coord,
-            structureType:storageConntructionConfig.structureType,
-            force:true,
-            onSuccess:(successCoord) => {
-                occupiedPackedCoordsSet.add(packCoord(successCoord));
-            },
-            onFailure:(failureCoord) => {
-                console.log(`Room ${room.name}: failed to construct storage at ${failureCoord.x},${failureCoord.y}`);
-            }
-        });
-        }
-    }
+    return;
 
     // --------------- Mining Storage Construction ---------------//
 
@@ -200,8 +209,10 @@ export const constructStructuresInRoom = (room: Room) => {
                 onSuccess:(successCoord) => {
                     occupiedPackedCoordsSet.add(packCoord(successCoord));
                 },
-                onFailure:(failureCoord) => {
-                    console.log(`Room ${room.name}: failed to construct mining storage at ${failureCoord.x},${failureCoord.y}`);
+                onFailure:(failureCoord,errorCode) => {
+                    console.log(`Room ${room.name}: failed to construct mining storage at ${failureCoord.x},${failureCoord.y} 
+                        with error code ${errorCode}`
+                    );
                 }
             });
         });
