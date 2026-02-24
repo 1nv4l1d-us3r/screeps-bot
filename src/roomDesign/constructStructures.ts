@@ -19,16 +19,24 @@ export const constructStructuresInRoom = (room: Room) => {
     const roomStructures = room.find(FIND_STRUCTURES);
     const roomConstructionsSites=room.find(FIND_CONSTRUCTION_SITES);
 
-    const existingStructures=[...roomStructures, ...roomConstructionsSites];
-
-    
-
-
+    const roomStructureMap=new Map<PackedCoord, StructureConstant>();
+    const roomConstructionSiteMap=new Map<PackedCoord, BuildableStructureConstant>();
     const occupiedPackedCoordsSet = new Set<PackedCoord>()
     
-    existingStructures.forEach(st => {
-        occupiedPackedCoordsSet.add(packCoord({x:st.pos.x, y:st.pos.y}));
+    
+    roomStructures.forEach(st => {
+        const structureCoord=packCoord({x:st.pos.x, y:st.pos.y});
+        roomStructureMap.set(structureCoord, st.structureType);
+        occupiedPackedCoordsSet.add(structureCoord);
     });
+
+    roomConstructionsSites.forEach(cs => {
+        const constructionSiteCoord=packCoord({x:cs.pos.x, y:cs.pos.y});
+        roomConstructionSiteMap.set(constructionSiteCoord, cs.structureType);
+        occupiedPackedCoordsSet.add(constructionSiteCoord);
+    });
+    
+
 
     
 
@@ -175,7 +183,6 @@ export const constructStructuresInRoom = (room: Room) => {
 
 
 
-    return;
 
     // --------------- Mining Storage Construction ---------------//
 
@@ -191,14 +198,13 @@ export const constructStructuresInRoom = (room: Room) => {
         miningStorageStructureConfigs.forEach(constructionConfig => {
 
             const {coord, structureType}=constructionConfig;
-
-            const alreadyConstructed=existingStructures.some(st => st.pos.x === coord.x && st.pos.y === coord.y && st.structureType === structureType);
-            if(alreadyConstructed) {
+            const storageCoord=packCoord(coord);
+            const existingStructure=roomStructureMap.get(storageCoord);
+            if(existingStructure && existingStructure !== structureType) {
                 return;
             }
-
-            const isBeingConstructed=roomConstructionsSites.some(cs => cs.pos.x === coord.x && cs.pos.y === coord.y && cs.structureType === structureType);
-            if(isBeingConstructed) {
+            const existingConstructionSite=roomConstructionSiteMap.get(storageCoord);
+            if(existingConstructionSite && existingConstructionSite !== structureType) {
                 return;
             }
 
@@ -206,6 +212,7 @@ export const constructStructuresInRoom = (room: Room) => {
                 room,
                 constructionCoords:coord,
                 structureType,
+                force:false,                      // for time being we don't force construction
                 onSuccess:(successCoord) => {
                     occupiedPackedCoordsSet.add(packCoord(successCoord));
                 },

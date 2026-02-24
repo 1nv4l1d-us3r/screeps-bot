@@ -8,6 +8,8 @@ import { testCoordinateFormats } from "../../tests/coordinateBenchmark";
 import { roomfindBenchmark } from "../../tests/roomfindBenchmark";
 import { testSpawnConstruction } from "../../tests/testSpawnConstruction";
 import { testRoomDesign } from "../../tests/roomDesign";
+import { testMiningStorage } from "../../tests/miningStorage";
+
 
 
 export const testScriptRunner = () => {
@@ -38,6 +40,7 @@ const testScripts:Record<string, () => void> = {
     'roomfindBenchmark': roomfindBenchmark,
     'spawnConstruction': testSpawnConstruction,
     'roomDesign': testRoomDesign,
+    'miningStorage': testMiningStorage,
 }
 
 
@@ -45,7 +48,7 @@ const testScripts:Record<string, () => void> = {
 
 /*
 
-Memory.testScript='roomDesign'
+Memory.testScript='miningStorage'
 
 */
 

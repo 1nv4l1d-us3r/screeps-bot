@@ -1,4 +1,4 @@
-import { getAdjacentCoords, getCoordDistance, getMaxReachableNeighborCoords, getReachableNeighborCoords } from "../geometry/coords";
+import { getCoordDistance, getMaxReachableNeighborCoords,  } from "../geometry/coords";
 import { Coord, PackedCoord } from "../types/geometry";
 import { getMaxBuildableStructuresByLevel } from "../gameConstants";
 import { StructureConstructionConfig } from "./common";
@@ -71,6 +71,7 @@ export const getMiningStorageStructureConfigs = (params: GetMiningStorageStructu
         let storageCoord:Coord|undefined;
 
         if(storageType==STRUCTURE_CONTAINER){
+            
             storageCoord=getMiningCoordForResource(sourceCoord,roomTerrain)
             // place container at mining spot
         }
@@ -80,11 +81,11 @@ export const getMiningStorageStructureConfigs = (params: GetMiningStorageStructu
                 availableLinks--;
             }
         }
-
+  
         if(storageCoord) {
 
             const sourceStorageConfig: StructureConstructionConfig = {
-                coord: sourceCoord,
+                coord: storageCoord,
                 structureType: storageType
             }
             storageStructureConfigs.push(sourceStorageConfig);
@@ -97,11 +98,13 @@ export const getMiningStorageStructureConfigs = (params: GetMiningStorageStructu
         minerals.forEach(mineral => {
             const mineralCoord={x:mineral.pos.x, y:mineral.pos.y} as Coord;
 
-            const storageCoord=getMiningCoordForResource(mineralCoord,roomTerrain)
-
-            if(storageCoord) {
+            const mineralStorageCoord=getMiningCoordForResource(mineralCoord,roomTerrain)
+            if(!mineralStorageCoord) {
+                return;
+            }
+            if(mineralStorageCoord) {
                 const mineralStorageConfig: StructureConstructionConfig = {
-                    coord: mineralCoord,
+                    coord: mineralStorageCoord,
                     structureType: STRUCTURE_CONTAINER
                 }
                 const extractorConfig: StructureConstructionConfig = {
