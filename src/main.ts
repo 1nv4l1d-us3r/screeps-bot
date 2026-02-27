@@ -84,6 +84,11 @@ export const loop = () => {
         delete Memory.testScript;
     }
 
+    // 
+    if(Game.cpu.bucket==10000) {
+        Game.cpu.generatePixel();
+    }
+
     if(Memory.logCpuUsage) {
         CpuProfiler.logEnd("Main Loop");
     }
