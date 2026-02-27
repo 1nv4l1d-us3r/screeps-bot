@@ -12,7 +12,7 @@ type  BaseMiner = BaseWorker<MinerMemory>;
 export const minerRole = (worker: BaseMiner) => {
 
     if(!worker.memory.miningResourceId) {
-        worker.say('no mining resource id , miner is idle');
+        worker.say('yawn!...');
         return;
     }
 

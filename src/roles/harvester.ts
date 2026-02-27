@@ -42,7 +42,7 @@ export const harvesterRole = (worker:BaseHarvester) => {
         }
 
         const fillResult = worker.transfer(energyFillingStructure, RESOURCE_ENERGY);
-        worker.say(`res:${fillResult}`);
+        
         if(fillResult === ERR_NOT_IN_RANGE) {
             worker.moveTo(energyFillingStructure);
         }

@@ -14,7 +14,6 @@ export const upgraderRole = (worker: BaseUpgrader) => {
 
     const upgradeResult = worker.upgradeController(roomController);
 
-    console.log('upgradeResult', upgradeResult);
 
     if(upgradeResult==ERR_NOT_IN_RANGE){
         worker.moveTo(roomController)
