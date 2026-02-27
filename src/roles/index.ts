@@ -40,5 +40,9 @@ export const getWorkerHandler = (worker:Worker) => {
 
 
 export const getWorkerSpawnPriority = (role: WorkerRoles) => {
-    return workersConfig[role]?.spawnPriority || Infinity;
+    const spawnPriority=workersConfig[role]?.spawnPriority;
+    if(spawnPriority===undefined) {
+        return Infinity;
+    }
+    return spawnPriority;
 }

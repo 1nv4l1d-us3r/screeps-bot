@@ -92,7 +92,7 @@ const getHarvestersSpawnDetails = (room: Room) => {
     const harvesterSpawnDetails = getSimpleWorkerSpawnConfig({
         room,
         bodyParts: harvesterBody,
-        optimalBodyParts: harvesterBody,
+        optimalBodyParts: harvesterOptimalBodyParts,
         memory: {
             role: WorkerRoles.HARVESTER
         },
@@ -113,7 +113,7 @@ const getUpgradersSpawnDetails = (room: Room) => {
     const upgraderSpawnDetails = getSimpleWorkerSpawnConfig({
         room,
         bodyParts: upgraderBody,
-        optimalBodyParts: upgraderBody,
+        optimalBodyParts: upgraderOptimalBodyParts,
         memory: {
             role: WorkerRoles.UPGRADER
         },
@@ -135,7 +135,7 @@ const getBuildersSpawnDetails = (room: Room) => {
     const builderSpawnDetails = getSimpleWorkerSpawnConfig({
         room,
         bodyParts: builderBody,
-        optimalBodyParts: builderBody,
+        optimalBodyParts: builderOptimalBodyParts,
         memory: {
             role: WorkerRoles.BUILDER
         },

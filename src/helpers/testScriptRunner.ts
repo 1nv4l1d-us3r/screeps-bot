@@ -1,7 +1,6 @@
 // global way of test Scripts execution
 
-import { testRoomPopulation } from "../../tests/test";
-import { testWorkerSpawning } from "../../tests/test";
+import { testPopulationUpdate, testSpawnOrder } from "../../tests/roomPopulation";
 import { testExtensionsConstruction } from "../../tests/extensions";
 import { CpuProfiler } from "./cpuProfiler";
 import { testCoordinateFormats } from "../../tests/coordinateBenchmark";
@@ -34,8 +33,8 @@ export const testScriptRunner = () => {
 
 const testScripts:Record<string, () => void> = {
     'extensions': testExtensionsConstruction,
-    'roomPopulation': testRoomPopulation,
-    'workerSpawning': testWorkerSpawning,
+    'testPopulationUpdate': testPopulationUpdate,
+    'testSpawnOrder': testSpawnOrder,
     'coordinateBenchmark': testCoordinateFormats,
     'roomfindBenchmark': roomfindBenchmark,
     'spawnConstruction': testSpawnConstruction,
@@ -48,7 +47,7 @@ const testScripts:Record<string, () => void> = {
 
 /*
 
-Memory.testScript='miningStorage'
+Memory.testScript='testSpawnOrder'
 
 */
 

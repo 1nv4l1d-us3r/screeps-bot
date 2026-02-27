@@ -6,13 +6,9 @@ import { getWorkerSpawnPriority } from "../roles";
 
 
 // -------------- Helper Functions --------------//
-const getRoomSpawn = (room: Room) => {
+const getRoomSpawns = (room: Room) => {
     const freeSpawns = room.find(FIND_MY_SPAWNS).filter(spawn => spawn.spawning === null);
-    if(!freeSpawns.length) {
-        return null;
-    }
-    const firstSpawn = freeSpawns[0];
-    return firstSpawn;
+    return freeSpawns;
 }
 
 
@@ -30,14 +26,21 @@ interface HandleRoomWorkerSpawningParams {
     roomPopulation: RoomPopulation;
 }
 
-const handleRoomWorkerSpawning = (params: HandleRoomWorkerSpawningParams) => {
+export const handleRoomWorkerSpawning = (params: HandleRoomWorkerSpawningParams) => {
     const {room, roomWorkers, roomPopulation} = params;
 
-    const aliveWorkerIds=new Set(roomWorkers.map(worker => worker.id));
+    const aliveWorkerIds=new Set(roomWorkers.map(worker => worker.memory.workerId));
+    
+    const aliveWorkerCount=aliveWorkerIds.size;
+    const optimalWorkerCount=(roomPopulation.totalWorkers/3);
+    const isWorkerCountBelowOptimal=(aliveWorkerCount<1 || aliveWorkerCount<=optimalWorkerCount);
 
-    const isWorkerCountBelowOptimal=aliveWorkerIds.size<roomPopulation.totalWorkers/4;
-    const isRoomEnergyLow=room.energyAvailable<room.energyCapacityAvailable/4;
-    const isRoomStruggling=isWorkerCountBelowOptimal && isRoomEnergyLow;
+    const optimalRoomEnergy=room.energyCapacityAvailable/3;
+
+    const isRoomEnergyBelowOptimal=(room.energyAvailable<=300 || room.energyAvailable<=optimalRoomEnergy);
+    const isRoomStruggling=isWorkerCountBelowOptimal && isRoomEnergyBelowOptimal;
+
+    
 
     const toBeSpawnedWorkerConfigs=roomPopulation.workerSpawnConfigs.filter(
         spawnConfig => !aliveWorkerIds.has(spawnConfig.workerId)
@@ -45,10 +48,18 @@ const handleRoomWorkerSpawning = (params: HandleRoomWorkerSpawningParams) => {
 
     toBeSpawnedWorkerConfigs.sort((a, b) => getWorkerSpawnPriority(a.memory.role) - getWorkerSpawnPriority(b.memory.role));
 
+   
+
+    const roomSpawns=getRoomSpawns(room);
+    if(!roomSpawns.length) {
+        return;
+    }
+
     for(const spawnConfig of toBeSpawnedWorkerConfigs) {
-        const spawn=getRoomSpawn(room);
+       
+        const spawn=roomSpawns.pop();
         if(!spawn) {
-            return;
+            break;
         }
         const workerName=spawnConfig.workerId
         const workerMemory=spawnConfig.memory;

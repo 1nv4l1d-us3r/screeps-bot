@@ -45,8 +45,8 @@ export const handleRoomTowerDefence = (room: Room) => {
         return;
     }
 
-    const towers = room.find(FIND_MY_STRUCTURES, {
-        filter: (s) => s.structureType === STRUCTURE_TOWER
+    const towers:StructureTower[] = room.find(FIND_MY_STRUCTURES, {
+        filter: (s) => s.structureType === STRUCTURE_TOWER && s.store.energy > 0
     });
     if(!towers.length) {
         console.log(`${room.name}: no towers found in room , cannot defend`);
