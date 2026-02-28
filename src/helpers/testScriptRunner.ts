@@ -47,7 +47,7 @@ const testScripts:Record<string, () => void> = {
 
 /*
 
-Memory.testScript='testSpawnOrder'
+Memory.testScript='roomDesign'
 
 */
 
