@@ -1,5 +1,4 @@
-import { HeatMap } from "./common";
-import { Worker, WorkerMemory } from "./worker";
+import { Worker, WorkerMemory } from "../worker";
 
 export interface WorkerSpawnConfig {
     workerId:Id<Worker>;
@@ -11,13 +10,4 @@ export interface WorkerSpawnConfig {
 export interface RoomPopulation{
     totalWorkers: number;
     workerSpawnConfigs: WorkerSpawnConfig[];
-}
-
-export interface CustomRoomMemory {
-    hasHostileCreeps?:boolean;
-    
-    roomPopulation?: RoomPopulation;
-    
-    fatigueHeatMap?: HeatMap;
-    isMonitoringFatigue?:boolean;
 }

@@ -1,14 +1,32 @@
 
-export interface EnergyCollectionMemory{
-    isCollectingEnergy?:boolean;
-
-    energyStorageStructureId?: Id<StructureContainer>;
-    energyDroppedResourceId?: Id<Resource>;
+export enum TasksType{
+    WITHDRAW_ENERGY = "WITHDRAW_ENERGY",
+    DEPOSIT_ENERGY = "DEPOSIT_ENERGY",
+    MINE_RESOURCE = "MINE_RESOURCE",
+    BUILD_STRUCTURE = "BUILD_STRUCTURE",
 }
 
 
-type EnergyCollectingCreep = Creep & {
-    memory: EnergyCollectionMemory;
+interface Task{
+    type: TasksType;
+    data?: Record<string, any>;
+}
+
+export interface WithdrawEnergyTask extends Task{
+    type: TasksType.WITHDRAW_ENERGY;
+    data?: {
+        withdrawStructureId?: Id<StructureContainer>;
+    }
+}
+
+
+export interface WithdrawEnergyMemory{
+    task: WithdrawEnergyTask;
+}
+
+
+type WithdrawEnergyWorker = Creep & {
+    memory: WithdrawEnergyMemory;
 }
 
 
@@ -80,7 +98,19 @@ const findNearestEnergyResource = (creep:Creep) => {
 
 
 
-export const collectEnergy = (creep: EnergyCollectingCreep) => {
+export const collectEnergy = (worker: WithdrawEnergyWorker) => {
+
+    const task = worker.memory.task;
+
+    if(!task || task.data?.withdrawStructureId) {
+        const findRoomSinks
+    }
+
+    if(task.data?.withdrawStructureId) {
+        const withdrawStructure = Game.getObjectById(task.data.withdrawStructureId);
+        if(!withdrawStructure) {
+            return;
+        }
     const roomLevel = creep.room.controller?.level || 0;
 
     if(roomLevel == 1) {

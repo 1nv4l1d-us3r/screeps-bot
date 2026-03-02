@@ -1,4 +1,4 @@
-import { Coord } from "../types/geometry";
+import { Coord } from "../../../types/geometry";
 
 
 
@@ -51,7 +51,3 @@ export const constructStructuresAtCoords = (params: ConstructStructureInRoomPara
 }
 
 
-export interface StructureConstructionConfig{
-    coord: Coord;
-    structureType: BuildableStructureConstant;
-}

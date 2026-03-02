@@ -2,7 +2,7 @@ import { Coord } from "../src/types/geometry";
 
 import { getMaxReachableNeighborCoords } from "../src/geometry/coords";
 
-import { getMiningStorageStructureConfigs } from "../src/roomDesign/miningStorage";
+import { getMiningStorageStructureConfigs } from "../src/room/design/miningSites";
 
 const manualTest=()=>{
     const sourceId='5bbcae999099fc012e639493' as Id<Source>;

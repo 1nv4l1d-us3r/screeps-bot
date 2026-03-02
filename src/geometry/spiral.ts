@@ -1,15 +1,16 @@
 import { ROOM_SIZE } from "../gameConstants";
-import type { Coord } from "../types/geometry";
-import { createCoordIfValid, findMaxDistanceCoord, getCoordDistance } from "./coords";
+import type { Coord, PackedCoord } from "../types/geometry";
+import { createCoordIfValid, findMaxDistanceCoord, getCoordDistance, isCoordReachable } from "./coords";
+import { packCoord } from "./packedCords";
 
-interface SpiralCordsGeneratorParams {
+interface SpiralCoordsGeneratorParams {
     center: Coord;   // the center of the spiral
     spiralStepSize?: number;
     cellStepSize?: number;
     yieldFunction: (coord: Coord,index: number) => boolean;
 }
 
-export const spiralCordsGenerator = (params: SpiralCordsGeneratorParams) => {
+export const spiralCoordsGenerator = (params: SpiralCoordsGeneratorParams) => {
     const {
         center,
         spiralStepSize=1,
@@ -75,4 +76,46 @@ export const spiralCordsGenerator = (params: SpiralCordsGeneratorParams) => {
         }
         step += spiralStepSize;
     }
+}
+
+
+
+
+interface GetAlternateSpiralCoordsParams {
+    center: Coord;
+    neededCount: number;
+    roomTerrain: RoomTerrain;
+    occupiedPackedCoordsSet: Set<PackedCoord>;
+}
+
+export const getAlternateSpiralCoords = (params: GetAlternateSpiralCoordsParams) => {
+
+
+    const { center, neededCount, roomTerrain, occupiedPackedCoordsSet } = params;
+
+
+    const alternateGridCoords:Coord[] = [];
+
+    const yieldFunction = (coord: Coord, index: number) => {
+        if(index%2!==0) {
+            return false;
+        }
+        if(occupiedPackedCoordsSet.has(packCoord(coord))) {
+            return false;
+        }
+        if(roomTerrain.get(coord.x, coord.y) === TERRAIN_MASK_WALL) {
+            return false;
+        }
+        if(!isCoordReachable({ coord, occupiedPackedCoordsSet })) {
+            return false;
+        }
+        alternateGridCoords.push(coord);
+        return alternateGridCoords.length>=neededCount;
+    }
+
+    spiralCoordsGenerator({
+        center,
+        yieldFunction,
+    });
+    return alternateGridCoords;
 }

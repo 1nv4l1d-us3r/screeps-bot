@@ -1,3 +1,4 @@
+import { Certificate } from "node:crypto";
 import { ROOM_SIZE } from "../gameConstants";
 import type { Coord, PackedCoord } from "../types/geometry";
 import { packCoord } from "./packedCords";
@@ -129,16 +130,16 @@ export const findMaxDistanceCoord=(params: FindMaxDistanceCoordParams):FindMaxDi
     return { maxDistance, maxDistanceCoord };
 }
 
-interface getMinDistanceCoordParams {
+interface FindMinDistanceCoordParams {
     center: Coord;
     targets: Coord[];
 }
-interface getMinDistanceCoordResult {
+interface FindMinDistanceCoordResult {
     minDistance: number;
     minDistanceCoord: Coord;
 }
 
-export const getMinDistanceCoord=(params: getMinDistanceCoordParams):getMinDistanceCoordResult => {
+export const findMinDistanceCoord=(params: FindMinDistanceCoordParams):FindMinDistanceCoordResult => {
     const { center, targets } = params;
     const firstTarget = targets[0];
     let minDistance = getCoordDistance(center, firstTarget);
@@ -296,4 +297,22 @@ export const getMaxReachableNeighborCoords=(params: GetMaxReachableNeighborCoord
     return maxNeighboursCoord;
 }
 
+
+
+
+export const getTopCoord = (coord: Coord) => {
+    return createCoordIfValid(coord.x, coord.y - 1);
+}
+
+export const getBottomCoord = (coord: Coord) => {
+    return createCoordIfValid(coord.x, coord.y + 1);
+}
+
+export const getLeftCoord = (coord: Coord) => {
+    return createCoordIfValid(coord.x - 1, coord.y);
+}
+
+export const getRightCoord = (coord: Coord) => {
+    return createCoordIfValid(coord.x + 1, coord.y);
+}
 

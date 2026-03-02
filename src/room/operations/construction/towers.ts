@@ -1,19 +1,20 @@
 CONTROLLER_STRUCTURES
 import { 
-    spiralCordsGenerator,
+    spiralCoordsGenerator,
     isCoordReachable,
     packCoord,
     getCoordDistance,
-    getMinDistanceCoord,
- } from "../geometry";
-import { Coord, PackedCoord } from "../types/geometry";
+    findMinDistanceCoord,
+ } from "../../../geometry";
+import { Coord, PackedCoord } from "../../../types/geometry";
+import { StructureConstructionConfig } from "../../../types/room/design";
 
 
 
 
 
-interface GetBestTowerConstructionPositionParams {
-    baseCenter: Coord;
+interface GetTowerConstructionCoordsParams {
+    baseCenterCoord: Coord;
     roomTerrain: RoomTerrain;
     occupiedPackedCoordsSet: Set<PackedCoord>;
     existingTowerCoords: Coord[];
@@ -22,10 +23,10 @@ interface GetBestTowerConstructionPositionParams {
 
 
 
-export const getTowerConstructionsCoords = (params: GetBestTowerConstructionPositionParams) => {
+export const getTowerConstructionCoords = (params: GetTowerConstructionCoordsParams): Coord[] => {
 
     const {
-        baseCenter,
+        baseCenterCoord,
         roomTerrain,
         occupiedPackedCoordsSet,
         existingTowerCoords,
@@ -50,7 +51,7 @@ export const getTowerConstructionsCoords = (params: GetBestTowerConstructionPosi
             return false;
         }
 
-        const { minDistance: closestExistingTowerDistance } = getMinDistanceCoord({ center: coord, targets: existingTowerCoords });
+        const { minDistance: closestExistingTowerDistance } = findMinDistanceCoord({ center: coord, targets: existingTowerCoords });
         if(closestExistingTowerDistance < minDistanceBetweenTowers) {
             return false;
         }
@@ -62,8 +63,8 @@ export const getTowerConstructionsCoords = (params: GetBestTowerConstructionPosi
         return foundCoords.length>=towersNeededCount;
     }
 
-    spiralCordsGenerator({
-        center:baseCenter,
+    spiralCoordsGenerator({
+        center:baseCenterCoord,
         yieldFunction,
         spiralStepSize:3, // sparse search
     });

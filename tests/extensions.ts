@@ -1,4 +1,4 @@
-import { findCenterCoord, isCoordReachable, packCoord, spiralCordsGenerator } from "../src/geometry";
+import { findCenterCoord, isCoordReachable, packCoord, spiralCoordsGenerator } from "../src/geometry";
 import { getMaxBuildableStructuresByLevel } from "../src/gameConstants";
 import { Coord, PackedCoord } from "../src/types/geometry";
 import { CpuProfiler } from "../src/helpers/cpuProfiler";
@@ -69,7 +69,7 @@ export const testExtensionsConstruction = () => {
             return foundCoords.length>=extensionsNeededCount;
         }
         CpuProfiler.log("running spiral cords generator");
-        spiralCordsGenerator({
+        spiralCoordsGenerator({
             center:baseCenter,
             yieldFunction,
         });

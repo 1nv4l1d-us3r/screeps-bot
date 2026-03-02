@@ -1,7 +1,7 @@
 import { packCoord } from "../src/geometry/packedCords";
 import { CpuProfiler } from "../src/helpers/cpuProfiler";
 
-import { getFirstSpawnConstructionCoord } from "../src/roomDesign/spawn";
+import { getFirstSpawnConstructionCoord } from "../src/room/design/spawn";
 import { PackedCoord } from "../src/types/geometry";
 
 export const testSpawnConstruction = () => {
