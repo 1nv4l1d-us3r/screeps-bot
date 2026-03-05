@@ -43,45 +43,43 @@ class Scheduler {
         const bucketTriggerTicks=Array.from(this.jobBucketMap.keys());
         bucketTriggerTicks.filter((triggerTick) => triggerTick<=currentTick);
 
-        bucketTriggerTicks.forEach(
-            (triggerTick) => {
-                const jobBucket=this.jobBucketMap.get(triggerTick);
-                if(jobBucket===undefined) {
-                    return;
-                }
-                jobBucket.forEach(
-                    (jobId) => {
-                        const job=this.jobs.get(jobId);
-                        if(job===undefined) {
-                            return;
-                        }
-                        const jobName=job.name;
-                        const jobType=job.type;
-                        try{
-                            console.log(`[Scheduler][Tick ${currentTick}] Running ${jobType} job  ${jobName}`); 
-                            job.func();
-                        }
-                        catch(err){
-                            console.log(`[Scheduler][Tick ${currentTick}] Error running ${jobType} job  ${jobName}`);
-                            console.log(err)
-                        }
-                        finally{
-                            
-                            if(jobType==JobType.RECURRING){
-                                // update trigger tick for next run
-                                job.triggerTick=currentTick+job.interval;
-                                this.addJobToQueue(job,jobId);
-                            }
-                            else{
-                                this.jobs.delete(jobId);   
-                            }
-                        }
-                    }
-                );
+
+        for(const triggerTick of bucketTriggerTicks){
+            const jobBucket=this.jobBucketMap.get(triggerTick);
+            if(!jobBucket){
+                continue
             }
-        );
-            
-        this.jobBucketMap.delete(currentTick);
+
+            for(const jobId of jobBucket){
+                const job=this.jobs.get(jobId);
+                if(!job){
+                    continue
+                }
+                const jobName=job.name;
+                const jobType=job.type;
+                try{
+                    console.log(`[Scheduler][Tick ${currentTick}] Running ${jobType} job  ${jobName}`); 
+                    job.func();
+                }
+                catch(err){
+                    console.log(`[Scheduler][Tick ${currentTick}] Error running ${jobType} job  ${jobName}`);
+                    console.log(err)
+                }
+                finally{
+                    
+                    if(jobType==JobType.RECURRING){
+                        // update trigger tick for next run
+                        job.triggerTick=currentTick+job.interval;
+                        this.addJobToQueue(job,jobId);
+                    }
+                    else{
+                        this.jobs.delete(jobId);   
+                    }
+                }
+            }
+            this.jobBucketMap.delete(triggerTick);
+            // delete the bucket after execution
+        }
     }
     
 
