@@ -2,7 +2,7 @@ export type SimpleFunction=() => void;
 
 export enum JobType {
     RECURRING='recurring',
-    // ONE_TIME
+    ONE_TIME='oneTime'
 }
 
 
@@ -18,9 +18,13 @@ export interface RecurringJob extends BaseJob {
     interval:number;
 }
 
+export interface OneTimeJob extends BaseJob {
+    type:JobType.ONE_TIME;
+}
 
 
-export type Job=RecurringJob;
+
+export type Job=RecurringJob|OneTimeJob;
 
 
 
@@ -35,6 +39,20 @@ export interface CreateRecurringJobsParams<T> {
     list:T[];
     nameGenerator: (item:T,index:number) => string;
     interval: number;
+    offset?: number;
+    func: (item:T) => void
+}
+
+
+export interface CreateOneTimeJobParams {
+    name: string;
+    delay: number;
+    func: () => void
+}
+export interface CreateOneTimeJobsParams<T> {
+    list:T[];
+    nameGenerator: (item:T,index:number) => string;
+    delay: number;
     offset?: number;
     func: (item:T) => void
 }
