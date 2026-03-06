@@ -112,10 +112,9 @@ class Scheduler {
         list.forEach((item, index) => {
             const jobName = nameGenerator(item, index);
             const delayWithOffset = delay + index*offset;
-            const triggerTick = Game.time + delayWithOffset;
             this.createOneTimeJob({
                 name:jobName,
-                delay: triggerTick,
+                delay: delayWithOffset,
                 func: () => func(item)
                 }
             );
