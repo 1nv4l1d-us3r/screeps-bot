@@ -1,4 +1,4 @@
-import { collectEnergy, EnergyCollectionMemory } from "../actions/energyCollection";
+
 import { BaseWorker, UpgraderMemory } from "../types/worker";
 
 

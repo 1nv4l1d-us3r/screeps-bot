@@ -1,5 +1,5 @@
 import { packCoord,getAlternateSpiralCoords } from "../../../geometry";
-import { getMaxBuildableStructuresByLevel } from "../../../gameConstants";
+import { getMaxBuildableStructuresByLevel } from "../../../utils/gameConstants";
 
 import {  getTowerConstructionCoords } from "./towers";
 import { RoomPlanner } from "../../planners/roomPlanner";

@@ -7,7 +7,6 @@ import {
     findMinDistanceCoord,
  } from "../../../geometry";
 import { Coord, PackedCoord } from "../../../types/geometry";
-import { StructureConstructionConfig } from "../../../types/room/design";
 
 
 

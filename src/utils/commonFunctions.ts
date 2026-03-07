@@ -1,3 +1,4 @@
+
 export const getMyRooms=()=>{
     const myRooms:Room[]=[]
 
@@ -8,4 +9,15 @@ export const getMyRooms=()=>{
         }
     }
     return myRooms
+}
+
+export const getAllWorkers=()=>{
+    return Object.values(Game.creeps)
+}
+
+export const getRoomWorkers=(room:Room)=>{
+    return getAllWorkers()
+        .filter(
+                creep => creep.room.name === room.name
+            )
 }

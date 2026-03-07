@@ -1,6 +1,5 @@
 import { getCoordDistance, getMaxReachableNeighborCoords,  } from "../../geometry/coords";
 import { getMaxBuildableStructuresByLevel } from "../../utils/gameConstants";
-import { getRoomBaseCenterCoord } from "../baseCenter";
 
 import { MiningSiteConfig } from "../../types/room/planner";
 import { Coord } from "../../types/geometry";

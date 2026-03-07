@@ -107,51 +107,51 @@ export const minerRole = (worker: BaseMiner) => {
 }
 
 
-const findMiningSpotWithLeastTrafic = (room: Room) => {
-    // const roomLevel = room.controller?.level || 0;
-    const miningSpots: (Source|Mineral)[] = [];
-    const energySources = room.find(FIND_SOURCES);
-    miningSpots.push(...energySources);
-    // if(roo)
-    if(!miningSpots.length) {
-        return;
-    }
-    if(miningSpots.length == 1) {
-        return miningSpots[0];
-    }
-    else {
-        const roomMiningCreeps = Object.values(Game.creeps).filter(c => c.memory.miningResourceId !== undefined);
-        const miningSpotTrafficMap=new Map<Id<Source|Mineral>, number>();
-        const miningSpotMaxMinerMap=new Map<Id<Source|Mineral>, number>();
-        const terrain = room.getTerrain();
-        miningSpots.forEach(spot => {
-            const spotMiners = roomMiningCreeps.filter(creep => creep.memory.miningResourceId == spot.id)
-            const spotMinerCount = spotMiners.length;
-            miningSpotTrafficMap.set(spot.id, spotMinerCount);
+// const findMiningSpotWithLeastTrafic = (room: Room): Source|Mineral|undefined => {
+//     // const roomLevel = room.controller?.level || 0;
+//     const miningSpots: (Source|Mineral)[] = [];
+//     const energySources = room.find(FIND_SOURCES);
+//     miningSpots.push(...energySources);
+//     // if(roo)
+//     if(!miningSpots.length) {
+//         return;
+//     }
+//     if(miningSpots.length == 1) {
+//         return miningSpots[0];
+//     }
+//     else {
+//         const roomMiningCreeps = Object.values(Game.creeps).filter(c => c.memory.miningResourceId !== undefined);
+//         const miningSpotTrafficMap=new Map<Id<Source|Mineral>, number>();
+//         const miningSpotMaxMinerMap=new Map<Id<Source|Mineral>, number>();
+//         const terrain = room.getTerrain();
+//         miningSpots.forEach(spot => {
+//             const spotMiners = roomMiningCreeps.filter(creep => creep.memory.miningResourceId == spot.id)
+//             const spotMinerCount = spotMiners.length;
+//             miningSpotTrafficMap.set(spot.id, spotMinerCount);
 
-            const walkablePositions = getAdjacentCoords(spot.pos)
-                .filter(coord => {
-                    return terrain.get(coord.x, coord.y) != TERRAIN_MASK_WALL;
-                });
-            const walkablePositionsCount= walkablePositions.length;
-            miningSpotMaxMinerMap.set(spot.id, walkablePositionsCount);
-            console.log('spot', spot.id, 'walkablePositionsCount', walkablePositionsCount);
-            console.log('spotMinerCount', spotMinerCount);
-        });
+//             const walkablePositions = getAdjacentCoords(spot.pos)
+//                 .filter(coord => {
+//                     return terrain.get(coord.x, coord.y) != TERRAIN_MASK_WALL;
+//                 });
+//             const walkablePositionsCount= walkablePositions.length;
+//             miningSpotMaxMinerMap.set(spot.id, walkablePositionsCount);
+//             console.log('spot', spot.id, 'walkablePositionsCount', walkablePositionsCount);
+//             console.log('spotMinerCount', spotMinerCount);
+//         });
 
-        miningSpots.sort((a, b) => {return (miningSpotTrafficMap.get(a.id)||0) - (miningSpotTrafficMap.get(b.id)||0)});
-        for(let miningSpot of miningSpots) {
-            const spotMinerCount = miningSpotTrafficMap.get(miningSpot.id) || 0;
-            const spotMaxMinerCount = miningSpotMaxMinerMap.get(miningSpot.id) || 0;
-            console.log('spot', miningSpot.id, 'spotMinerCount', spotMinerCount, 'spotMaxMinerCount', spotMaxMinerCount);
-            if(spotMinerCount+1 <= spotMaxMinerCount) {
-                return miningSpot;
-            }
-        }
+//         miningSpots.sort((a, b) => {return (miningSpotTrafficMap.get(a.id)||0) - (miningSpotTrafficMap.get(b.id)||0)});
+//         for(let miningSpot of miningSpots) {
+//             const spotMinerCount = miningSpotTrafficMap.get(miningSpot.id) || 0;
+//             const spotMaxMinerCount = miningSpotMaxMinerMap.get(miningSpot.id) || 0;
+//             console.log('spot', miningSpot.id, 'spotMinerCount', spotMinerCount, 'spotMaxMinerCount', spotMaxMinerCount);
+//             if(spotMinerCount+1 <= spotMaxMinerCount) {
+//                 return miningSpot;
+//             }
+//         }
 
-    }
+//     }
 
-}
+// }
 
 
 const findStorageSpotNearMiningSpot = (miningSpot: Source|Mineral) => {

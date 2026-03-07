@@ -39,13 +39,13 @@ const findLeastTraficSource = (room: Room) => {
         return sources[0];
     }
     else {
-        const roomCollectingCreeps = room.find(FIND_MY_CREEPS, {
+        const roomCollectingworkers = room.find(FIND_MY_CREEPS, {
             filter: (c) => c.memory.isCollectingEnergy !== undefined
         })
         let leastTrafic = Infinity;
         let selectedSource = sources[0];
         for(const source of sources) {
-            const collectorCount = roomCollectingCreeps.filter(creep => creep.memory.miningResourceId  === source.id).length;
+            const collectorCount = roomCollectingworkers.filter(worker => worker.memory.miningResourceId  === source.id).length;
             if(collectorCount < leastTrafic) {
                 leastTrafic = collectorCount;
                 selectedSource = source;
@@ -67,14 +67,14 @@ const findLeastTraficEnergyStorageStructure = (room: Room) => {
         return storageStructures[0];
     }
     else {
-        const roomCollectingCreeps = room.find(FIND_MY_CREEPS, {
+        const roomCollectingworkers = room.find(FIND_MY_CREEPS, {
             filter: (c) => c.memory.energyStorageStructureId !== undefined
         })
         const firstStorageStructure = storageStructures[0];
         let leastTrafic = Infinity;
         let selectedStorageStructure = firstStorageStructure;
         for(const storageStructure of storageStructures) {
-            const collectorCount = roomCollectingCreeps.filter(creep => creep.memory.energyStorageStructureId == storageStructure.id).length;
+            const collectorCount = roomCollectingworkers.filter(worker => worker.memory.energyStorageStructureId == storageStructure.id).length;
             if(collectorCount < leastTrafic) {
                 leastTrafic = collectorCount;
                 selectedStorageStructure = storageStructure;
@@ -84,9 +84,9 @@ const findLeastTraficEnergyStorageStructure = (room: Room) => {
     }
 }
 
-const findNearestEnergyResource = (creep:Creep) => {
+const findNearestEnergyResource = (worker:WithdrawEnergyWorker) => {
 
-    const closestResource = creep.pos.findClosestByRange(FIND_DROPPED_RESOURCES, {
+    const closestResource = worker.pos.findClosestByRange(FIND_DROPPED_RESOURCES, {
         filter: (r) => r.resourceType === RESOURCE_ENERGY
     })
     if(!closestResource) {
@@ -103,7 +103,7 @@ export const collectEnergy = (worker: WithdrawEnergyWorker) => {
     const task = worker.memory.task;
 
     if(!task || task.data?.withdrawStructureId) {
-        const findRoomSinks
+        // const findRoomSinks
     }
 
     if(task.data?.withdrawStructureId) {
@@ -111,78 +111,78 @@ export const collectEnergy = (worker: WithdrawEnergyWorker) => {
         if(!withdrawStructure) {
             return;
         }
-    const roomLevel = creep.room.controller?.level || 0;
+        const roomLevel = worker.room.controller?.level || 0;
 
-    if(roomLevel == 1) {
-        const creepRoom = creep.room;
-        const leastTraficSource = findLeastTraficSource(creepRoom);
-        if(!leastTraficSource) {
+        if(roomLevel == 1) {
+            const workerRoom = worker.room;
+            const leastTraficSource = findLeastTraficSource(workerRoom);
+            if(!leastTraficSource) {
+                return;
+            }
+            worker.memory.isCollectingEnergy = false;
+            worker.memory.isMiningResource = true;
+            worker.memory.miningResourceId = leastTraficSource.id;
             return;
         }
-        creep.memory.isCollectingEnergy = false;
-        creep.memory.isMiningResource = true;
-        creep.memory.miningResourceId = leastTraficSource.id;
-        return;
     }
 
-    if(!creep.memory.energyStorageStructureId && !creep.memory.energyDroppedResourceId) {
-        const leastTraficStorageStructure = findLeastTraficEnergyStorageStructure(creep.room);
+    if(!worker.memory.energyStorageStructureId && !worker.memory.energyDroppedResourceId) {
+        const leastTraficStorageStructure = findLeastTraficEnergyStorageStructure(worker.room);
         if(!leastTraficStorageStructure) {
-            const nearestResource = findNearestEnergyResource(creep);
+            const nearestResource = findNearestEnergyResource(worker);
             if(!nearestResource) {
-                if(creep.store.getUsedCapacity() > creep.store.getCapacity()/2) {
-                    creep.memory.isCollectingEnergy = false;
+                if(worker.store.getUsedCapacity() > worker.store.getCapacity()/2) {
+                    worker.memory.isCollectingEnergy = false;
                 }
                 return;
             }
-            creep.memory.energyDroppedResourceId = nearestResource.id;
+            worker.memory.energyDroppedResourceId = nearestResource.id;
             return;
         }
         else {
-            creep.memory.energyStorageStructureId = leastTraficStorageStructure.id;
+            worker.memory.energyStorageStructureId = leastTraficStorageStructure.id;
             return;
         }
     }
 
-    if(creep.memory.energyStorageStructureId) {
-        const energyStorageStructure = Game.getObjectById(creep.memory.energyStorageStructureId);
+    if(worker.memory.energyStorageStructureId) {
+        const energyStorageStructure = Game.getObjectById<StructureContainer>(worker.memory.energyStorageStructureId);
         if(!energyStorageStructure) {
-            creep.memory.energyStorageStructureId = undefined;
+            worker.memory.energyStorageStructureId = undefined;
             return;
         }
-        const withdrawResult = creep.withdraw(energyStorageStructure, RESOURCE_ENERGY);
+        const withdrawResult = worker.withdraw(energyStorageStructure, RESOURCE_ENERGY);
         if(withdrawResult === ERR_NOT_IN_RANGE) {
-            creep.moveTo(energyStorageStructure);
+            worker.moveTo(energyStorageStructure);
         }
         else if(withdrawResult === ERR_INVALID_TARGET || energyStorageStructure.store.energy < 50) {
-            creep.memory.energyStorageStructureId = undefined;
+            worker.memory.energyStorageStructureId = undefined;
             return;
         }
       
     }
 
-    if(creep.memory.energyDroppedResourceId) {
-        const energyResource = Game.getObjectById(creep.memory.energyDroppedResourceId);
+    if(worker.memory.energyDroppedResourceId) {
+        const energyResource = Game.getObjectById(worker.memory.energyDroppedResourceId);
         if(!energyResource) {
-            creep.memory.energyDroppedResourceId = undefined;
+            worker.memory.energyDroppedResourceId = undefined;
             return;
         }
-        const transferResult = creep.pickup(energyResource);
+        const transferResult = worker.pickup(energyResource);
         if(transferResult === ERR_NOT_IN_RANGE) {
-            creep.moveTo(energyResource);
+            worker.moveTo(energyResource);
         }
         else if(transferResult === ERR_INVALID_TARGET) {
-            creep.memory.energyDroppedResourceId = undefined;
+            worker.memory.energyDroppedResourceId = undefined;
             return;
         }
     }
-    if(creep.store.getFreeCapacity() === 0) {
-        creep.memory.isCollectingEnergy = false;
+    if(worker.store.getFreeCapacity() === 0) {
+        worker.memory.isCollectingEnergy = false;
         return;
     }
-
-
 }
+
 
 
 
