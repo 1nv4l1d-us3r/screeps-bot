@@ -3,24 +3,31 @@
   "version": "1.0.0",
   "description": "my bot program for the screeps game",
   "main": "index.js",
-  "devDependencies": {
-    "@types/node": "^25.2.3",
-    "@types/screeps": "^3.3.8",
-    "esbuild": "^0.27.3",
-    "screeps-api": "^1.16.1",
-    "tsx": "^4.21.0",
-    "typescript": "^5.9.3"
-  },
   "scripts": {
-    "build": "node built.js",
-    "push": "npm run build && tsx scripts/upload.ts",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "rollup -c",
+    "push-main": "rollup -c --environment DEST:main",
+    "push-pserver": "rollup -c --environment DEST:pserver",
+    "push-season": "rollup -c --environment DEST:season",
+    "push-sim": "rollup -c --environment DEST:sim",
+    "watch-main": "rollup -cw --environment DEST:main",
+    "watch-pserver": "rollup -cw --environment DEST:pserver",
+    "watch-season": "rollup -cw --environment DEST:season",
+    "watch-sim": "rollup -cw --environment DEST:sim"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "type": "module",
-  "dependencies": {
-    "dotenv": "^17.3.1"
+  "devDependencies": {
+    "@rollup/plugin-commonjs": "^29.0.2",
+    "@rollup/plugin-node-resolve": "^16.0.3",
+    "@types/node": "^25.3.5",
+    "@types/screeps": "^3.3.8",
+    "rollup": "^4.59.0",
+    "rollup-plugin-clear": "^2.0.7",
+    "rollup-plugin-screeps": "^1.0.1",
+    "rollup-plugin-typescript2": "^0.36.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.3"
   }
 }
