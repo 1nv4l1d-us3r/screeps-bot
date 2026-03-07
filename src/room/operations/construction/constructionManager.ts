@@ -197,13 +197,10 @@ export class ConstructionManager {
 
     public static updateConstructionRequestsForRoom(room: Room): void {
         const constructionRequests=this.getConstructionRequestsForRoom(room);
-
         room.memory.roomOperations={
             constructionRequests,
         }
-
-
-       
     }
+
 
 }

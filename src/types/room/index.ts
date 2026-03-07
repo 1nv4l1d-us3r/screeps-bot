@@ -1,5 +1,4 @@
 import { HeatMap } from "../common";
-import { RoomPopulation } from "./population";
 import { RoomPlan } from "./planner";
 import { RoomOperations } from "./managers";
 
@@ -9,7 +8,6 @@ export interface CustomRoomMemory {
     
     hasHostileCreeps?:boolean;
     
-    roomPopulation?: RoomPopulation;
     
     fatigueHeatMap?: HeatMap;
     isMonitoringFatigue?:boolean;

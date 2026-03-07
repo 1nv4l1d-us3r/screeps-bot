@@ -1,5 +1,5 @@
 import { Certificate } from "node:crypto";
-import { ROOM_SIZE } from "../gameConstants";
+import { ROOM_SIZE } from "../utils/gameConstants";
 import type { Coord, PackedCoord } from "../types/geometry";
 import { packCoord } from "./packedCords";
 

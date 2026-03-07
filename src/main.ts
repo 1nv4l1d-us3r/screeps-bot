@@ -11,16 +11,24 @@ import { constructStructuresInRoom } from "./roomDesign/constructStructures";
 
 import { testScriptRunner } from "./helpers/testScriptRunner";
 import { initializeOverrides } from "./overrides";
-import { updateWorkerPopulation } from "./spawning/RoomPopulation";
+import { RoomPlanner } from "./room/planners/roomPlanner";
 import { CpuProfiler } from "./helpers/cpuProfiler";
+import { Scheduler } from "./helpers/Scheduler";
 
-// Initialize prototype overrides once at module load
-initializeOverrides();
+
+
+
+
+// const startRecurringJobs=()=>{
+
+RoomPlanner.startDeamon();
 
 export const loop = () => {
     if(Memory.logCpuUsage) {
         CpuProfiler.log("Main Loop");
     }
+    Scheduler.run();
+    
 
 
 
@@ -47,35 +55,64 @@ export const loop = () => {
     const myRooms = Object.values(Game.rooms).filter(room => room.controller?.my);
 
 
+
+
+    // ------------ Room  Defence ------------//
     myRooms.forEach(room => {
         if(room.memory.hasHostileCreeps) {
             handleRoomTowerDefence(room);
         }
     });
+    
 
-    if (Game.time % 5 === 0) {
-        myRooms.forEach(room => {
-            handleIntrusionDetection(room);
-        });
-    }
+    // ------------ Construct Structures ------------//
 
-    if (Game.time % 10 === 0) {
-        handleWorkerSpawning();
-    }
-
-    if (Game.time % 100 === 0) {
-        myRooms.forEach(room => {
+    Scheduler.registerIntervalList({
+        list: myRooms,
+        nameGenerator: (room) => 'constructStructures-' + room.name,
+        interval: 100,
+        callback: (room) => {
             constructStructuresInRoom(room);
-        });
-    }
-    if(Game.time % 100 === 0) {
-        updateWorkerPopulation(myRooms);
-    }
+        }
+    })
+
+    
+
+
+    // ------------ Intrusion Detection ------------//
+    Scheduler.registerIntervalList({
+        list: myRooms,
+        nameGenerator: (room) => 'intrusionDetection-' + room.name,
+        interval: 10,
+        callback: (room) => {
+            handleIntrusionDetection(room);
+        }
+    });
+    
+
+    // ------------ Worker Spawning ------------//
+    Scheduler.registerInterval({
+        intervalName: 'workerSpawning',
+        interval: 10,
+        callback:handleWorkerSpawning
+    })
+
+   
+    // ------------ Worker Population Update ------------//
+    Scheduler.registerInterval({
+        intervalName: 'workerPopulationUpdate',
+        interval: 100,
+        callback: () => {
+            updateWorkerPopulation(myRooms);
+        }
+    })
 
     // ------------ Clean Ups ------------//
-    if (Game.time % 100 === 0) {
-        clearDeadCreepMemory();
-    }
+    Scheduler.registerInterval({
+        intervalName: 'creepMemoryCleanup',
+        interval: 100,
+        callback: clearDeadCreepMemory
+    })
 
 
     // ------------ Test Script / Debugging ------------//
@@ -93,3 +130,4 @@ export const loop = () => {
         CpuProfiler.logEnd("Main Loop");
     }
 }
+

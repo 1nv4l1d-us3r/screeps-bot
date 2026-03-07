@@ -8,9 +8,9 @@ const getScreepsAPI = async () => {
     const api = new ScreepsAPI({
         token: config.screepsAuthToken,
         protocol: "https",
-        hostname: "screeps.com",
+        hostname: config.screepsHost,
         port: 443,
-        path: "/",
+        path: config.screepsPath,
     });
 
     return api;

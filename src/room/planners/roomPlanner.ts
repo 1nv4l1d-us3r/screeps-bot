@@ -1,18 +1,44 @@
 import { RoomPlan } from "../../types/room/planner";
 import { BasePlanner } from "./basePlanner";
 import { MiningPlanner } from "./miningPlanner";
+import { PopulationPlanner } from "./populationPlanner";
 
 
 import { Coord } from "../../types/geometry";
+
+import { Scheduler } from "../../helpers/Scheduler";
+import { getMyRooms } from "../../utils/commonFunctions";
 
 
 export class RoomPlanner {
 
 
-    public static run(myRooms: Room[]){
-        myRooms.forEach(room => {
-           this.updateRoomPlan(room);
-        });
+    public static startDeamon(){
+
+        Scheduler.createRecurringJob({
+            name: 'RoomPlannerDeamon',
+            interval: 500,
+            func: this.startRoomPlannerJobs,
+        })
+
+    }
+
+
+    /*
+    Run the room planner for all the my rooms.
+    - uses the job scheduler to spread processing of each room at same tick.
+    */
+    private static startRoomPlannerJobs(){
+
+        const myRooms=getMyRooms();
+
+        Scheduler.createOneTimeJobs({
+            list: myRooms,
+            nameGenerator: (room) => 'UpdateRoomPlan-' + room.name,
+            delay: 2,
+            offset: 2,
+            func: (room) => this.updateRoomPlan(room),
+        })
     }
 
     public static updateRoomPlan = (room: Room) => {
@@ -36,6 +62,8 @@ export class RoomPlanner {
         const miningConfig=MiningPlanner.getMiningConfigForRoom(room, baseCenterCoord);
         newRoomPlan.miningConfig = miningConfig;
 
+        const populationConfig = PopulationPlanner.getPopulationConfigForRoom(room, miningConfig);
+        newRoomPlan.populationConfig = populationConfig;
 
 
         

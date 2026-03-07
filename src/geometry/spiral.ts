@@ -1,4 +1,4 @@
-import { ROOM_SIZE } from "../gameConstants";
+import { ROOM_SIZE } from "../utils/gameConstants";
 import type { Coord, PackedCoord } from "../types/geometry";
 import { createCoordIfValid, findMaxDistanceCoord, getCoordDistance, isCoordReachable } from "./coords";
 import { packCoord } from "./packedCords";
