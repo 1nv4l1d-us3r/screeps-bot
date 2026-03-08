@@ -1,7 +1,8 @@
+import { Worker } from "types/worker";
+import { WorkerRoles } from "types/roles";
 import { TasksType, WithdrawEnergyTask } from "types/tasks";
-import { TaskWorker } from "types/tasks";
 
-type WithdrawEnergyTaskWorker = TaskWorker<TasksType.WITHDRAW_ENERGY>;
+type WithdrawEnergyTaskWorker = Worker<WorkerRoles,TasksType.WITHDRAW_ENERGY>;
 
 
 type EnergyProviderStructure = StructureContainer | StructureStorage;

@@ -2,23 +2,25 @@ import {Worker, WorkerMemory } from "types/worker";
 import { Task,TasksType } from "types/tasks";
 import { EnergyTaskHandler } from "./energyTask";
 import { MiningTaskHandler } from "./miningTask";
-import { PickupTasksHandler } from "./pickupTasks";
+import { LogisticsTaskHandler } from "./logisticsTask";
+import { WorkerRoles } from "types/roles";
 
-type TaskHandlerFunction<T extends Task['taskType']> = (worker: TaskWorker<T>) => void;
 
-type TaskWorker<T extends TasksType> = Worker & {memory:WorkerMemory & {task:Task & {taskType:T}}}
+import { TaskHandlerFunction } from "types/tasks";
+
 
 export class TaskHandler {
 
     private static taskHanderMap: Record<TasksType, TaskHandlerFunction<TasksType>> = {
         [TasksType.WITHDRAW_ENERGY]: EnergyTaskHandler.handleWithdrawEnergyTask,
         [TasksType.MINE_RESOURCE]: MiningTaskHandler.handleMiningTask,
-        [TasksType.PICKUP_RESOURCE]: PickupTasksHandler.handlePickupResourceTask,
+        [TasksType.PICKUP_RESOURCE]: LogisticsTaskHandler.handlePickupResourceTask,
+        [TasksType.TRANSFER_RESOURCE]: LogisticsTaskHandler.handleTransferResourceTask,
     };
 
 
 
-    public static handleTask(worker: TaskWorker<any>) {
+    public static handleTask(worker: Worker<any,any>) {
         const memory = worker.memory;
         const task = memory.task;
         const taskType = task.taskType;

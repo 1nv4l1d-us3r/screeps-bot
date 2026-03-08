@@ -1,48 +1,49 @@
 
+import {  Worker } from "../types/worker";
 import { TasksType } from "types/tasks";
 import { getAdjacentCoords } from "../geometry";
 
-import {  BaseWorker } from "../types/worker";
-import { MinerMemory } from "../types/roles";
+import { MinerMemory, WorkerRoles } from "../types/roles";
 import { Task,ResourceMiningTask } from "types/tasks";
 
-type  BaseMiner = BaseWorker<MinerMemory>;
+type  MinerWorker = Worker<WorkerRoles.MINER>;
 
 
 
 
-export const minerRole = (worker: BaseMiner) => {
+export const minerRole = (worker: MinerWorker) => {
     const memory = worker.memory;
+    const roleMemory=memory.roleMemory
 
-    const miningCoord = memory.miningCoord;
+    const miningCoord = roleMemory.miningCoord;
 
     if(worker.pos.x !== miningCoord.x || worker.pos.y !== miningCoord.y) {
         worker.moveTo(miningCoord.x,miningCoord.y);
         return;
     }
 
-    if(memory.storageType== STRUCTURE_LINK && !memory.storageStructureId) {
-        const storageCoord = memory.storageCoord;
+    if(roleMemory.storageType== STRUCTURE_LINK && !roleMemory.storageStructureId) {
+        const storageCoord = roleMemory.storageCoord;
         const link = worker.room.lookForAt(LOOK_STRUCTURES, storageCoord.x, storageCoord.y)
         const structureLink:StructureLink|undefined = link.find((st: Structure<StructureConstant>) => st.structureType === STRUCTURE_LINK) as StructureLink|undefined;
         if(structureLink) {
-            memory.storageStructureId = structureLink.id;
+            roleMemory.storageStructureId = structureLink.id;
         }
         else {
             // if storage structure is not found, dont use structure
-            memory.storageType = undefined;
+            roleMemory.storageType = undefined;
         }
     }
 
 
 
-    if(memory.storageStructureId){
-        const storageStructure = Game.getObjectById(memory.storageStructureId);
+    if(roleMemory.storageStructureId){
+        const storageStructure = Game.getObjectById(roleMemory.storageStructureId);
         if(!storageStructure) {
-            memory.storageStructureId = undefined;
+            roleMemory.storageStructureId = undefined;
             return;
         }
-        const transferResult = worker.transfer(storageStructure, memory.resourceType);
+        const transferResult = worker.transfer(storageStructure, roleMemory.resourceType);
     }
 
     
@@ -50,7 +51,7 @@ export const minerRole = (worker: BaseMiner) => {
         const miningTask: ResourceMiningTask = {
             taskType: TasksType.MINE_RESOURCE,
             data: {
-                resourceId: memory.resourceId,
+                resourceId: roleMemory.resourceId,
             }
         }
         memory.task = miningTask;

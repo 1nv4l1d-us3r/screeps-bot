@@ -106,10 +106,10 @@ export class SpawnManager {
             const optimalWorkerCount=totalWorkersCount/3;
             const aliveWorkers=getRoomWorkers(room);
             const aliveWorkerCount=aliveWorkers.length;
-            const isWorkerCountBelowOptimal=aliveWorkerCount<optimalWorkerCount;
+            const isWorkerCountBelowOptimal=aliveWorkerCount<3 || aliveWorkerCount<optimalWorkerCount;
             const energyAvailable=room.energyAvailable;
             const optimalEnergy=room.energyCapacityAvailable/3;
-            const isRoomEnergyBelowOptimal=energyAvailable<optimalEnergy;
+            const isRoomEnergyBelowOptimal=energyAvailable<300 || energyAvailable<optimalEnergy;
             const isRoomStruggling=isWorkerCountBelowOptimal && isRoomEnergyBelowOptimal;
             while(spawnQueue.length && freeSpawns.length) {
                 const spawn=freeSpawns.shift();

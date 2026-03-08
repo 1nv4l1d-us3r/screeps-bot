@@ -1,5 +1,4 @@
 import { TasksType, WithdrawEnergyTask } from "types/tasks";
-import { BaseWorker } from "types/worker";
 import { Worker } from "types/worker";
 
 

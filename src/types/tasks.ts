@@ -1,9 +1,10 @@
+import { WorkerRoles } from "./roles";
 import { Worker, WorkerMemory } from "./worker";
 
 export enum TasksType{
     WITHDRAW_ENERGY = "WITHDRAW_ENERGY",
     PICKUP_RESOURCE = "PICKUP_RESOURCE",
-    // DEPOSIT_ENERGY = "DEPOSIT_ENERGY",
+    TRANSFER_RESOURCE = "TRANSFER_RESOURCE",
     MINE_RESOURCE = "MINE_RESOURCE",
     // BUILD_STRUCTURE = "BUILD_STRUCTURE",
 }
@@ -33,12 +34,26 @@ export interface PickupResourceTask{
     }
 }
 
+// -------------- Resource Transfer --------------//
+export interface TransferResourceTask{
+    taskType: TasksType.TRANSFER_RESOURCE;
+    data: {
+        targetStructureId: Id<StructureContainer|StructureStorage|StructureSpawn|StructureExtension>;
+        resourceType: ResourceConstant;
+    }
+}
 
 
-export type Task = WithdrawEnergyTask | ResourceMiningTask | PickupResourceTask;
+
+export type Task<T extends TasksType> =(
+      WithdrawEnergyTask 
+    | ResourceMiningTask 
+    | PickupResourceTask
+    | TransferResourceTask
+) & {taskType:T};
 
 
-export type TaskWorker<T extends Task['taskType']> = Worker & {memory:WorkerMemory & {task:Task & {taskType:T}}};
 
 
-export type TaskHandlerFunction<T extends Task['taskType']> = (worker: TaskWorker<T>) => void;
+
+export type TaskHandlerFunction<T extends TasksType> = (worker: Worker<WorkerRoles,T>) => void;

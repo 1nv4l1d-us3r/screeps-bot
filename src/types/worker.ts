@@ -1,5 +1,5 @@
 import { RoleMemory, WorkerRoles } from "./roles";
-import { Task } from "./tasks";
+import { Task, TasksType } from "./tasks";
 
 
 // -------------- Builder Memory --------------//
@@ -16,29 +16,29 @@ import { Task } from "./tasks";
 
 
 // -------------- Worker Memory --------------//
-export interface WorkerMemory extends RoleMemory{
-    role: WorkerRoles;
-    task?: Task;
-}
-    
-
-// -------------- Base Worker --------------//
-export type BaseWorkerMemory = {}
-
-export type BaseWorker<M extends BaseWorkerMemory> = Creep & {
-    memory:  M & {task?: Task}
+interface BaseWorkerMemory{}
+export interface WorkerMemory<
+        R extends WorkerRoles=WorkerRoles,
+        T extends TasksType=TasksType
+    >{
+    roleMemory: RoleMemory<R>;
+    task?: Task<T>;
 }
 
-export type Worker = BaseWorker<WorkerMemory>;
 
-
+export interface Worker<
+        R extends WorkerRoles=WorkerRoles,
+        T extends TasksType=TasksType
+    > extends Creep{
+    memory: WorkerMemory<R,T>;
+}
 
 // -------------- Worker Config --------------//
 
-export interface WorkerConfig<M extends CreepMemory>{
-    role: WorkerRoles;
-    roleHandler: (worker: BaseWorker<M>) => void;
+export interface WorkerConfig<R extends WorkerRoles> {
+    role: R;
+    roleHandler: (worker: Worker<R>) => void;
 }
 
 
-export type WorkersConfig = Record<WorkerRoles, WorkerConfig<WorkerMemory>>;
+export type WorkersConfig = Record<WorkerRoles, WorkerConfig<WorkerRoles>>;

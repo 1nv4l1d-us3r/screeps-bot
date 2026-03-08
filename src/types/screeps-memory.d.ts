@@ -7,15 +7,15 @@ import { WorkerMemory } from "./worker";
 import { CustomRoomMemory } from "./room";
 
 declare global {
-  interface CreepMemory extends WorkerMemory {
+    interface CreepMemory extends WorkerMemory {
 
-  }
-  interface RoomMemory extends CustomRoomMemory {
-  }
-  interface Memory {
-    logCpuUsage?: boolean;
-    testScript?: string;
-  }
+    }
+    interface RoomMemory extends CustomRoomMemory {
+    }
+    interface Memory {
+        logCpuUsage?: boolean;
+        testScript?: string;
+    }
 }
 
-export {};
+export { };

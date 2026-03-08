@@ -36,14 +36,16 @@ export const loop = () => {
   
     const myWorkers = Object.values(Game.creeps).filter(worker => worker.my);
     myWorkers.forEach(worker => {
+        const memory = worker.memory
 
-        if(worker.memory.task) {
-            TaskHandler.handleTask(worker  as any);
+        if(memory.task) {
+            TaskHandler.handleTask(worker as any);
+            return;
             
         }
 
 
-        RoleHandler.handleRole(worker);
+        RoleHandler.handleRole(worker as any);
     });
 
 

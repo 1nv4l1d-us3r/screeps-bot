@@ -1,30 +1,31 @@
 import { upgraderRole } from "./upgrader";
-import { BaseWorker } from "types/worker";
+import { Worker } from "types/worker";
 import { BuilderMemory } from "types/roles";
 import { TasksType, WithdrawEnergyTask } from "types/tasks";
+import { WorkerRoles } from "types/roles";
+
+type BuilderWorker = Worker<WorkerRoles.BUILDER>;
 
 
-type BaseBuilder = BaseWorker<BuilderMemory>;
-
-
-export const builderRole = (worker: BaseBuilder) => {
+export const builderRole = (worker: BuilderWorker) => {
     const memory = worker.memory;
+    const roleMemory = memory.roleMemory as BuilderMemory;
 
-    if(!memory.targetConstructionSiteId) {
+    if(!roleMemory.targetConstructionSiteId) {
         const closestConstructionSite = worker.pos.findClosestByRange(FIND_MY_CONSTRUCTION_SITES);
         if(closestConstructionSite) {
-            worker.memory.targetConstructionSiteId = closestConstructionSite.id;
+            roleMemory.targetConstructionSiteId = closestConstructionSite.id;
         }
         else {
-            upgraderRole(worker);
+            upgraderRole(worker as Worker);
             return;
         }
     }
 
-    if(memory.targetConstructionSiteId) {
-        const constructionSite = Game.getObjectById(memory.targetConstructionSiteId);
+    if(roleMemory.targetConstructionSiteId) {
+        const constructionSite = Game.getObjectById(roleMemory.targetConstructionSiteId);
         if(!constructionSite) {
-            worker.memory.targetConstructionSiteId = undefined;
+            roleMemory.targetConstructionSiteId = undefined;
             return;
         }
         if(constructionSite) {
@@ -33,7 +34,7 @@ export const builderRole = (worker: BaseBuilder) => {
                 worker.moveTo(constructionSite);
             }
             else if(buildResult === ERR_INVALID_TARGET) {
-                worker.memory.targetConstructionSiteId = undefined;
+                roleMemory.targetConstructionSiteId = undefined;
             }
             else if(buildResult === ERR_NOT_ENOUGH_RESOURCES) {
                 const withdrawEnergyTask: WithdrawEnergyTask = {

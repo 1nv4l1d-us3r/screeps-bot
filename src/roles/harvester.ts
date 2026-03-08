@@ -1,19 +1,19 @@
 
 import { builderRole } from "./builder";
-import { BaseWorker } from "types/worker";
-import { RefillingStructure,HarvesterMemory } from "types/roles";
+import { Worker } from "types/worker";
+import { RefillingStructure,HarvesterMemory, BuilderMemory } from "types/roles";
 import { TasksType, WithdrawEnergyTask } from "types/tasks";
-
+import { WorkerRoles } from "types/roles";
 // other creeps can inherit from this memory
-type BaseHarvester = BaseWorker<HarvesterMemory>;
+type HarvesterWorker = Worker<WorkerRoles.HARVESTER>;
 
 
-
-export const harvesterRole = (worker:BaseHarvester) => {
+export const harvesterRole = (worker:HarvesterWorker) => {
     const memory = worker.memory;
+    const roleMemory=memory.roleMemory
 
 
-    if (!memory.energyFillingStructureId) {
+    if (!roleMemory.energyFillingStructureId) {
         const energyFillingStructure: RefillingStructure|null = worker.pos.findClosestByRange(
             FIND_MY_STRUCTURES,
             {
@@ -26,22 +26,22 @@ export const harvesterRole = (worker:BaseHarvester) => {
             }
         );
         if(energyFillingStructure) {
-            worker.memory.energyFillingStructureId = energyFillingStructure.id;
+            roleMemory.energyFillingStructureId = energyFillingStructure.id;
         }
         else {
-            builderRole(worker);
+            builderRole(worker as any);
             return;
         }
     }
 
-    if(!memory.energyFillingStructureId) {
-        const energyFillingStructure = Game.getObjectById(worker.memory.energyFillingStructureId);
+    if(!roleMemory.energyFillingStructureId) {
+        const energyFillingStructure = Game.getObjectById(roleMemory.energyFillingStructureId);
         if(!energyFillingStructure) {
-            worker.memory.energyFillingStructureId = undefined;
+            roleMemory.energyFillingStructureId = undefined;
             return;
         }
         if(energyFillingStructure.store.energy === energyFillingStructure.store.getCapacity('energy')) {
-            worker.memory.energyFillingStructureId = undefined;
+            roleMemory.energyFillingStructureId = undefined;
             return;
         }
 
@@ -57,10 +57,9 @@ export const harvesterRole = (worker:BaseHarvester) => {
                 }
             }
             memory.task = withdrawEnergyTask;
-            return;
         }
         else if(fillResult === ERR_FULL || fillResult ==ERR_INVALID_TARGET) {
-            worker.memory.energyFillingStructureId = undefined;
+            roleMemory.energyFillingStructureId = undefined;
         }
     }
 

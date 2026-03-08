@@ -1,15 +1,11 @@
 
-import { findCenterCoord, getCoordDistance } from "../../geometry";
 import { WorkerRoles } from "types/roles";
-import { Worker } from "types/worker";
+import { Worker,WorkerMemory } from "../../types/worker";
 
 
-import { getMaxBuildableStructuresByLevel } from "../../utils/gameConstants";
-
-
-import { Coord } from "../../types/geometry";
 import { BaseConfig, MiningSiteConfig } from "../../types/room/planner";
 import { PopulationConfig, WorkerSpawnConfig } from "../../types/room/planner";
+import { MinerMemory, MineHaulerMemory } from "types/roles";
 
 
 
@@ -35,7 +31,7 @@ export class PopulationPlanner {
     
         const minerOptimalBodyParts=[WORK,WORK,MOVE];
       
-        const miningWorkerConfigs: WorkerSpawnConfig[] = [];
+        const mineWorkerSpawnConfigs: WorkerSpawnConfig[] = [];
         const roomSpawnBudget = room.energyCapacityAvailable;
       
         miningConfig.forEach(miningSite => {
@@ -52,18 +48,48 @@ export class PopulationPlanner {
             minerBodyParts.push(...autoScaledBodyParts);
 
             const minerId = `M-${room.name}-${miningSite.resourceId}` as Id<Worker>;
-            const minerMemory = {
+            const minerMemory: MinerMemory = {
                 role: WorkerRoles.MINER,
-                ...miningSite,
+                resourceId: miningSite.resourceId,
+                resourceType: miningSite.resourceType,
+                miningCoord: miningSite.miningCoord,
+                storageType: miningSite.storageType,
+                storageCoord: miningSite.storageCoord,
 
             }
-            const minerWorkerConfig: WorkerSpawnConfig = {
+            const minerSpawnConfig: WorkerSpawnConfig = {
                 workerId: minerId,
                 bodyParts: minerBodyParts,
                 optimalBodyParts: minerOptimalBodyParts,
-                memory: minerMemory
+                memory: {
+                    roleMemory: minerMemory,
+                }
             }
-            miningWorkerConfigs.push(minerWorkerConfig);
+            mineWorkerSpawnConfigs.push(minerSpawnConfig);
+
+            if(miningSite.storageType!==STRUCTURE_LINK) {
+
+                const haulerOptimalBodyParts=[MOVE,CARRY];
+                const haulerMaxBodyParts=14;
+                const haulerBodyParts=this.getAutoScaledBodyParts(haulerOptimalBodyParts,roomSpawnBudget,haulerMaxBodyParts);
+
+                const mineHaulerId = `M-H-${room.name}-${miningSite.resourceId}` as Id<Worker>;
+                const mineHaulerMemory: MineHaulerMemory = {
+                    role: WorkerRoles.HAULER,
+                    miningCoord: miningSite.miningCoord,
+                    storageCoord: miningSite.storageCoord,
+                }
+                const mineHaulerSpawnConfig: WorkerSpawnConfig = {
+                    workerId: mineHaulerId,
+                    bodyParts: haulerBodyParts,
+                    optimalBodyParts: haulerOptimalBodyParts,
+                    memory: {
+                        roleMemory: mineHaulerMemory,
+                    }
+                }
+                mineWorkerSpawnConfigs.push(mineHaulerSpawnConfig);
+            }
+            
 
             // if(miningSite.storageType!==STRUCTURE_LINK) {
 
@@ -83,7 +109,7 @@ export class PopulationPlanner {
         });
 
 
-        return miningWorkerConfigs;
+        return mineWorkerSpawnConfigs;
     
         
     
