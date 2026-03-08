@@ -10,8 +10,8 @@ export class SpawnManager {
 
         Scheduler.createRecurringJob({
             name: 'SpawnManagerDeamon',
-            interval: 20,
-            func: this.startRoomPopulationJobs,
+            interval: 15,
+            func: SpawnManager.startRoomPopulationJobs,
         })
 
     }
@@ -23,7 +23,7 @@ export class SpawnManager {
             nameGenerator: (room) => 'PopulationCheck-' + room.name,
             delay:1,
             offset:2,
-            func: (room) => this.populateSpawnQueue(room),
+            func: (room) => SpawnManager.populateSpawnQueue(room),
         })
     }
 
@@ -43,7 +43,7 @@ export class SpawnManager {
                 spawnQueue:[],
             }
         }
-       
+       console.log(`Populating spawn queue for room ${room.name}`);
         
         const roomWorkers=getRoomWorkers(room);
 
@@ -53,7 +53,7 @@ export class SpawnManager {
         const alreadySpawning=spawningOperation.spawnQueue.length>0;
 
         if(needWorkerReconciliation && !alreadySpawning) {
-            const aliveWorkerIds=new Set(roomWorkers.map(worker => worker.memory.workerId));
+            const aliveWorkerIds=new Set(roomWorkers.map(worker => worker.name));
             const toBeSpawnedWorkerConfigs=populationConfig.workerSpawnConfigs.filter(spawnConfig => !aliveWorkerIds.has(spawnConfig.workerId));
             spawningOperation.spawnQueue=toBeSpawnedWorkerConfigs;
 
@@ -62,7 +62,7 @@ export class SpawnManager {
 
         const queueIsEmpty=spawningOperation.spawnQueue.length===0;
         const lockEpiryDelay=100; // 100 ticks
-        const isLockExpired=spawningOperation.lockedUntil && spawningOperation.lockedUntil+lockEpiryDelay<Game.time;
+        const isLockExpired=!spawningOperation.lockedUntil?true:(spawningOperation.lockedUntil+lockEpiryDelay)<Game.time;
 
 
         if(!queueIsEmpty && isLockExpired) {

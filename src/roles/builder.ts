@@ -1,13 +1,16 @@
 import { upgraderRole } from "./upgrader";
-import { BaseWorker, BuilderMemory } from "../types/worker";
+import { BaseWorker } from "types/worker";
+import { BuilderMemory } from "types/roles";
+import { TasksType, WithdrawEnergyTask } from "types/tasks";
 
 
 type BaseBuilder = BaseWorker<BuilderMemory>;
 
 
 export const builderRole = (worker: BaseBuilder) => {
+    const memory = worker.memory;
 
-    if(!worker.memory.targetConstructionSiteId) {
+    if(!memory.targetConstructionSiteId) {
         const closestConstructionSite = worker.pos.findClosestByRange(FIND_MY_CONSTRUCTION_SITES);
         if(closestConstructionSite) {
             worker.memory.targetConstructionSiteId = closestConstructionSite.id;
@@ -18,8 +21,8 @@ export const builderRole = (worker: BaseBuilder) => {
         }
     }
 
-    if(worker.memory.targetConstructionSiteId) {
-        const constructionSite = Game.getObjectById(worker.memory.targetConstructionSiteId);
+    if(memory.targetConstructionSiteId) {
+        const constructionSite = Game.getObjectById(memory.targetConstructionSiteId);
         if(!constructionSite) {
             worker.memory.targetConstructionSiteId = undefined;
             return;
@@ -33,7 +36,13 @@ export const builderRole = (worker: BaseBuilder) => {
                 worker.memory.targetConstructionSiteId = undefined;
             }
             else if(buildResult === ERR_NOT_ENOUGH_RESOURCES) {
-                worker.memory.isCollectingEnergy = true;
+                const withdrawEnergyTask: WithdrawEnergyTask = {
+                    taskType: TasksType.WITHDRAW_ENERGY,
+                    data: {
+                    }
+                }
+                memory.task = withdrawEnergyTask;
+                return;
             }
         }
     }

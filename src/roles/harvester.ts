@@ -1,6 +1,8 @@
 
 import { builderRole } from "./builder";
-import { BaseWorker, HarvesterMemory, RefillingStructure } from "../types/worker";
+import { BaseWorker } from "types/worker";
+import { RefillingStructure,HarvesterMemory } from "types/roles";
+import { TasksType, WithdrawEnergyTask } from "types/tasks";
 
 // other creeps can inherit from this memory
 type BaseHarvester = BaseWorker<HarvesterMemory>;
@@ -8,8 +10,10 @@ type BaseHarvester = BaseWorker<HarvesterMemory>;
 
 
 export const harvesterRole = (worker:BaseHarvester) => {
+    const memory = worker.memory;
 
-    if (!worker.memory.energyFillingStructureId) {
+
+    if (!memory.energyFillingStructureId) {
         const energyFillingStructure: RefillingStructure|null = worker.pos.findClosestByRange(
             FIND_MY_STRUCTURES,
             {
@@ -30,7 +34,7 @@ export const harvesterRole = (worker:BaseHarvester) => {
         }
     }
 
-    if(!worker.memory.isCollectingEnergy) {
+    if(!memory.energyFillingStructureId) {
         const energyFillingStructure = Game.getObjectById(worker.memory.energyFillingStructureId);
         if(!energyFillingStructure) {
             worker.memory.energyFillingStructureId = undefined;
@@ -47,7 +51,13 @@ export const harvesterRole = (worker:BaseHarvester) => {
             worker.moveTo(energyFillingStructure);
         }
         else if(fillResult === ERR_NOT_ENOUGH_RESOURCES) {
-            worker.memory.isCollectingEnergy = true;
+            const withdrawEnergyTask: WithdrawEnergyTask = {
+                taskType: TasksType.WITHDRAW_ENERGY,
+                data: {
+                }
+            }
+            memory.task = withdrawEnergyTask;
+            return;
         }
         else if(fillResult === ERR_FULL || fillResult ==ERR_INVALID_TARGET) {
             worker.memory.energyFillingStructureId = undefined;

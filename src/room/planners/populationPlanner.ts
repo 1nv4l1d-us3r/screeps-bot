@@ -1,6 +1,7 @@
 
 import { findCenterCoord, getCoordDistance } from "../../geometry";
-import { WorkerRoles, WorkerMemory, Worker } from "../../types/worker";
+import { WorkerRoles } from "types/roles";
+import { Worker } from "types/worker";
 
 
 import { getMaxBuildableStructuresByLevel } from "../../utils/gameConstants";
@@ -53,7 +54,6 @@ export class PopulationPlanner {
             const minerId = `M-${room.name}-${miningSite.resourceId}` as Id<Worker>;
             const minerMemory = {
                 role: WorkerRoles.MINER,
-                workerId: minerId,
                 ...miningSite,
 
             }
