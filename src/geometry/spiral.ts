@@ -1,7 +1,7 @@
 import { ROOM_SIZE } from "../utils/gameConstants";
 import type { Coord, PackedCoord } from "../types/geometry";
 import { createCoordIfValid, findMaxDistanceCoord, getCoordDistance, isCoordReachable } from "./coords";
-import { packCoord } from "./packedCords";
+import { packCoord } from "./packedCoords";
 
 interface SpiralCoordsGeneratorParams {
     center: Coord;   // the center of the spiral

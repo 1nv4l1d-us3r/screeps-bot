@@ -8,7 +8,7 @@ import {
     PickupResourceTask,
     TransferResourceTask,
 } from "types/tasks";
-
+import { LogisticsManager } from "room/managers/logisticsmanager";
 
 type MineHaulerWorker = Worker<WorkerRoles.HAULER>;
 
@@ -16,17 +16,6 @@ export class MineHauler {
 
 
 
-    private static findRoomStorageStructure(worker: MineHaulerWorker) {
-        const roomStructures=worker.room.find(FIND_STRUCTURES);
-
-        const energyConsumers=roomStructures.filter(
-            st=>(st.structureType ==STRUCTURE_SPAWN || st.structureType ==STRUCTURE_EXTENSION)
-            && st.store.energy < st.store.getCapacity('energy')
-        ) as (StructureSpawn|StructureExtension)[];
-        energyConsumers.sort((a,b)=>a.pos.getRangeTo(worker.pos)-b.pos.getRangeTo(worker.pos))
-        const closestEnergyConsumer=energyConsumers.shift();
-        return closestEnergyConsumer;
-    }
 
 
     
@@ -97,18 +86,23 @@ export class MineHauler {
                 return;
             }
         }
+        worker.say(`${worker.store.getFreeCapacity().toString()}`)
 
         if(worker.store.getFreeCapacity() === 0) {
-            const storageStructure = this.findRoomStorageStructure(worker);
-            if(storageStructure) {
+            
+            const storageStructures = LogisticsManager.getResourceTransferStructures(worker.room);
+            storageStructures.sort((a,b)=>a.pos.getRangeTo(worker.pos)-b.pos.getRangeTo(worker.pos))
+            const closestStorageStructure = storageStructures[0]
+            if(closestStorageStructure) {
                 const transferResourceTask: TransferResourceTask = {
                     taskType: TasksType.TRANSFER_RESOURCE,
                     data: {
-                        targetStructureId: storageStructure.id,
+                        targetStructureId: closestStorageStructure.id,
                         resourceType: RESOURCE_ENERGY,
                     }
                 }
                 worker.memory.task = transferResourceTask;
+                return;
             }
         }
 

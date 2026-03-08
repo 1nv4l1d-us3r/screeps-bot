@@ -8,6 +8,11 @@ export interface SpawningOperation{
     lockedUntil?:number;
 }
 
+export interface LogisticsOperation{
+    storageProviderIds:Id<StructureStorage | StructureContainer | StructureSpawn>[];
+}
+
+
 export interface ConstructionRequest{
     coord:Coord,
     structureType:BuildableStructureConstant,

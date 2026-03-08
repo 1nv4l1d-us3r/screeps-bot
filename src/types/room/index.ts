@@ -1,14 +1,14 @@
 import { HeatMap } from "../common";
 import { RoomPlan } from "./planner";
-import { RoomOperations, SpawningOperation } from "./managers";
+import { LogisticsOperation, RoomOperations, SpawningOperation } from "./managers";
 
 export interface CustomRoomMemory {
     roomPlan?: RoomPlan;
-    roomOperations?: RoomOperations;
     spawning?:SpawningOperation;
+    logistics?:LogisticsOperation;
     
+    roomOperations?: RoomOperations;
     hasHostileCreeps?:boolean;
-    
     
     fatigueHeatMap?: HeatMap;
     isMonitoringFatigue?:boolean;

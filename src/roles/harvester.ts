@@ -4,6 +4,9 @@ import { Worker } from "types/worker";
 import { RefillingStructure,HarvesterMemory, BuilderMemory } from "types/roles";
 import { TasksType, WithdrawEnergyTask } from "types/tasks";
 import { WorkerRoles } from "types/roles";
+import { LogisticsManager } from "room/managers/logisticsmanager";
+
+
 // other creeps can inherit from this memory
 type HarvesterWorker = Worker<WorkerRoles.HARVESTER>;
 
