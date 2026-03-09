@@ -177,7 +177,7 @@ export class LogisticsManager {
                 LogisticsManager.updateStorageProviderIds(room)
                 return storageProviders
             }
-            if(provider.store.getFreeCapacity() > 0) {
+            if(provider.store.getUsedCapacity() < provider.store.getCapacity()) {
                 storageProviders.push(provider)
             }
         })

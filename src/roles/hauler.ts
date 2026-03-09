@@ -86,7 +86,6 @@ export class MineHauler {
                 return;
             }
         }
-        worker.say(`${worker.store.getFreeCapacity().toString()}`)
 
         if(worker.store.getFreeCapacity() === 0) {
             
