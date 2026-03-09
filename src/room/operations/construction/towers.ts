@@ -50,7 +50,14 @@ export const getTowerConstructionCoords = (params: GetTowerConstructionCoordsPar
             return false;
         }
 
-        const { minDistance: closestExistingTowerDistance } = findMinDistanceCoord({ center: coord, targets: existingTowerCoords });
+        let closestExistingTowerDistance=0;
+
+        if(existingTowerCoords.length) {
+            const { minDistance } = findMinDistanceCoord({ center: coord, targets: existingTowerCoords });
+            closestExistingTowerDistance = minDistance;
+
+        }
+
         if(closestExistingTowerDistance < minDistanceBetweenTowers) {
             return false;
         }

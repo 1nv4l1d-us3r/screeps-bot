@@ -10,17 +10,17 @@ import { CpuProfiler } from "./helpers/cpuProfiler";
 import { testScriptRunner } from "./helpers/testScriptRunner";
 
 import { RoomPlanner } from "./room/planners/roomPlanner";
+import { ConstructionManager } from "./room/operations/construction/constructionManager";
 import { SpawnManager } from "./room/managers/spawnManager";
-
 
 
 
 // const startRecurringJobs=()=>{
 
-RoomPlanner.startDeamon();
 Cleanup.startDeamon();
+RoomPlanner.startDeamon();
 SpawnManager.startDeamon();
-
+ConstructionManager.startDeamon();
 
 export const loop = () => {
     if(Memory.logCpuUsage) {

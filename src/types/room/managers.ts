@@ -12,14 +12,16 @@ export interface LogisticsOperation{
     storageProviderIds:Id<StructureStorage | StructureContainer | StructureSpawn>[];
 }
 
-
 export interface ConstructionRequest{
     coord:Coord,
     structureType:BuildableStructureConstant,
     replaceExisting?:boolean,
 }
 
-
-export interface RoomOperations{
-    constructionRequests:ConstructionRequest[],
+export interface ConstructionOperation{
+    constructionQueue:ConstructionRequest[];
+    constructionSiteIds?:Id<ConstructionSite>[];
 }
+
+
+

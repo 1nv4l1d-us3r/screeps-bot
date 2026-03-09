@@ -6,6 +6,8 @@ import { RoomPlanner } from "../../planners/roomPlanner";
 
 import { Coord, PackedCoord } from "../../../types/geometry";
 import { ConstructionRequest } from "../../../types/room/managers";
+import { Scheduler } from "helpers/Scheduler";
+import { getMyRooms } from "utils/commonFunctions";
 
 
 
@@ -25,10 +27,31 @@ const constructionPriorityMap: Partial<Record<BuildableStructureConstant, number
 
 export class ConstructionManager {
 
+    private static CONSTRUCTION_SITES_BATCH_SIZE=5;
 
-    public static getConstructionRequestsForRoom(room: Room): ConstructionRequest[] {
 
-        const constructionRequests:ConstructionRequest[]=[];
+
+    public static startDeamon(){
+        Scheduler.createRecurringJob({
+            name: 'ConstructionManagerDeamon',
+            interval: 100,
+            func: ConstructionManager.startConstructionJobs,
+        })
+    }
+    
+    public static startConstructionJobs(){
+        Scheduler.createOneTimeJobs({
+            list: getMyRooms(),
+            nameGenerator: (room) => 'ConstructionQueuePopulation-' + room.name,
+            delay:1,
+            offset:2,
+            func: (room) => ConstructionManager.populateConstructionQueue(room),
+        })
+    }
+
+    public static populateConstructionQueue(room: Room){
+
+        const constructionQueue:ConstructionRequest[]=[];
 
         const roomLevel = room.controller?.level || 0;
         const roomTerrain = room.getTerrain();
@@ -75,7 +98,7 @@ export class ConstructionManager {
                 structureType:STRUCTURE_SPAWN,
                 replaceExisting:true,
             }
-            constructionRequests.push(firstSpawnConstructionRequest);
+            constructionQueue.push(firstSpawnConstructionRequest);
             occupiedPackedCoordsSet.add(packCoord(primarySpawnCoord));
         }
 
@@ -87,22 +110,33 @@ export class ConstructionManager {
             console.log(`need to construct ${spawnsNeededCount} spawns in room ${room.name}`);
 
 
-            const spawnPlacementCoords=getAlternateSpiralCoords({
-                center:primarySpawnCoord,
-                neededCount:spawnsNeededCount,
-                roomTerrain,
-                occupiedPackedCoordsSet,
-            });
 
-            spawnPlacementCoords.forEach(coord => {
-                const spawnConstructionRequest:ConstructionRequest={
-                    coord,
-                    structureType:STRUCTURE_SPAWN,
-                    replaceExisting:true,
-                }
-                constructionRequests.push(spawnConstructionRequest);
-                occupiedPackedCoordsSet.add(packCoord(coord));
-            });
+            try{
+                const spawnPlacementCoords=getAlternateSpiralCoords({
+                    center:primarySpawnCoord,
+                    neededCount:spawnsNeededCount,
+                    roomTerrain,
+                    occupiedPackedCoordsSet,
+                });
+
+
+                
+
+
+                console.log('pushing spawn construction requests');
+                spawnPlacementCoords.forEach(coord => {
+                    const spawnConstructionRequest:ConstructionRequest={
+                        coord,
+                        structureType:STRUCTURE_SPAWN,
+                        replaceExisting:true,
+                    }
+                    constructionQueue.push(spawnConstructionRequest);
+                    occupiedPackedCoordsSet.add(packCoord(coord));
+                });
+            }
+            catch(error) {
+                console.error(JSON.stringify({error}, null, 2));
+            }
         }
         // ------------------ X ---------------------//
 
@@ -120,7 +154,7 @@ export class ConstructionManager {
                 structureType:STRUCTURE_STORAGE,
                 replaceExisting:true,
             }
-            constructionRequests.push(storageConstructionRequest);
+            constructionQueue.push(storageConstructionRequest);
             occupiedPackedCoordsSet.add(packCoord(storageCoord));
         }
         // ------------------ X ---------------------//
@@ -142,7 +176,7 @@ export class ConstructionManager {
                         structureType:storageType,
                         replaceExisting:true,
                     }
-                    constructionRequests.push(storageConstructionRequest);
+                    constructionQueue.push(storageConstructionRequest);
                     occupiedPackedCoordsSet.add(storageCoordPacked);
                 }
             }
@@ -179,7 +213,7 @@ export class ConstructionManager {
                     structureType:STRUCTURE_TOWER,
                     replaceExisting:true,
                 }
-                constructionRequests.push(towerConstructionRequest);
+                constructionQueue.push(towerConstructionRequest);
                 occupiedPackedCoordsSet.add(packCoord(coord));
             });
 
@@ -188,19 +222,113 @@ export class ConstructionManager {
         // ------------------ X ---------------------//
 
 
+        constructionQueue.sort((a,b) => {
+            const aPriority=constructionPriorityMap[a.structureType];
+            const bPriority=constructionPriorityMap[b.structureType];
+            return aPriority - bPriority;
+        });
+
+        const constructionSiteIds=roomConstructionsSites.map(cs => cs.id);
 
 
-
-        return constructionRequests;
-    }
-
-
-    public static updateConstructionRequestsForRoom(room: Room): void {
-        const constructionRequests=this.getConstructionRequestsForRoom(room);
-        room.memory.roomOperations={
-            constructionRequests,
+        room.memory.construction={
+            constructionQueue,
+            constructionSiteIds,
         }
     }
+
+
+    
+
+
+
+    public static getConstructionSites(room: Room){
+        const ConstructionOperation=room.memory.construction
+        if(!ConstructionOperation) {
+            ConstructionManager.populateConstructionQueue(room);
+            return [];
+        }
+        const constructionQueue=ConstructionOperation.constructionQueue;
+        let constructionSiteIds:Id<ConstructionSite>[]=ConstructionOperation?.constructionSiteIds || [];
+       
+        if(!constructionSiteIds.length && constructionQueue.length) {
+
+            const windowedConstructionRequests=constructionQueue.splice(0,ConstructionManager.CONSTRUCTION_SITES_BATCH_SIZE-1);
+
+            windowedConstructionRequests.forEach(request => {
+                ConstructionManager.createConstructionSites(room, request);
+            })
+
+            Scheduler.createOneTimeJob({
+                name: 'constructionSiteIdsPopulation-' + room.name,
+                delay: 1,
+                func: () => {
+                    const constructionSites=room.find(FIND_MY_CONSTRUCTION_SITES);
+                    constructionSiteIds=constructionSites.map(cs => cs.id);
+                    room.memory.construction.constructionSiteIds=constructionSiteIds;
+                }
+            });
+            return [];
+        
+        }
+
+        if(constructionSiteIds.length) {
+
+            const constructionSites:ConstructionSite[]=[]
+            const validConstructionSiteIds:Id<ConstructionSite>[]=[];
+
+            constructionSiteIds.forEach(id => {
+                const constructionSite=Game.getObjectById(id);
+                if(constructionSite) {
+                    constructionSites.push(constructionSite);
+                    validConstructionSiteIds.push(id);
+                }
+            });
+
+            if(validConstructionSiteIds.length !== constructionSiteIds.length) {
+                // only update const-site ids if some of them are invalid
+                room.memory.construction.constructionSiteIds=validConstructionSiteIds;
+            }
+            return constructionSites;
+        }
+        
+        return [];
+    }
+
+
+  
+
+
+
+    private static createConstructionSites(room: Room, constructionRequest: ConstructionRequest){
+
+        const {coord, structureType, replaceExisting}=constructionRequest;
+
+        const constructionResult=room.createConstructionSite(coord.x, coord.y, structureType);
+        if(constructionResult === OK) {
+            return true;
+        }
+        else if(replaceExisting === true && constructionResult === ERR_INVALID_TARGET) {
+            const existingStructure = room.lookForAt(LOOK_STRUCTURES, coord.x, coord.y);
+            existingStructure.forEach(st=>st.destroy())
+
+
+            // try to create the construction site after destroying the existing structure
+            Scheduler.createOneTimeJob({
+                name: 'ConstructionSiteCreation-' + coord.x + '-' + coord.y,
+                delay: 1,
+                func: () => {
+                    room.createConstructionSite(coord.x, coord.y, structureType);
+                }
+               });
+            return false;
+        }
+        else {
+            return false;
+        }
+    }
+
+
 
 
 }

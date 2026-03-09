@@ -7,19 +7,28 @@ import { WorkerRoles } from "types/roles";
 type BuilderWorker = Worker<WorkerRoles.BUILDER>;
 
 
+import { ConstructionManager } from "room/operations/construction/constructionManager";
+
+
 export const builderRole = (worker: BuilderWorker) => {
     const memory = worker.memory;
     const roleMemory = memory.roleMemory as BuilderMemory;
 
     if(!roleMemory.targetConstructionSiteId) {
-        const closestConstructionSite = worker.pos.findClosestByRange(FIND_MY_CONSTRUCTION_SITES);
-        if(closestConstructionSite) {
-            roleMemory.targetConstructionSiteId = closestConstructionSite.id;
-        }
-        else {
+        const constructionSites=ConstructionManager.getConstructionSites(worker.room);
+        if(!constructionSites.length) {
             upgraderRole(worker as Worker);
             return;
         }
+        constructionSites.sort((a,b) => {
+            const aDistance=a.pos.getRangeTo(worker.pos);
+            const bDistance=b.pos.getRangeTo(worker.pos);
+            return aDistance - bDistance;
+        });
+        const closestConstructionSite = constructionSites[0];
+
+        roleMemory.targetConstructionSiteId = closestConstructionSite.id;
+
     }
 
     if(roleMemory.targetConstructionSiteId) {
