@@ -2,6 +2,8 @@ import { Worker } from "types/worker";
 import { WorkerRoles } from "types/roles";
 import { TasksType, WithdrawEnergyTask } from "types/tasks";
 
+import { LogisticsManager } from "room/managers/logisticsmanager";
+
 type WithdrawEnergyTaskWorker = Worker<WorkerRoles,TasksType.WITHDRAW_ENERGY>;
 
 
@@ -34,18 +36,21 @@ export class EnergyTaskHandler {
         const taskData = task.data;
 
         if(!taskData?.withdrawStructureId) {
-            const energyProviderStructure = this.findEnergyProviderStructure(worker.room);
-            if(!energyProviderStructure) {
+            const energyProviderStructure = LogisticsManager.getResourceWithdrawStructures(worker.room,RESOURCE_ENERGY);
+            if(energyProviderStructure.length === 0) {
                 memory.task = undefined;
+                worker.say('💤')
                 return;
             }
-            taskData.withdrawStructureId = energyProviderStructure.id;
-            return;
+            energyProviderStructure.sort((a,b)=>a.pos.getRangeTo(worker.pos)-b.pos.getRangeTo(worker.pos))
+            const closestEnergyProvider=energyProviderStructure.shift()
+            taskData.withdrawStructureId = closestEnergyProvider.id;
         }
         
         const withdrawStructure = Game.getObjectById(taskData.withdrawStructureId);
         if(!withdrawStructure) {
             taskData.withdrawStructureId = undefined;
+            worker.say('⚠️?')
             return;
         }
         const withdrawResult = worker.withdraw(withdrawStructure, RESOURCE_ENERGY);
@@ -53,6 +58,7 @@ export class EnergyTaskHandler {
             worker.moveTo(withdrawStructure);
         }
         else if(withdrawResult === ERR_INVALID_TARGET) {
+            worker.say('⚠️?')
             taskData.withdrawStructureId = undefined;
             return;
         }

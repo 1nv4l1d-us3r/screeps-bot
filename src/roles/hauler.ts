@@ -90,6 +90,10 @@ export class MineHauler {
         if(worker.store.getFreeCapacity() === 0) {
             
             const storageStructures = LogisticsManager.getResourceTransferStructures(worker.room);
+            if(storageStructures.length === 0) {
+                worker.say('yawn!')
+                return;
+            }
             storageStructures.sort((a,b)=>a.pos.getRangeTo(worker.pos)-b.pos.getRangeTo(worker.pos))
             const closestStorageStructure = storageStructures[0]
             if(closestStorageStructure) {

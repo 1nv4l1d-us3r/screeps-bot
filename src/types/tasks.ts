@@ -13,7 +13,7 @@ export enum TasksType{
 export interface WithdrawEnergyTask{
     taskType: TasksType.WITHDRAW_ENERGY;
     data: {
-        withdrawStructureId?: Id<StructureContainer|StructureStorage>;
+        withdrawStructureId?: Id<StructureContainer|StructureStorage |StructureSpawn>;
     }
 }
 

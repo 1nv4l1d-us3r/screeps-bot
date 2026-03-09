@@ -150,6 +150,14 @@ export class LogisticsManager {
                 LogisticsManager.updateStorageProviderIds(room)
                 return storageProviders
             }
+            if(
+                provider.structureType === STRUCTURE_SPAWN &&
+                provider.store.energy > 50 &&
+                resourceType === RESOURCE_ENERGY
+            ) {
+                storageProviders.push(provider)
+                return;
+            }
 
             if(provider.store.getUsedCapacity(resourceType) > 0) {
                 storageProviders.push(provider)
@@ -175,7 +183,11 @@ export class LogisticsManager {
             const provider=Game.getObjectById(providerId)
             if(!provider) {
                 LogisticsManager.updateStorageProviderIds(room)
-                return storageProviders
+                return 
+            }
+            if(provider.structureType === STRUCTURE_SPAWN) {
+                storageProviders.push(provider)
+                return; 
             }
             if(provider.store.getUsedCapacity() < provider.store.getCapacity()) {
                 storageProviders.push(provider)

@@ -37,7 +37,7 @@ export const harvesterRole = (worker:HarvesterWorker) => {
         }
     }
 
-    if(!roleMemory.energyFillingStructureId) {
+    if(roleMemory.energyFillingStructureId) {
         const energyFillingStructure = Game.getObjectById(roleMemory.energyFillingStructureId);
         if(!energyFillingStructure) {
             roleMemory.energyFillingStructureId = undefined;

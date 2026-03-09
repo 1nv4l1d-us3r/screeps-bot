@@ -1,5 +1,5 @@
 
-import { WorkerRoles } from "types/roles";
+import { HarvesterMemory, WorkerRoles } from "types/roles";
 import { Worker,WorkerMemory } from "../../types/worker";
 
 
@@ -17,11 +17,20 @@ export class PopulationPlanner {
     public static getPopulationConfigForRoom = (room: Room,miningConfig: MiningSiteConfig[]) => {
 
 
+
+
         const miningWorkerConfigs = this.getMinersSpawnConfigs(room,miningConfig);
+        const harvesterWorkerConfigs = this.getHarvesterSpawnConfigs(room);
+
+
+        const workerSpawnConfigs = [
+            ...miningWorkerConfigs, 
+            ...harvesterWorkerConfigs
+        ];
 
         const populationConfig: PopulationConfig = {
-            totalWorkers: miningWorkerConfigs.length,
-            workerSpawnConfigs: miningWorkerConfigs
+            totalWorkers: workerSpawnConfigs.length,
+            workerSpawnConfigs: workerSpawnConfigs
         }
         return populationConfig;
 
@@ -118,7 +127,37 @@ export class PopulationPlanner {
 
 
     
+    private static getHarvesterSpawnConfigs = (room: Room) => {
+        const roomLevel = room.controller?.level || 0;
+        let harvesterCount=4;
+        const harvesterOptimalBodyParts=[WORK,CARRY,MOVE,MOVE];
+        const harvesterMaxBodyParts=16;
+        const harvesterBodyParts=this.getAutoScaledBodyParts(harvesterOptimalBodyParts,room.energyCapacityAvailable,harvesterMaxBodyParts);
+        
+        const harvesterSpawnConfigs: WorkerSpawnConfig[] = [];
+        for(let i = 0; i < harvesterCount; i++) {
+            const harvesterId = `H-${room.name}-${i}` as Id<Worker>;
+            const harvesterMemory: HarvesterMemory = {
+                role: WorkerRoles.HARVESTER,
+            }
+            const harvesterSpawnConfig: WorkerSpawnConfig = {
+                workerId: harvesterId,
+                bodyParts: harvesterBodyParts,
+                optimalBodyParts: harvesterOptimalBodyParts,
+                memory: {
+                    roleMemory: harvesterMemory,
+                }
+            }
+            harvesterSpawnConfigs.push(harvesterSpawnConfig);
+        }
+        return harvesterSpawnConfigs;
+    }
 
+    
+
+
+
+    //---------------- Utility Functions ----------------//
     private static getBodyPartsCost=(bodyPart: BodyPartConstant | BodyPartConstant[])=> {
         if(Array.isArray(bodyPart)) {
             return bodyPart.reduce((acc, part) => acc + BODYPART_COST[part], 0);
