@@ -10,8 +10,9 @@ import { CpuProfiler } from "./helpers/cpuProfiler";
 import { testScriptRunner } from "./helpers/testScriptRunner";
 
 import { RoomPlanner } from "./room/planners/roomPlanner";
-import { ConstructionManager } from "./room/operations/construction/constructionManager";
 import { SpawnManager } from "./room/managers/spawnManager";
+import { ConstructionManager } from "./room/operations/construction/constructionManager";
+import { LogisticsManager } from "room/managers/logisticsmanager";
 
 
 
@@ -21,6 +22,7 @@ Cleanup.startDeamon();
 RoomPlanner.startDeamon();
 SpawnManager.startDeamon();
 ConstructionManager.startDeamon();
+LogisticsManager.startDeamon();
 
 export const loop = () => {
     if(Memory.logCpuUsage) {

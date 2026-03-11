@@ -21,6 +21,7 @@ export interface MiningSiteConfig{
     miningCoord: Coord;
     storageType?: STRUCTURE_CONTAINER | STRUCTURE_LINK;
     storageCoord?: Coord;
+    extractorCoord?: Coord;
 }
 
 

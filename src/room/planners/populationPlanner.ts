@@ -85,6 +85,7 @@ export class PopulationPlanner {
                 const mineHaulerId = `M-H-${room.name}-${miningSite.resourceId}` as Id<Worker>;
                 const mineHaulerMemory: MineHaulerMemory = {
                     role: WorkerRoles.HAULER,
+                    resourceType: miningSite.resourceType,
                     miningCoord: miningSite.miningCoord,
                     storageCoord: miningSite.storageCoord,
                 }
@@ -100,29 +101,10 @@ export class PopulationPlanner {
             }
             
 
-            // if(miningSite.storageType!==STRUCTURE_LINK) {
-
-            //     const haulerId = `H-${room.name}-${miningSite.resourceId}` as Id<Worker>;
-            //     const haulerMemory: WorkerMemory = {
-            //         role: WorkerRoles.HAULER,
-            //         workerId: haulerId,
-            //         ...miningSite,
-            //     }
-            //     const haulerWorkerConfig: WorkerSpawnConfig = {
-            //         workerId: haulerId,
-            //         bodyParts: haulerBodyParts,
-            //         optimalBodyParts: haulerOptimalBodyParts,
-
-            // }
-
         });
 
 
         return mineWorkerSpawnConfigs;
-    
-        
-    
-    
     }
 
 

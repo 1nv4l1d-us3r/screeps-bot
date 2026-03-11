@@ -1,4 +1,4 @@
-import { TasksType, WithdrawEnergyTask } from "types/tasks";
+import { TasksType, WithdrawResourceTask } from "types/tasks";
 import { Worker } from "types/worker";
 
 
@@ -19,9 +19,11 @@ export const upgraderRole = (worker: Worker) => {
         worker.moveTo(roomController)
     }
     if(upgradeResult==ERR_NOT_ENOUGH_RESOURCES){
-        const withdrawEnergyTask: WithdrawEnergyTask = {
-            taskType: TasksType.WITHDRAW_ENERGY,
+        const withdrawEnergyTask: WithdrawResourceTask = {
+            taskType: TasksType.WITHDRAW_RESOURCE,
             data: {
+                withdrawStructureId: 'auto',
+                resourceType: RESOURCE_ENERGY,
             }
         }
         memory.task = withdrawEnergyTask;

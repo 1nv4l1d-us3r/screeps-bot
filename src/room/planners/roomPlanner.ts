@@ -37,7 +37,7 @@ export class RoomPlanner {
             nameGenerator: (room) => 'UpdateRoomPlan-' + room.name,
             delay: 2,
             offset: 2,
-            func: (room) => this.updateRoomPlan(room),
+            func: (room) => RoomPlanner.updateRoomPlan(room),
         })
     }
 

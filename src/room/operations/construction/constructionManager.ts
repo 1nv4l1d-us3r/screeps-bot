@@ -119,11 +119,6 @@ export class ConstructionManager {
                     occupiedPackedCoordsSet,
                 });
 
-
-                
-
-
-                console.log('pushing spawn construction requests');
                 spawnPlacementCoords.forEach(coord => {
                     const spawnConstructionRequest:ConstructionRequest={
                         coord,
@@ -138,6 +133,38 @@ export class ConstructionManager {
                 console.error(JSON.stringify({error}, null, 2));
             }
         }
+        // ------------------ X ---------------------//
+
+
+
+        // ------------- Extension Construction -------------//
+
+
+        const extensions=roomStructures.filter(st => st.structureType === STRUCTURE_EXTENSION);
+        const constructingExtensions=roomConstructionsSites.filter(cs => cs.structureType === STRUCTURE_EXTENSION);
+        const totalExtensionsCount=extensions.length+constructingExtensions.length; 
+        const maxExtensionsCount=getMaxBuildableStructuresByLevel(STRUCTURE_EXTENSION, roomLevel);
+        if(totalExtensionsCount < maxExtensionsCount) {
+            const extensionsNeededCount=maxExtensionsCount-totalExtensionsCount;
+            console.log(`need to construct ${extensionsNeededCount} extensions in room ${room.name}`);
+
+            const extensionPlacementCoords=getAlternateSpiralCoords({
+                center:primarySpawnCoord,
+                neededCount:extensionsNeededCount,
+                roomTerrain,
+                occupiedPackedCoordsSet,
+            });
+
+            extensionPlacementCoords.forEach(coord => {
+                const extensionConstructionRequest:ConstructionRequest={
+                    coord,
+                    structureType:STRUCTURE_EXTENSION,
+                }
+                constructionQueue.push(extensionConstructionRequest);
+                occupiedPackedCoordsSet.add(packCoord(coord));
+            });
+        }
+
         // ------------------ X ---------------------//
 
 
@@ -164,7 +191,7 @@ export class ConstructionManager {
         // ----------------- Mining Utility Structures Construction ----------------//
 
         for(const miningSiteConfig of miningConfig) {
-            const { storageCoord, storageType } = miningSiteConfig;
+            const { storageCoord, storageType,extractorCoord } = miningSiteConfig;
             if(storageCoord && storageType) {
                 const storageCoordPacked=packCoord(storageCoord);
                 const storageExists=roomStructureMap.get(storageCoordPacked) === storageType;
@@ -178,6 +205,22 @@ export class ConstructionManager {
                     }
                     constructionQueue.push(storageConstructionRequest);
                     occupiedPackedCoordsSet.add(storageCoordPacked);
+                }
+            }
+
+            if(extractorCoord) {
+                const extractorCoordPacked=packCoord(extractorCoord);
+                const extractorExists=roomStructureMap.get(extractorCoordPacked) === STRUCTURE_EXTRACTOR;
+                const constructionSiteExists=roomConstructionSiteMap.get(extractorCoordPacked) === STRUCTURE_EXTRACTOR;
+
+                if(!extractorExists && !constructionSiteExists) {
+                    const extractorConstructionRequest:ConstructionRequest={
+                        coord:extractorCoord,
+                        structureType:STRUCTURE_EXTRACTOR,
+                        replaceExisting:true,
+                    }
+                    constructionQueue.push(extractorConstructionRequest);
+                    occupiedPackedCoordsSet.add(extractorCoordPacked);
                 }
             }
         }

@@ -4,7 +4,7 @@ import { MineHaulerMemory } from "types/roles";
 import { Coord } from "types/geometry";
 import { 
     TasksType, 
-    WithdrawEnergyTask, 
+    WithdrawResourceTask, 
     PickupResourceTask,
     TransferResourceTask,
 } from "types/tasks";
@@ -63,19 +63,30 @@ export class MineHauler {
         }
 
 
-        if(worker.store.getUsedCapacity() === 0) {
+        if(worker.store.getUsedCapacity() < worker.store.getCapacity()) {
 
             if(roleMemory.withdrawStructureId) {
-                const withdrawEnergyTask: WithdrawEnergyTask = {
-                    taskType: TasksType.WITHDRAW_ENERGY,
+                const withdrawStructure = Game.getObjectById(roleMemory.withdrawStructureId);
+                if(!withdrawStructure) {
+                    roleMemory.withdrawStructureId = undefined;
+                    return;
+                }
+                const withdrawEnergyTask: WithdrawResourceTask = {
+                    taskType: TasksType.WITHDRAW_RESOURCE,
                     data: {
                         withdrawStructureId: roleMemory.withdrawStructureId as Id<StructureContainer|StructureStorage>,
+                        resourceType: roleMemory.resourceType,
                     }
                 }
                 worker.memory.task = withdrawEnergyTask;
                 return 
             }
             else if(roleMemory.droppedResourceId) {
+                const droppedResource = Game.getObjectById(roleMemory.droppedResourceId);
+                if(!droppedResource) {
+                    roleMemory.droppedResourceId = undefined;
+                    return;
+                }
                 const pickupResourceTask: PickupResourceTask = {
                     taskType: TasksType.PICKUP_RESOURCE,
                     data: {
@@ -101,7 +112,7 @@ export class MineHauler {
                     taskType: TasksType.TRANSFER_RESOURCE,
                     data: {
                         targetStructureId: closestStorageStructure.id,
-                        resourceType: RESOURCE_ENERGY,
+                        resourceType: roleMemory.resourceType,
                     }
                 }
                 worker.memory.task = transferResourceTask;

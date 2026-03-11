@@ -41,8 +41,9 @@ export interface MinerMemory extends BaseRoleMemory {
 
 export interface MineHaulerMemory extends BaseRoleMemory {
     role: WorkerRoles.HAULER;
-    miningCoord: Coord;
-    storageCoord?: Coord;
+    resourceType: MiningSiteConfig['resourceType'];
+    miningCoord: MiningSiteConfig['miningCoord'];
+    storageCoord?: MiningSiteConfig['storageCoord'];
 
     withdrawStructureId?: Id<StructureContainer>;
     droppedResourceId?: Id<Resource>;

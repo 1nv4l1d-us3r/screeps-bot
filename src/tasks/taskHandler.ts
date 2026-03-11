@@ -1,6 +1,5 @@
 import {Worker, WorkerMemory } from "types/worker";
 import { Task,TasksType } from "types/tasks";
-import { EnergyTaskHandler } from "./energyTask";
 import { MiningTaskHandler } from "./miningTask";
 import { LogisticsTaskHandler } from "./logisticsTask";
 import { WorkerRoles } from "types/roles";
@@ -12,7 +11,7 @@ import { TaskHandlerFunction } from "types/tasks";
 export class TaskHandler {
 
     private static taskHanderMap: Record<TasksType, TaskHandlerFunction<TasksType>> = {
-        [TasksType.WITHDRAW_ENERGY]: EnergyTaskHandler.handleWithdrawEnergyTask,
+        [TasksType.WITHDRAW_RESOURCE]: LogisticsTaskHandler.handleWithdrawResourceTask,
         [TasksType.MINE_RESOURCE]: MiningTaskHandler.handleMiningTask,
         [TasksType.PICKUP_RESOURCE]: LogisticsTaskHandler.handlePickupResourceTask,
         [TasksType.TRANSFER_RESOURCE]: LogisticsTaskHandler.handleTransferResourceTask,

@@ -2,7 +2,7 @@
 import { builderRole } from "./builder";
 import { Worker } from "types/worker";
 import { RefillingStructure,HarvesterMemory, BuilderMemory } from "types/roles";
-import { TasksType, WithdrawEnergyTask } from "types/tasks";
+import { TasksType, WithdrawResourceTask } from "types/tasks";
 import { WorkerRoles } from "types/roles";
 import { LogisticsManager } from "room/managers/logisticsmanager";
 
@@ -54,9 +54,11 @@ export const harvesterRole = (worker:HarvesterWorker) => {
             worker.moveTo(energyFillingStructure);
         }
         else if(fillResult === ERR_NOT_ENOUGH_RESOURCES) {
-            const withdrawEnergyTask: WithdrawEnergyTask = {
-                taskType: TasksType.WITHDRAW_ENERGY,
+            const withdrawEnergyTask: WithdrawResourceTask = {
+                taskType: TasksType.WITHDRAW_RESOURCE,
                 data: {
+                    withdrawStructureId: 'auto',
+                    resourceType: RESOURCE_ENERGY,
                 }
             }
             memory.task = withdrawEnergyTask;

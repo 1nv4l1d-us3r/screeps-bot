@@ -1,7 +1,7 @@
 import { upgraderRole } from "./upgrader";
 import { Worker } from "types/worker";
 import { BuilderMemory } from "types/roles";
-import { TasksType, WithdrawEnergyTask } from "types/tasks";
+import { TasksType, WithdrawResourceTask } from "types/tasks";
 import { WorkerRoles } from "types/roles";
 
 type BuilderWorker = Worker<WorkerRoles.BUILDER>;
@@ -46,9 +46,11 @@ export const builderRole = (worker: BuilderWorker) => {
                 roleMemory.targetConstructionSiteId = undefined;
             }
             else if(buildResult === ERR_NOT_ENOUGH_RESOURCES) {
-                const withdrawEnergyTask: WithdrawEnergyTask = {
-                    taskType: TasksType.WITHDRAW_ENERGY,
+                const withdrawEnergyTask: WithdrawResourceTask = {
+                    taskType: TasksType.WITHDRAW_RESOURCE,
                     data: {
+                        withdrawStructureId: 'auto',
+                        resourceType: RESOURCE_ENERGY,
                     }
                 }
                 memory.task = withdrawEnergyTask;

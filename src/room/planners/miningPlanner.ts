@@ -113,6 +113,11 @@ export class MiningPlanner {
         if(roomLevel>=6){
             const minerals=room.find(FIND_MINERALS);
             minerals.forEach(mineral => {
+
+                if(mineral.mineralAmount === 0 && (mineral.ticksToRegeneration|| Infinity) > 1000 ) {
+                    // mineral in cooldown, so we don't need to extract it
+                    return;
+                }
                 const mineralCoord={x:mineral.pos.x, y:mineral.pos.y} as Coord;
     
     
@@ -120,6 +125,7 @@ export class MiningPlanner {
                 let miningCoord:MiningSiteConfig['miningCoord'];
                 let storageType:MiningSiteConfig['storageType'];
                 let storageCoord:MiningSiteConfig['storageCoord'];
+                let extractorCoord:Coord=mineralCoord
     
     
                 const mineralMiningCoord=getMaxReachableNeighborCoords({center:mineralCoord,roomTerrain})
@@ -136,7 +142,8 @@ export class MiningPlanner {
                     resourceType: mineral.mineralType,
                     miningCoord,
                     storageType,
-                    storageCoord
+                    storageCoord,
+                    extractorCoord
                 }
                 miningSiteConfigs.push(mineralStorageConfig);
             });
