@@ -91,8 +91,7 @@ export class LogisticsTaskHandler {
             worker.moveTo(targetStructure);
         }
         else if (
-                transferResult === ERR_FULL
-            || transferResult === ERR_NOT_ENOUGH_RESOURCES
+            transferResult === ERR_NOT_ENOUGH_RESOURCES
             || transferResult === ERR_INVALID_TARGET
         ) {
             memory.task = undefined;
