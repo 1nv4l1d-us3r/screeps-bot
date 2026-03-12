@@ -1,14 +1,14 @@
 
 
 
-class Log {
+// class Log {
 
 
 
 
-    public static 
+//     public static 
 
 
 
 
-}
+// }

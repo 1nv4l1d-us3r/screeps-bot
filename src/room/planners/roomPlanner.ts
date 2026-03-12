@@ -1,0 +1,76 @@
+import { RoomPlan } from "../../types/room/planner";
+import { BasePlanner } from "./basePlanner";
+import { MiningPlanner } from "./miningPlanner";
+import { PopulationPlanner } from "./populationPlanner";
+
+
+import { Coord } from "../../types/geometry";
+
+import { Scheduler } from "../../helpers/Scheduler";
+import { getMyRooms } from "../../utils/commonFunctions";
+
+
+export class RoomPlanner {
+
+
+    public static startDeamon(){
+
+        Scheduler.createRecurringJob({
+            name: 'RoomPlannerDeamon',
+            interval: 500,
+            func: this.startRoomPlannerJobs,
+        })
+
+    }
+
+
+    /*
+    Run the room planner for all the my rooms.
+    - uses the job scheduler to spread processing of each room at same tick.
+    */
+    private static startRoomPlannerJobs(){
+
+        const myRooms=getMyRooms();
+
+        Scheduler.createOneTimeJobs({
+            list: myRooms,
+            nameGenerator: (room) => 'UpdateRoomPlan-' + room.name,
+            delay: 2,
+            offset: 2,
+            func: (room) => RoomPlanner.updateRoomPlan(room),
+        })
+    }
+
+    public static updateRoomPlan = (room: Room) => {
+        const roomPlan = RoomPlanner.getRoomPlan(room);
+        room.memory.roomPlan = roomPlan;
+    }
+
+
+    public static getRoomPlan = (room: Room): RoomPlan => {
+
+        const roomPlan=room.memory.roomPlan;
+        const newRoomPlan:Partial<RoomPlan>={};
+
+
+        if(!roomPlan || !roomPlan.baseConfig) {
+            const baseConfig = BasePlanner.getBaseConfig(room);
+            newRoomPlan.baseConfig = baseConfig;
+        }
+        const baseCenterCoord=(roomPlan?.baseConfig.primarySpawnCoord || newRoomPlan.baseConfig?.primarySpawnCoord) as Coord;
+
+        const miningConfig=MiningPlanner.getMiningConfigForRoom(room, baseCenterCoord);
+        newRoomPlan.miningConfig = miningConfig;
+
+        const populationConfig = PopulationPlanner.getPopulationConfigForRoom(room, miningConfig);
+        newRoomPlan.populationConfig = populationConfig;
+
+
+        
+        const updatedRoomPlan={...roomPlan, ...newRoomPlan} as RoomPlan;
+
+        return updatedRoomPlan;
+    }
+
+}
+

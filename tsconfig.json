@@ -1,0 +1,17 @@
+{
+    "compilerOptions": {
+      "module": "esnext",
+      "lib": ["es2018"],
+      "target": "es2018",
+      "moduleResolution": "Node",
+      "outDir": "dist",
+      "baseUrl": "src/",
+      "sourceMap": true,
+      "strict": false,
+      "experimentalDecorators": true,
+      "noImplicitReturns": false,
+      "allowSyntheticDefaultImports": true,
+      "allowUnreachableCode": true
+    },
+    "exclude": ["node_modules"]
+  }

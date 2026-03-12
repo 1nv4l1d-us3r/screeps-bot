@@ -1,27 +1,40 @@
 import { upgraderRole } from "./upgrader";
-import { BaseWorker, BuilderMemory } from "../types/worker";
+import { Worker } from "types/worker";
+import { BuilderMemory } from "types/roles";
+import { TasksType, WithdrawResourceTask } from "types/tasks";
+import { WorkerRoles } from "types/roles";
+
+type BuilderWorker = Worker<WorkerRoles.BUILDER>;
 
 
-type BaseBuilder = BaseWorker<BuilderMemory>;
+import { ConstructionManager } from "room/operations/construction/constructionManager";
 
 
-export const builderRole = (worker: BaseBuilder) => {
+export const builderRole = (worker: BuilderWorker) => {
+    const memory = worker.memory;
+    const roleMemory = memory.roleMemory as BuilderMemory;
 
-    if(!worker.memory.targetConstructionSiteId) {
-        const closestConstructionSite = worker.pos.findClosestByRange(FIND_MY_CONSTRUCTION_SITES);
-        if(closestConstructionSite) {
-            worker.memory.targetConstructionSiteId = closestConstructionSite.id;
-        }
-        else {
-            upgraderRole(worker);
+    if(!roleMemory.targetConstructionSiteId) {
+        const constructionSites=ConstructionManager.getConstructionSites(worker.room);
+        if(!constructionSites.length) {
+            upgraderRole(worker as Worker);
             return;
         }
+        constructionSites.sort((a,b) => {
+            const aDistance=a.pos.getRangeTo(worker.pos);
+            const bDistance=b.pos.getRangeTo(worker.pos);
+            return aDistance - bDistance;
+        });
+        const closestConstructionSite = constructionSites[0];
+
+        roleMemory.targetConstructionSiteId = closestConstructionSite.id;
+
     }
 
-    if(worker.memory.targetConstructionSiteId) {
-        const constructionSite = Game.getObjectById(worker.memory.targetConstructionSiteId);
+    if(roleMemory.targetConstructionSiteId) {
+        const constructionSite = Game.getObjectById(roleMemory.targetConstructionSiteId);
         if(!constructionSite) {
-            worker.memory.targetConstructionSiteId = undefined;
+            roleMemory.targetConstructionSiteId = undefined;
             return;
         }
         if(constructionSite) {
@@ -30,10 +43,18 @@ export const builderRole = (worker: BaseBuilder) => {
                 worker.moveTo(constructionSite);
             }
             else if(buildResult === ERR_INVALID_TARGET) {
-                worker.memory.targetConstructionSiteId = undefined;
+                roleMemory.targetConstructionSiteId = undefined;
             }
             else if(buildResult === ERR_NOT_ENOUGH_RESOURCES) {
-                worker.memory.isCollectingEnergy = true;
+                const withdrawEnergyTask: WithdrawResourceTask = {
+                    taskType: TasksType.WITHDRAW_RESOURCE,
+                    data: {
+                        withdrawStructureId: 'auto',
+                        resourceType: RESOURCE_ENERGY,
+                    }
+                }
+                memory.task = withdrawEnergyTask;
+                return;
             }
         }
     }

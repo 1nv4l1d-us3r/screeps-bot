@@ -1,75 +1,44 @@
-import { EnergyCollectionMemory } from "./actions";
-import { ResourceMiningMemory } from "./actions";
-
-
-
-
-export enum WorkerRoles{
-    HARVESTER = "harvester",
-    BUILDER = "builder",
-    UPGRADER = "upgrader",
-    MINER = "miner",
-}
-
-
-// -------------- Harvester Memory --------------//
-export type RefillingStructure = StructureExtension|StructureTower|StructureSpawn;
-
-export interface HarvesterMemory extends EnergyCollectionMemory{
-    energyFillingStructureId?: Id<RefillingStructure>;
-}
+import { RoleMemory, WorkerRoles } from "./roles";
+import { Task, TasksType } from "./tasks";
 
 
 // -------------- Builder Memory --------------//
-export interface BuilderMemory extends EnergyCollectionMemory{
-    targetConstructionSiteId?: Id<ConstructionSite>;
-}
 
 
 // -------------- Upgrader Memory --------------//
-export type UpgraderMemory = EnergyCollectionMemory;
+
 
 
 
 // -------------- Miner Memory --------------//
-export interface MinerMemory extends  ResourceMiningMemory {
-    storageStructureType?: STRUCTURE_CONTAINER | STRUCTURE_LINK;
-    storageStructureId?: Id<StructureContainer | StructureLink>;
-}
+
 
 
 
 // -------------- Worker Memory --------------//
-export interface WorkerMemory 
-    extends 
-        BuilderMemory,
-        HarvesterMemory,
-        MinerMemory,
-        UpgraderMemory 
-    {
-        role: WorkerRoles;
-        workerId: string;
-    }
-
-
-// -------------- Base Worker --------------//
-export type BaseWorkerMemory = {}
-
-export type BaseWorker<M extends BaseWorkerMemory> = Creep & {
-    memory: M;
+interface BaseWorkerMemory{}
+export interface WorkerMemory<
+        R extends WorkerRoles=WorkerRoles,
+        T extends TasksType=TasksType
+    >{
+    roleMemory: RoleMemory<R>;
+    task?: Task<T>;
 }
 
-export type Worker = BaseWorker<WorkerMemory>;
 
-
+export interface Worker<
+        R extends WorkerRoles=WorkerRoles,
+        T extends TasksType=TasksType
+    > extends Creep{
+    memory: WorkerMemory<R,T>;
+}
 
 // -------------- Worker Config --------------//
 
-export interface WorkerConfig<M extends CreepMemory>{
-    role: WorkerRoles;
-    spawnPriority: number;
-    roleHandler: (worker: BaseWorker<M>) => void;
+export interface WorkerConfig<R extends WorkerRoles> {
+    role: R;
+    roleHandler: (worker: Worker<R>) => void;
 }
 
 
-export type WorkersConfig = Record<WorkerRoles, WorkerConfig<WorkerMemory>>;
+export type WorkersConfig = Record<WorkerRoles, WorkerConfig<WorkerRoles>>;
