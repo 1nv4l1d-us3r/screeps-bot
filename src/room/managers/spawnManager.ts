@@ -2,7 +2,7 @@ import { getMyRooms, getRoomWorkers } from "utils/commonFunctions";
 import { RoomPlanner } from "room/planners/roomPlanner";
 
 import { Scheduler } from "helpers/Scheduler";
-import { worker } from "node:cluster";
+
 
 export class SpawnManager {
 
@@ -125,7 +125,7 @@ export class SpawnManager {
                 const workerMemory=spawnConfig.memory;
                 const workerBodyParts=isRoomStruggling?spawnConfig.optimalBodyParts:spawnConfig.bodyParts;
                 if(isRoomStruggling) {
-                    console.log('Room is struggling, spawning optimal worker',worker);
+                    console.log('Room is struggling, spawning optimal worker',workerName);
                 }
                 const spawnResult=spawn.spawnCreep(workerBodyParts, workerName, {memory: workerMemory});
                 if(spawnResult === OK) {
