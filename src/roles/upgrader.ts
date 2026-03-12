@@ -1,11 +1,11 @@
-import { collectEnergy, EnergyCollectionMemory } from "../actions/energyCollection";
-import { BaseWorker, UpgraderMemory } from "../types/worker";
+import { TasksType, WithdrawResourceTask } from "types/tasks";
+import { Worker } from "types/worker";
 
 
-type  BaseUpgrader = BaseWorker<UpgraderMemory>;
 
 
-export const upgraderRole = (worker: BaseUpgrader) => {
+export const upgraderRole = (worker: Worker) => {
+    const memory = worker.memory;
 
     const roomController=worker.room.controller
     if(!roomController){
@@ -19,7 +19,14 @@ export const upgraderRole = (worker: BaseUpgrader) => {
         worker.moveTo(roomController)
     }
     if(upgradeResult==ERR_NOT_ENOUGH_RESOURCES){
-        worker.memory.isCollectingEnergy=true
+        const withdrawEnergyTask: WithdrawResourceTask = {
+            taskType: TasksType.WITHDRAW_RESOURCE,
+            data: {
+                withdrawStructureId: 'auto',
+                resourceType: RESOURCE_ENERGY,
+            }
+        }
+        memory.task = withdrawEnergyTask;
     }
     
 }

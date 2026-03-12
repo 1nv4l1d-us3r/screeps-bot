@@ -1,4 +1,4 @@
 
 export * from "./coords";
-export * from "./packedCords";
+export * from "./packedCoords";
 export * from "./spiral";

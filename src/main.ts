@@ -1,26 +1,36 @@
+import { Cleanup } from "./helpers/cleanup";
+import { RoleHandler } from "./roles/roleHander";
+import { TaskHandler } from "tasks/taskHandler";
 
-import { getWorkerHandler } from "./roles";
-import { handleWorkerSpawning } from "./spawning/RoomSpawning";
-import { clearDeadCreepMemory } from "./helpers/cleanup";
 
-import { collectEnergy } from "./actions/energyCollection";
-import { mineResource } from "./actions/resourceMining";
-import { handleIntrusionDetection } from "./roomDefence/intrusionDetection";
-import { handleRoomTowerDefence } from "./roomDefence/towerDefence";
-import { constructStructuresInRoom } from "./roomDesign/constructStructures";
-
-import { testScriptRunner } from "./helpers/testScriptRunner";
-import { initializeOverrides } from "./overrides";
-import { updateWorkerPopulation } from "./spawning/RoomPopulation";
+import { Scheduler } from "./helpers/Scheduler";
 import { CpuProfiler } from "./helpers/cpuProfiler";
+import { testScriptRunner } from "./helpers/testScriptRunner";
 
-// Initialize prototype overrides once at module load
-initializeOverrides();
+import { RoomPlanner } from "./room/planners/roomPlanner";
+import { SpawnManager } from "./room/managers/spawnManager";
+import { ConstructionManager } from "./room/operations/construction/constructionManager";
+import { LogisticsManager } from "room/managers/logisticsManager";
+import { DefenceManager } from "room/managers/defenceManager";
+
+
+// const startRecurringJobs=()=>{
+
+Cleanup.startDeamon();
+RoomPlanner.startDeamon();
+SpawnManager.startDeamon();
+ConstructionManager.startDeamon();
+LogisticsManager.startDeamon();
+DefenceManager.startDeamon();
 
 export const loop = () => {
     if(Memory.logCpuUsage) {
         CpuProfiler.log("Main Loop");
     }
+    Scheduler.run();
+    DefenceManager.handleDefence();
+    console.log('Tick ' + Game.time);
+    
 
 
 
@@ -28,54 +38,18 @@ export const loop = () => {
   
     const myWorkers = Object.values(Game.creeps).filter(worker => worker.my);
     myWorkers.forEach(worker => {
-        if (worker.memory.isCollectingEnergy) {
-            collectEnergy(worker);
+        const memory = worker.memory
+
+        if(memory.task) {
+            TaskHandler.handleTask(worker as any);
             return;
-        }
-        if (worker.memory.isMiningResource) {
-            mineResource(worker);
-            return;
+            
         }
 
-        const workerHandler = getWorkerHandler(worker);
-        workerHandler(worker);
+
+        RoleHandler.handleRole(worker as any);
     });
 
-
-
-    // ------------ Room Task  Handling ------------//
-    const myRooms = Object.values(Game.rooms).filter(room => room.controller?.my);
-
-
-    myRooms.forEach(room => {
-        if(room.memory.hasHostileCreeps) {
-            handleRoomTowerDefence(room);
-        }
-    });
-
-    if (Game.time % 5 === 0) {
-        myRooms.forEach(room => {
-            handleIntrusionDetection(room);
-        });
-    }
-
-    if (Game.time % 10 === 0) {
-        handleWorkerSpawning();
-    }
-
-    if (Game.time % 100 === 0) {
-        myRooms.forEach(room => {
-            constructStructuresInRoom(room);
-        });
-    }
-    if(Game.time % 100 === 0) {
-        updateWorkerPopulation(myRooms);
-    }
-
-    // ------------ Clean Ups ------------//
-    if (Game.time % 100 === 0) {
-        clearDeadCreepMemory();
-    }
 
 
     // ------------ Test Script / Debugging ------------//
@@ -93,3 +67,5 @@ export const loop = () => {
         CpuProfiler.logEnd("Main Loop");
     }
 }
+
+
