@@ -2,6 +2,7 @@ import { getMyRooms, getRoomWorkers } from "utils/commonFunctions";
 import { RoomPlanner } from "room/planners/roomPlanner";
 
 import { Scheduler } from "helpers/Scheduler";
+import { worker } from "node:cluster";
 
 export class SpawnManager {
 
@@ -103,13 +104,13 @@ export class SpawnManager {
         else{
             const populationConfig=roomPlan.populationConfig;
             const totalWorkersCount=populationConfig.totalWorkers;
-            const optimalWorkerCount=totalWorkersCount/3;
+            const optimalWorkerCount=Math.ceil(totalWorkersCount/2);
             const aliveWorkers=getRoomWorkers(room);
             const aliveWorkerCount=aliveWorkers.length;
             const isWorkerCountBelowOptimal=aliveWorkerCount<3 || aliveWorkerCount<optimalWorkerCount;
             const energyAvailable=room.energyAvailable;
-            const optimalEnergy=room.energyCapacityAvailable/3;
-            const isRoomEnergyBelowOptimal=energyAvailable<300 || energyAvailable<optimalEnergy;
+            const optimalEnergy=Math.ceil(room.energyCapacityAvailable/3);
+            const isRoomEnergyBelowOptimal=energyAvailable<500 || energyAvailable<optimalEnergy;
             const isRoomStruggling=isWorkerCountBelowOptimal && isRoomEnergyBelowOptimal;
             while(spawnQueue.length && freeSpawns.length) {
                 const spawn=freeSpawns.shift();
@@ -123,6 +124,9 @@ export class SpawnManager {
                 const workerName=spawnConfig.workerId;
                 const workerMemory=spawnConfig.memory;
                 const workerBodyParts=isRoomStruggling?spawnConfig.optimalBodyParts:spawnConfig.bodyParts;
+                if(isRoomStruggling) {
+                    console.log('Room is struggling, spawning optimal worker',worker);
+                }
                 const spawnResult=spawn.spawnCreep(workerBodyParts, workerName, {memory: workerMemory});
                 if(spawnResult === OK) {
                     spawnQueue.shift();
