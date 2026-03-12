@@ -1,6 +1,5 @@
 import { Worker } from "types/worker";
 import { WorkerRoles } from "types/roles";
-import { MineHaulerMemory } from "types/roles";
 import { Coord } from "types/geometry";
 import { 
     TasksType, 
@@ -8,7 +7,7 @@ import {
     PickupResourceTask,
     TransferResourceTask,
 } from "types/tasks";
-import { LogisticsManager } from "room/managers/logisticsmanager";
+import { LogisticsManager } from "room/managers/logisticsManager";
 
 type MineHaulerWorker = Worker<WorkerRoles.HAULER>;
 

@@ -1,7 +1,7 @@
 import { Worker } from "types/worker";
 import { WorkerRoles } from "types/roles";
 import { TasksType, PickupResourceTask } from "types/tasks";
-import { LogisticsManager } from "room/managers/logisticsmanager";
+import { LogisticsManager } from "room/managers/logisticsManager";
 
 type WithdrawResourceTaskWorker = Worker<WorkerRoles,TasksType.WITHDRAW_RESOURCE>;
 type PickupResourceTaskWorker = Worker<WorkerRoles,TasksType.PICKUP_RESOURCE>;

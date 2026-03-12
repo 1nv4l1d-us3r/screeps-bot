@@ -1,10 +1,9 @@
 
 import { builderRole } from "./builder";
 import { Worker } from "types/worker";
-import { RefillingStructure,HarvesterMemory, BuilderMemory } from "types/roles";
+import { RefillingStructure } from "types/roles";
 import { TasksType, WithdrawResourceTask } from "types/tasks";
 import { WorkerRoles } from "types/roles";
-import { LogisticsManager } from "room/managers/logisticsmanager";
 
 
 // other creeps can inherit from this memory
