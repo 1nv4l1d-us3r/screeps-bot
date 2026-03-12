@@ -62,8 +62,8 @@ export class SpawnManager {
         room.memory.spawning=spawningOperation;
 
         const queueIsEmpty=spawningOperation.spawnQueue.length===0;
-        const lockEpiryDelay=100; // 100 ticks
-        const isLockExpired=!spawningOperation.lockedUntil?true:(spawningOperation.lockedUntil+lockEpiryDelay)<Game.time;
+        // const lockEpiryDelay=100; // 100 ticks
+        const isLockExpired=!spawningOperation.lockedUntil?true:(spawningOperation.lockedUntil)<=Game.time;
 
 
         if(!queueIsEmpty && isLockExpired) {
@@ -140,11 +140,11 @@ export class SpawnManager {
         if(nextSpawnDelay) {
             // lock the spawning for the next spawn delay and reSchedule the job
             spawningOperation.lockedUntil=Game.time+nextSpawnDelay;
-            Scheduler.createOneTimeJob({
-                name: 'ProcessSpawnQueueAfterDelay-' + room.name,
-                delay: nextSpawnDelay,
-                func: () => this.processSpawnQueue(room),
-            })
+            // Scheduler.createOneTimeJob({
+            //     name: 'ProcessSpawnQueueAfterDelay-' + room.name,
+            //     delay: nextSpawnDelay,
+            //     func: () => this.processSpawnQueue(room),
+            // })
         }
 
     
