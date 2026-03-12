@@ -20,9 +20,10 @@ export const harvesterRole = (worker:HarvesterWorker) => {
             FIND_MY_STRUCTURES,
             {
                 filter: (st) =>
-                    (   st.structureType === STRUCTURE_SPAWN
-                        || st.structureType === STRUCTURE_EXTENSION
+                    (  
+                         st.structureType === STRUCTURE_EXTENSION
                         || st.structureType === STRUCTURE_TOWER
+                        // || st.structureType === STRUCTURE_SPAWN
                     )
                     && st.store.energy < st.store.getCapacity('energy')
             }
