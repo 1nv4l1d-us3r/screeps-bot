@@ -24,9 +24,13 @@ export class RoleHandler {
 
     public static handleRole(worker: Worker) {
         const memory = worker.memory;
+        const roleMemory = memory.roleMemory;
+        const role = roleMemory?.role;
+        if(!roleMemory || !role) {
+            worker.say('🛠️❌')
+            return;
+        }
         try {
-            const roleMemory = memory.roleMemory;
-            const role = roleMemory.role;
             const roleHandler = this.roleHandlerMap[role];
             if(!roleHandler) {
                 return;
