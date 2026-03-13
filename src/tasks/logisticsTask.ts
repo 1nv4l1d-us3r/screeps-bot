@@ -7,7 +7,26 @@ type WithdrawResourceTaskWorker = Worker<WorkerRoles,TasksType.WITHDRAW_RESOURCE
 type PickupResourceTaskWorker = Worker<WorkerRoles,TasksType.PICKUP_RESOURCE>;
 type TransferResourceTaskWorker = Worker<WorkerRoles,TasksType.TRANSFER_RESOURCE>;
 
+
+type WithdrawStructure = StructureContainer|StructureStorage |StructureSpawn;
+
 export class LogisticsTaskHandler {
+
+
+
+
+    public static getUsedCapacity(structure:WithdrawStructure,resourceType:ResourceConstant){
+
+        if(structure.structureType === STRUCTURE_SPAWN) {
+            if(resourceType === RESOURCE_ENERGY) {
+                return structure.store.energy;
+            }
+            return 0;
+        }
+
+        return structure.store.getUsedCapacity(resourceType);
+
+    }
 
     public static handlePickupResourceTask(worker: PickupResourceTaskWorker) {
         const memory = worker.memory;
@@ -59,9 +78,18 @@ export class LogisticsTaskHandler {
                 memory.task = undefined;
                 return;
             }
+            const resourceExist=LogisticsTaskHandler.getUsedCapacity(withdrawStructure,taskData.resourceType)>0;
+            if(!resourceExist) {
+                if(worker.pos.inRangeTo(withdrawStructure.pos,1)) {
+                    worker.moveTo(worker.room.controller)
+                }
+                return;
+            }
             const withdrawResult = worker.withdraw(withdrawStructure, taskData.resourceType);
+           
             if(withdrawResult === ERR_NOT_IN_RANGE) {
                 worker.moveTo(withdrawStructure);
+                return;
             }
             else if(
                 withdrawResult === ERR_INVALID_TARGET 
