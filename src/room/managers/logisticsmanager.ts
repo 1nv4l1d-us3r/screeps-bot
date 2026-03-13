@@ -14,27 +14,30 @@ interface FindStructureAtTargetParams<S extends StructureConstant>{
 type FindStructureAtTargetResult<S extends StructureConstant> = Structure<S> | undefined;
 
 
-export class LogisticsManager {
 
+
+
+
+export class LogisticsService {
 
     public static startDeamon(){
         Scheduler.createRecurringJob({
             name: 'LogisticsManagerDeamon',
             interval: 300,
-            func: LogisticsManager.startRoomLogisticsCheckingJobs,
+            func: LogisticsService.scheduleStorageProviderIdsUpdate,
         })
     }
 
-
-    public static startRoomLogisticsCheckingJobs() {
+    public static scheduleStorageProviderIdsUpdate() {
         Scheduler.createOneTimeJobs({
             list: getMyRooms(),
             nameGenerator: (room) => 'UpdateStorageProviderIds-' + room.name,
             delay: 1,
             offset: 2,
-            func: (room) => LogisticsManager.updateStorageProviderIds(room),
+            func: (room) => LogisticsService.updateStorageProviderIds(room),
         })
     }
+
 
     public static updateStorageProviderIds(room: Room) {
         console.log(`Updating storage provider ids for room ${room.name}`)
@@ -110,8 +113,7 @@ export class LogisticsManager {
 
 
 
-
-    // util functions
+        // utility function
     private static findStructureAtTarget<S extends StructureConstant>(
         params: FindStructureAtTargetParams<S>
     ): FindStructureAtTargetResult<S> {
@@ -129,20 +131,31 @@ export class LogisticsManager {
     }
 
 
+   
 
-    public static getResourceWithdrawStructures(room: Room,resourceType: ResourceConstant) {
+
+}
+
+
+export class LogisticsManager extends LogisticsService{
+
+
+    private static getLogisticsOps(room: Room) {
         let logistics=room.memory.logistics
         if(!logistics) {
             LogisticsManager.updateStorageProviderIds(room)
             logistics=room.memory.logistics
-            if(!logistics) {
-                console.error(`Failed to get logistics for room  ${room.name} , skipping storage providers check`);
-                return []
-            }
         }
+        return logistics
+    }
 
+
+    public static getResourceWithdrawStructures(room: Room,resourceType: ResourceConstant) {
+        let logistics=LogisticsManager.getLogisticsOps(room)
+        if(!logistics) {
+            return []
+        }
         const storageProviders:(StructureStorage|StructureContainer|StructureSpawn)[]=[]
-
 
         logistics.storageProviderIds.forEach(providerId => {
             const provider=Game.getObjectById(providerId)
@@ -168,31 +181,61 @@ export class LogisticsManager {
     }
 
 
-    public static getResourceTransferStructures(room: Room) {
-        let logistics=room.memory.logistics
+    public static getResourceStorageStructures(room: Room,resourceType: ResourceConstant) {
+        let logistics=LogisticsManager.getLogisticsOps(room)
         if(!logistics) {
-            LogisticsManager.updateStorageProviderIds(room)
-            logistics=room.memory.logistics
-            if(!logistics) {
-                console.error(`Failed to get logistics for room  ${room.name} , skipping storage providers check`);
-                return []
-            }
+            return []
         }
         const storageProviders:(StructureStorage|StructureContainer|StructureSpawn)[]=[]
         logistics.storageProviderIds.forEach(providerId => {
             const provider=Game.getObjectById(providerId)
             if(!provider) {
                 LogisticsManager.updateStorageProviderIds(room)
-                return 
+                return  
             }
-            if(provider.structureType === STRUCTURE_SPAWN) {
+            if(provider.structureType === STRUCTURE_SPAWN  && resourceType === RESOURCE_ENERGY) {
                 storageProviders.push(provider)
                 return; 
             }
-            if(provider.store.getUsedCapacity() < provider.store.getCapacity()) {
+            if(provider.store.getUsedCapacity(resourceType) < provider.store.getCapacity(resourceType)) {
                 storageProviders.push(provider)
             }
         })
         return storageProviders
+    }
+
+
+
+
+    private static TOWER_FILL_THRESHOLD=0.8;
+
+    private static getEnergyConsumerPriority(structure: Structure) {
+        if(structure.structureType === STRUCTURE_SPAWN || structure.structureType === STRUCTURE_EXTENSION) {
+            return 0;
+        }
+       
+        return 1;
+    }
+
+
+    public static getEnergyConsumers(room: Room) {
+
+        const roomStructures=room.find(FIND_STRUCTURES)
+
+        const energyConsumers = roomStructures.filter(
+            st =>
+                (
+                    (  st.structureType === STRUCTURE_SPAWN
+                        || st.structureType === STRUCTURE_EXTENSION
+                    ) && st.store.energy < st.store.getCapacity('energy')
+                )
+                ||
+                (
+                    st.structureType === STRUCTURE_TOWER
+                    && st.store.getUsedCapacity('energy') > LogisticsManager.TOWER_FILL_THRESHOLD * st.store.getCapacity('energy')
+                )
+        ) as (StructureSpawn|StructureExtension|StructureTower)[]
+
+        return energyConsumers;
     }
 }

@@ -6,6 +6,7 @@ import {
     WithdrawResourceTask, 
     PickupResourceTask,
     TransferResourceTask,
+    Task,
 } from "types/tasks";
 import { LogisticsManager } from "room/managers/logisticsManager";
 
@@ -40,86 +41,73 @@ export class MineHauler {
         const roleMemory=memory.roleMemory
 
 
-        if(roleMemory.storageCoord && !roleMemory.withdrawStructureId) {
-            const withdrawStructure = this.findWithdrawStructure(worker, roleMemory.storageCoord);
-            if(withdrawStructure) {
-                roleMemory.withdrawStructureId = withdrawStructure.id;
-                roleMemory.droppedResourceId=undefined
-            }
-            else {
-                roleMemory.storageCoord = undefined;
-                roleMemory.withdrawStructureId = undefined;
-            }
-        }
 
-    
+        if(!roleMemory.withdrawStructureId && !roleMemory.droppedResourceId) {
 
-        if(!roleMemory.storageCoord && !roleMemory.droppedResourceId) {
             const droppedResource = this.findDroppedResource(worker, roleMemory.miningCoord);
             if(droppedResource) {
                 roleMemory.droppedResourceId = droppedResource.id;
             }
+            else if( roleMemory.storageCoord){
+                const withdrawStructure = this.findWithdrawStructure(worker, roleMemory.storageCoord);
+                if(withdrawStructure) {
+                    roleMemory.withdrawStructureId = withdrawStructure.id;
+                }
+            }
         }
-
 
         if(worker.store.getUsedCapacity() < worker.store.getCapacity()) {
 
-            if(roleMemory.withdrawStructureId) {
-                const withdrawStructure = Game.getObjectById(roleMemory.withdrawStructureId);
-                if(!withdrawStructure) {
-                    roleMemory.withdrawStructureId = undefined;
-                    return;
-                }
-                const withdrawEnergyTask: WithdrawResourceTask = {
-                    taskType: TasksType.WITHDRAW_RESOURCE,
-                    data: {
-                        withdrawStructureId: roleMemory.withdrawStructureId as Id<StructureContainer|StructureStorage>,
-                        resourceType: roleMemory.resourceType,
-                    }
-                }
-                worker.memory.task = withdrawEnergyTask;
-                return 
-            }
-            else if(roleMemory.droppedResourceId) {
+            let haulerTask: Task<TasksType.PICKUP_RESOURCE> | Task<TasksType.WITHDRAW_RESOURCE> | undefined;
+
+            if(roleMemory.droppedResourceId){
                 const droppedResource = Game.getObjectById(roleMemory.droppedResourceId);
                 if(!droppedResource) {
                     roleMemory.droppedResourceId = undefined;
                     return;
                 }
+
                 const pickupResourceTask: PickupResourceTask = {
                     taskType: TasksType.PICKUP_RESOURCE,
                     data: {
                         droppedResourceId: roleMemory.droppedResourceId as Id<Resource>,
                     }
                 }
-                worker.memory.task = pickupResourceTask;
-                return;
+                haulerTask = pickupResourceTask;
             }
-        }
-
-        if(worker.store.getFreeCapacity() === 0) {
-            
-            const storageStructures = LogisticsManager.getResourceTransferStructures(worker.room);
-            if(storageStructures.length === 0) {
-                worker.say('yawn!')
-                return;
-            }
-            storageStructures.sort((a,b)=>a.pos.getRangeTo(worker.pos)-b.pos.getRangeTo(worker.pos))
-            const closestStorageStructure = storageStructures[0]
-            if(closestStorageStructure) {
-                const transferResourceTask: TransferResourceTask = {
-                    taskType: TasksType.TRANSFER_RESOURCE,
+            else if(roleMemory.withdrawStructureId){
+                const withdrawStructure = Game.getObjectById(roleMemory.withdrawStructureId);
+                if(!withdrawStructure) {
+                    roleMemory.withdrawStructureId = undefined;
+                    return;
+                }
+                const withdrawResourceTask: WithdrawResourceTask = {
+                    taskType: TasksType.WITHDRAW_RESOURCE,
                     data: {
-                        targetStructureId: closestStorageStructure.id,
+                        withdrawStructureId: roleMemory.withdrawStructureId as Id<StructureContainer|StructureStorage>,
                         resourceType: roleMemory.resourceType,
                     }
                 }
-                worker.memory.task = transferResourceTask;
-                return;
+                haulerTask = withdrawResourceTask;
+            }
+            if(haulerTask) {
+                worker.memory.task = haulerTask;
             }
         }
 
 
+
+        if(worker.store.getFreeCapacity() === 0) {
+            
+            const storageTask: TransferResourceTask = {
+                taskType: TasksType.TRANSFER_RESOURCE,
+                data: {
+                    targetStructureId: 'auto',
+                    resourceType: roleMemory.resourceType
+                }
+            }
+            worker.memory.task = storageTask;
+        }
 
 
     }

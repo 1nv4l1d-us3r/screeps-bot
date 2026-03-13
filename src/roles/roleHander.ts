@@ -7,6 +7,7 @@ import { WorkerRoles } from "types/roles";
 import { WorkersConfig, Worker } from "../types/worker";
 
 import { MineHauler } from "./hauler";
+import { Filler } from "./filler";
 
 
 
@@ -19,7 +20,8 @@ export class RoleHandler {
         [WorkerRoles.HARVESTER]: harvesterRole,
         [WorkerRoles.UPGRADER]: upgraderRole,
         [WorkerRoles.BUILDER]: builderRole,
-        [WorkerRoles.HAULER]: (worker: Worker<WorkerRoles.HAULER>) => MineHauler.handleMineHaulerRole(worker),
+        [WorkerRoles.HAULER]:  MineHauler.handleMineHaulerRole,
+        [WorkerRoles.FILLER]: Filler.handleFillerRole,
     };
 
     public static handleRole(worker: Worker) {

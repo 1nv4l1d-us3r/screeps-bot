@@ -1,7 +1,7 @@
 // global way of test Scripts execution
 import { CpuProfiler } from "./cpuProfiler";
 
-
+import { testRoomPlanning } from "testScripts/roomPlanning";
 
 
 export const testScriptRunner = () => {
@@ -25,6 +25,7 @@ export const testScriptRunner = () => {
 }
 
 const testScripts:Record<string, () => void> = {
+    'roomPlanning': testRoomPlanning,
 }
 
 
@@ -32,7 +33,7 @@ const testScripts:Record<string, () => void> = {
 
 /*
 
-Memory.testScript='roomDesign'
+Memory.testScript='roomPlanning'
 
 */
 

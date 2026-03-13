@@ -2,6 +2,7 @@ import { Coord } from "./geometry";
 import { MiningSiteConfig } from "./room/planner";
 
 export enum WorkerRoles{
+    FILLER = "filler",
     HARVESTER = "harvester",
     BUILDER = "builder",
     UPGRADER = "upgrader",
@@ -15,6 +16,10 @@ export type RefillingStructure = StructureExtension|StructureTower|StructureSpaw
 
 interface BaseRoleMemory {
     role: WorkerRoles;
+}
+
+export interface FillterMemory extends BaseRoleMemory {
+    role: WorkerRoles.FILLER;
 }
 
 export interface HarvesterMemory extends BaseRoleMemory {
@@ -52,7 +57,8 @@ export interface MineHaulerMemory extends BaseRoleMemory {
 
 
 export type RoleMemory<R extends WorkerRoles> = (
-    HarvesterMemory
+     FillterMemory
+    | HarvesterMemory
     | BuilderMemory
     | MinerMemory
     | MineHaulerMemory

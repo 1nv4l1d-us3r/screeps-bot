@@ -109,7 +109,22 @@ export class LogisticsTaskHandler {
         const memory = worker.memory;
         const task = memory.task;
         const taskData = task.data;
-        const targetStructureId = taskData.targetStructureId;
+        let targetStructureId=taskData.targetStructureId;
+
+
+        if(targetStructureId === 'auto') {
+            const targetStructure = LogisticsManager.getResourceStorageStructures(worker.room,taskData.resourceType);
+            if(!targetStructure.length) {
+                memory.task = undefined;
+                return;
+            }
+            targetStructure.sort((a,b)=>a.pos.getRangeTo(worker.pos)-b.pos.getRangeTo(worker.pos))
+            const closestTargetStructure = targetStructure.shift();
+            targetStructureId = closestTargetStructure.id;
+            taskData.targetStructureId = targetStructureId;
+        }
+
+
         const targetStructure = Game.getObjectById(targetStructureId);
         if(!targetStructure) {
             memory.task = undefined;

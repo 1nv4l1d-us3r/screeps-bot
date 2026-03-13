@@ -35,7 +35,7 @@ export interface WithdrawResourceTask{
 export interface TransferResourceTask{
     taskType: TasksType.TRANSFER_RESOURCE;
     data: {
-        targetStructureId: Id<StructureContainer|StructureStorage|StructureSpawn|StructureExtension>;
+        targetStructureId: (Id<StructureContainer|StructureStorage|StructureSpawn|StructureExtension |StructureTower> | 'auto');
         resourceType: ResourceConstant;
     }
 }
