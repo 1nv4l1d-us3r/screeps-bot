@@ -232,7 +232,7 @@ export class LogisticsManager extends LogisticsService{
                 ||
                 (
                     st.structureType === STRUCTURE_TOWER
-                    && st.store.getUsedCapacity('energy') > LogisticsManager.TOWER_FILL_THRESHOLD * st.store.getCapacity('energy')
+                    && st.store.getUsedCapacity('energy') < LogisticsManager.TOWER_FILL_THRESHOLD * st.store.getCapacity('energy')
                 )
         ) as (StructureSpawn|StructureExtension|StructureTower)[]
 

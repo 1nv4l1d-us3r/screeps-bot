@@ -44,12 +44,12 @@ export class MineHauler {
 
         if(!roleMemory.withdrawStructureId && !roleMemory.droppedResourceId) {
 
-            const droppedResource = this.findDroppedResource(worker, roleMemory.miningCoord);
+            const droppedResource = MineHauler.findDroppedResource(worker, roleMemory.miningCoord);
             if(droppedResource) {
                 roleMemory.droppedResourceId = droppedResource.id;
             }
             else if( roleMemory.storageCoord){
-                const withdrawStructure = this.findWithdrawStructure(worker, roleMemory.storageCoord);
+                const withdrawStructure = MineHauler.findWithdrawStructure(worker, roleMemory.storageCoord);
                 if(withdrawStructure) {
                     roleMemory.withdrawStructureId = withdrawStructure.id;
                 }
