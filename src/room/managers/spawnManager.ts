@@ -122,12 +122,12 @@ export class SpawnManager {
                     break;
                 }
                 const workerName=spawnConfig.workerId;
-                const workerMemory=spawnConfig.memory;
+                const workerMemory=spawnConfig.roleMemory;
                 const workerBodyParts=isRoomStruggling?spawnConfig.optimalBodyParts:spawnConfig.bodyParts;
                 if(isRoomStruggling) {
                     console.log('Room is struggling, spawning optimal worker',workerName);
                 }
-                const spawnResult=spawn.spawnCreep(workerBodyParts, workerName, {memory: workerMemory});
+                const spawnResult=spawn.spawnCreep(workerBodyParts, workerName, {memory: {roleMemory: workerMemory}});
                 if(spawnResult === OK) {
                     spawnQueue.shift();
                 }
