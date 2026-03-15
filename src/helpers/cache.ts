@@ -23,12 +23,12 @@ export const TickCache = <I,O>(key:(input:I)=>string):CacheDecorator<I,O>=>{
         descriptor
     )=>{
         const originalMethod=descriptor.value as (input:I)=>O
-        const cacheMethod=(input:I):O=>{
+        const cacheMethod=function(this:any,input:I):O{
             const cacheKey=key(input)+Game.time
             if(cacheKey===lastCacheKey && cacheValue!==undefined) {
                 return cacheValue
             }
-            cacheValue=originalMethod.call(target,input)
+            cacheValue=originalMethod.call(this,input)
             lastCacheKey=cacheKey
             return cacheValue
         }
