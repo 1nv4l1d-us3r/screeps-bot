@@ -1,5 +1,5 @@
 import { Scheduler } from "helpers/Scheduler";
-import { getMyRooms } from "utils/commonFunctions";
+import { CommonFunctions } from "utils/commonFunctions";
 
 export class DefenceManager {
 
@@ -16,7 +16,7 @@ export class DefenceManager {
 
 
     public static startIntrusionDetectionJobs=()=>{
-        getMyRooms().forEach(
+        CommonFunctions.getMyRooms().forEach(
             (room:Room,index:number) => {
                 Scheduler.createOneTimeJob({
                     name: `IntrusionDetection-${room.name}`,
@@ -58,7 +58,7 @@ export class DefenceManager {
 
 
     public static handleDefence(){
-        getMyRooms().forEach(
+        CommonFunctions.getMyRooms().forEach(
             room=>{
                 if(room.memory.hasHostileCreeps) {
                     this.handleRoomDefence(room);

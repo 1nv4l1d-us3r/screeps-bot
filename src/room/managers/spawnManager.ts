@@ -1,4 +1,4 @@
-import { getMyRooms, getRoomWorkers } from "utils/commonFunctions";
+import { CommonFunctions } from "utils/commonFunctions";
 import { RoomPlanner } from "room/planners/roomPlanner";
 
 import { Scheduler } from "helpers/Scheduler";
@@ -18,7 +18,7 @@ export class SpawnManager {
     }
 
     private static startRoomPopulationJobs(){
-        const myRooms=getMyRooms();
+        const myRooms=CommonFunctions.getMyRooms();
         Scheduler.createOneTimeJobs({
             list: myRooms,
             nameGenerator: (room) => 'PopulationCheck-' + room.name,
@@ -46,7 +46,7 @@ export class SpawnManager {
         }
        console.log(`Populating spawn queue for room ${room.name}`);
         
-        const roomWorkers=getRoomWorkers(room);
+        const roomWorkers=CommonFunctions.getRoomWorkers(room);
 
         const aliveWorkerCount=roomWorkers.length;
 
@@ -105,7 +105,7 @@ export class SpawnManager {
             const populationConfig=roomPlan.populationConfig;
             const totalWorkersCount=populationConfig.totalWorkers;
             const optimalWorkerCount=Math.ceil(totalWorkersCount/2);
-            const aliveWorkers=getRoomWorkers(room);
+            const aliveWorkers=CommonFunctions.getRoomWorkers(room);
             const aliveWorkerCount=aliveWorkers.length;
             const isWorkerCountBelowOptimal=aliveWorkerCount<3 || aliveWorkerCount<optimalWorkerCount;
             const energyAvailable=room.energyAvailable;

@@ -7,7 +7,7 @@ import { PopulationPlanner } from "./populationPlanner";
 import { Coord } from "../../types/geometry";
 
 import { Scheduler } from "../../helpers/Scheduler";
-import { getMyRooms } from "../../utils/commonFunctions";
+import { CommonFunctions } from "../../utils/commonFunctions";
 
 import { LogisticsPlanner } from "./logisticsPlanner";
 
@@ -32,7 +32,7 @@ export class RoomPlanner {
     */
     private static startRoomPlannerJobs(){
 
-        const myRooms=getMyRooms();
+        const myRooms=CommonFunctions.getMyRooms();
 
         Scheduler.createOneTimeJobs({
             list: myRooms,

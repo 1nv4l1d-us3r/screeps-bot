@@ -1,10 +1,9 @@
 import { PackedCoord } from "types/geometry";
 import { RoomPlanner } from "../planners/roomPlanner";
 import { packCoord } from "../../geometry/packedCoords";
-import { getMyRooms } from "utils/commonFunctions";
 import { Scheduler } from "helpers/Scheduler";
 import { TickCache } from "helpers/cache";
-
+import { CommonFunctions } from "utils/commonFunctions";
 
 
 
@@ -33,7 +32,7 @@ export class LogisticsService {
 
     public static scheduleStorageProviderIdsUpdate() {
         Scheduler.createOneTimeJobs({
-            list: getMyRooms(),
+            list: CommonFunctions.getMyRooms(),
             nameGenerator: (room) => 'UpdateLogisticsOps-' + room.name,
             delay: 1,
             offset: 2,

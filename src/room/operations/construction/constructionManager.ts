@@ -7,7 +7,7 @@ import { RoomPlanner } from "../../planners/roomPlanner";
 import { Coord, PackedCoord } from "../../../types/geometry";
 import { ConstructionRequest } from "../../../types/room/managers";
 import { Scheduler } from "helpers/Scheduler";
-import { getMyRooms } from "utils/commonFunctions";
+import { CommonFunctions } from "utils/commonFunctions";
 
 import { TickCache } from "helpers/cache";
 
@@ -43,7 +43,7 @@ export class ConstructionManager {
     
     public static startConstructionJobs(){
         Scheduler.createOneTimeJobs({
-            list: getMyRooms(),
+            list: CommonFunctions.getMyRooms(),
             nameGenerator: (room) => 'ConstructionQueuePopulation-' + room.name,
             delay:1,
             offset:2,
