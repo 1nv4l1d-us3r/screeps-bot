@@ -26,7 +26,7 @@ export interface PickupResourceTask{
 export interface WithdrawResourceTask{
     taskType: TasksType.WITHDRAW_RESOURCE;
     data: {
-        withdrawStructureId?: (Id<StructureContainer|StructureStorage |StructureSpawn> | 'auto');
+        withdrawStructureId?: (Id<StructureContainer|StructureStorage |StructureSpawn |StructureLink> | 'auto');
         resourceType: ResourceConstant;
     }
 }

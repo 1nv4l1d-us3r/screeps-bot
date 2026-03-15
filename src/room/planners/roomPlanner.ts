@@ -9,6 +9,8 @@ import { Coord } from "../../types/geometry";
 import { Scheduler } from "../../helpers/Scheduler";
 import { getMyRooms } from "../../utils/commonFunctions";
 
+import { LogisticsPlanner } from "./logisticsPlanner";
+
 
 export class RoomPlanner {
 
@@ -64,6 +66,9 @@ export class RoomPlanner {
 
         const populationConfig = PopulationPlanner.getPopulationConfigForRoom(room, miningConfig);
         newRoomPlan.populationConfig = populationConfig;
+
+        const logisticsConfig=LogisticsPlanner.getLogisticsConfig(room, baseCenterCoord, miningConfig);
+        newRoomPlan.logisticsConfig = logisticsConfig;
 
 
         

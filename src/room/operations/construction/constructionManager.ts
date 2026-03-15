@@ -1,4 +1,4 @@
-import { packCoord,getAlternateSpiralCoords } from "../../../geometry";
+import { packCoord,getAlternateSpiralCoords, unpackCoord } from "../../../geometry";
 import { getMaxBuildableStructuresByLevel } from "../../../utils/gameConstants";
 
 import {  getTowerConstructionCoords } from "./towers";
@@ -185,6 +185,38 @@ export class ConstructionManager {
             occupiedPackedCoordsSet.add(packCoord(storageCoord));
         }
         // ------------------ X ---------------------//
+
+
+        // ----------------- Upgrader Container Construction ----------------//
+
+        const logisticsConfig=roomPlan.logisticsConfig;
+
+        const {upgraderStoragePackedCoord,upgraderStorageType}=logisticsConfig;
+
+        if(upgraderStorageType) {
+
+            const upgraderContainerExists=roomStructureMap.get(upgraderStoragePackedCoord) === upgraderStorageType;
+            const constructionSiteExists=roomConstructionSiteMap.get(upgraderStoragePackedCoord) === upgraderStorageType;
+
+            if(!upgraderContainerExists && !constructionSiteExists) {
+                const upgraderContainerConstructionRequest:ConstructionRequest={
+                    coord:unpackCoord(upgraderStoragePackedCoord),
+                    structureType:upgraderStorageType,
+                    replaceExisting:true,
+                }
+                constructionQueue.push(upgraderContainerConstructionRequest);
+                occupiedPackedCoordsSet.add(upgraderStoragePackedCoord);
+            }
+        }
+
+
+
+        // ------------------ X ---------------------//
+
+
+
+
+
 
         const miningConfig=roomPlan.miningConfig
 

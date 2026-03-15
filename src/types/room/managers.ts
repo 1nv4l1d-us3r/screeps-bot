@@ -10,6 +10,8 @@ export interface SpawningOperation{
 
 export interface LogisticsOperation{
     storageProviderIds:Id<StructureStorage | StructureContainer | StructureSpawn>[];
+    upgraderStorageId?:Id<StructureContainer | StructureLink>;
+    upgraderStorageType?:STRUCTURE_CONTAINER | STRUCTURE_LINK;
 }
 
 export interface ConstructionRequest{

@@ -31,15 +31,15 @@ export class LogisticsService {
     public static scheduleStorageProviderIdsUpdate() {
         Scheduler.createOneTimeJobs({
             list: getMyRooms(),
-            nameGenerator: (room) => 'UpdateStorageProviderIds-' + room.name,
+            nameGenerator: (room) => 'UpdateLogisticsOps-' + room.name,
             delay: 1,
             offset: 2,
-            func: (room) => LogisticsService.updateStorageProviderIds(room),
+            func: (room) => LogisticsService.updateLogisticsOperations(room),
         })
     }
 
 
-    public static updateStorageProviderIds(room: Room) {
+    public static updateLogisticsOperations(room: Room) {
         console.log(`Updating storage provider ids for room ${room.name}`)
         let roomPlan=room.memory.roomPlan
         
@@ -104,8 +104,28 @@ export class LogisticsService {
 
         const storageProviderIds=stroageStructures.map(structure => structure.id)
 
+
+
+        let upgraderStorageId:Id<StructureContainer | StructureLink> | undefined=undefined;
+        let upgraderStorageType:STRUCTURE_CONTAINER | STRUCTURE_LINK | undefined=undefined;
+        const upgraderStorageConfig=roomPlan.logisticsConfig
+
+        if(upgraderStorageConfig.upgraderStorageType) {
+            const upgraderStorage=this.findStructureAtTarget({
+                structureType: upgraderStorageConfig.upgraderStorageType,
+                packedCoord: upgraderStorageConfig.upgraderStoragePackedCoord,
+                structureMap
+            }) as StructureContainer | StructureLink | undefined
+            if(upgraderStorage) {
+                upgraderStorageId=upgraderStorage.id
+                upgraderStorageType=upgraderStorageConfig.upgraderStorageType
+            }
+        }
+
         room.memory.logistics={
-            storageProviderIds
+            storageProviderIds,
+            upgraderStorageId,
+            upgraderStorageType
         }
 
 
@@ -143,7 +163,7 @@ export class LogisticsManager extends LogisticsService{
     private static getLogisticsOps(room: Room) {
         let logistics=room.memory.logistics
         if(!logistics) {
-            LogisticsManager.updateStorageProviderIds(room)
+            LogisticsManager.updateLogisticsOperations(room)
             logistics=room.memory.logistics
         }
         return logistics
@@ -160,7 +180,7 @@ export class LogisticsManager extends LogisticsService{
         logistics.storageProviderIds.forEach(providerId => {
             const provider=Game.getObjectById(providerId)
             if(!provider) {
-                LogisticsManager.updateStorageProviderIds(room)
+                LogisticsManager.updateLogisticsOperations(room)
                 return storageProviders
             }
             if(
@@ -190,7 +210,7 @@ export class LogisticsManager extends LogisticsService{
         logistics.storageProviderIds.forEach(providerId => {
             const provider=Game.getObjectById(providerId)
             if(!provider) {
-                LogisticsManager.updateStorageProviderIds(room)
+                LogisticsManager.updateLogisticsOperations(room)
                 return  
             }
             if(provider.structureType === STRUCTURE_SPAWN  && resourceType === RESOURCE_ENERGY) {
@@ -204,38 +224,71 @@ export class LogisticsManager extends LogisticsService{
         return storageProviders
     }
 
+    
+    public static getUpgraderStorage(room: Room) {
+        let logistics=LogisticsManager.getLogisticsOps(room)
+        if(!logistics || !logistics.upgraderStorageId) {
+            return 
+        }
+        const upgraderStorage=Game.getObjectById(logistics.upgraderStorageId)
+        return upgraderStorage
+    }
+
 
 
 
     private static TOWER_FILL_THRESHOLD=0.8;
+    private static UPGRADER_STORAGE_FILL_THRESHOLD=0.8;
 
-    private static getEnergyConsumerPriority(structure: Structure) {
-        if(structure.structureType === STRUCTURE_SPAWN || structure.structureType === STRUCTURE_EXTENSION) {
-            return 0;
-        }
-       
-        return 1;
-    }
+
 
 
     public static getEnergyConsumers(room: Room) {
+        let logistics=LogisticsManager.getLogisticsOps(room)
+        if(!logistics) {
+            return []
+        }
 
         const roomStructures=room.find(FIND_STRUCTURES)
 
-        const energyConsumers = roomStructures.filter(
-            st =>
-                (
-                    (  st.structureType === STRUCTURE_SPAWN
-                        || st.structureType === STRUCTURE_EXTENSION
-                    ) && st.store.energy < st.store.getCapacity('energy')
-                )
-                ||
-                (
-                    st.structureType === STRUCTURE_TOWER
-                    && st.store.getUsedCapacity('energy') < LogisticsManager.TOWER_FILL_THRESHOLD * st.store.getCapacity('energy')
-                )
-        ) as (StructureSpawn|StructureExtension|StructureTower)[]
+        const extensionsAndSpawns: (StructureExtension|StructureSpawn)[]=[]
 
-        return energyConsumers;
+        const otherEnergyConsumers: (StructureTower|StructureContainer)[]=[]
+
+
+        roomStructures.forEach(structure => {
+            if(
+                    (structure.structureType === STRUCTURE_EXTENSION 
+                    || structure.structureType === STRUCTURE_SPAWN
+                    ) && structure.store.energy < structure.store.getCapacity('energy')
+                ) {
+                extensionsAndSpawns.push(structure)
+            }
+            else if(
+                    structure.structureType === STRUCTURE_TOWER 
+                    && structure.store.getUsedCapacity('energy') < LogisticsManager.TOWER_FILL_THRESHOLD * structure.store.getCapacity('energy')
+            ) {
+                otherEnergyConsumers.push(structure)
+
+            }
+        })
+
+        if(extensionsAndSpawns.length) {
+            return extensionsAndSpawns
+        }
+        else{
+
+            if(logistics.upgraderStorageType===STRUCTURE_CONTAINER) {
+                const upgraderStorage=Game.getObjectById(logistics.upgraderStorageId)
+                if(upgraderStorage && upgraderStorage.structureType === STRUCTURE_CONTAINER){
+                    if(upgraderStorage.store.getUsedCapacity('energy') < LogisticsManager.UPGRADER_STORAGE_FILL_THRESHOLD * upgraderStorage.store.getCapacity('energy')) {
+                        otherEnergyConsumers.push(upgraderStorage)
+                    }
+                }
+            }
+
+            return otherEnergyConsumers
+
+        }
     }
 }

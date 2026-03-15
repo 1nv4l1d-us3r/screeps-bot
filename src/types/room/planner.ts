@@ -1,4 +1,4 @@
-import { Coord } from "../geometry";
+import { Coord, PackedCoord } from "../geometry";
 import { Worker, WorkerMemory } from "../worker";
 
 
@@ -25,15 +25,12 @@ export interface MiningSiteConfig{
 }
 
 
-interface MinerMemory{
-    resourceId: Id<Source | Mineral>;
-    resourceType: RESOURCE_ENERGY | MineralConstant;
-    miningCoord: Coord;
-    storageType?: STRUCTURE_CONTAINER | STRUCTURE_LINK;
-    storageCoord?: Coord;
-    storageStructureId?: Id<StructureContainer | StructureLink>;
-}
 
+// -------------- Logistics Configuration --------------//
+export interface LogisticsConfig {
+    upgraderStoragePackedCoord: PackedCoord;
+    upgraderStorageType?: STRUCTURE_CONTAINER | STRUCTURE_LINK;
+}
 
 
 
@@ -64,5 +61,6 @@ export interface PopulationConfig{
 export interface RoomPlan{
     baseConfig: BaseConfig;
     miningConfig: MiningSiteConfig[];
+    logisticsConfig: LogisticsConfig;
     populationConfig: PopulationConfig;
 }

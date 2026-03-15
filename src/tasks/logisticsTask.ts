@@ -8,7 +8,7 @@ type PickupResourceTaskWorker = Worker<WorkerRoles,TasksType.PICKUP_RESOURCE>;
 type TransferResourceTaskWorker = Worker<WorkerRoles,TasksType.TRANSFER_RESOURCE>;
 
 
-type WithdrawStructure = StructureContainer|StructureStorage |StructureSpawn;
+type WithdrawStructure = StructureContainer|StructureStorage |StructureSpawn |StructureLink;
 
 export class LogisticsTaskHandler {
 
