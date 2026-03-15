@@ -3,6 +3,9 @@ import { RoomPlanner } from "../planners/roomPlanner";
 import { packCoord } from "../../geometry/packedCoords";
 import { getMyRooms } from "utils/commonFunctions";
 import { Scheduler } from "helpers/Scheduler";
+import { TickCache } from "helpers/cache";
+
+
 
 
 
@@ -243,6 +246,7 @@ export class LogisticsManager extends LogisticsService{
 
 
 
+    @TickCache((room: Room) => room.name)
     public static getEnergyConsumers(room: Room) {
         let logistics=LogisticsManager.getLogisticsOps(room)
         if(!logistics) {

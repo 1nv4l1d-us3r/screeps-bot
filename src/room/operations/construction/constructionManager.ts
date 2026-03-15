@@ -9,6 +9,8 @@ import { ConstructionRequest } from "../../../types/room/managers";
 import { Scheduler } from "helpers/Scheduler";
 import { getMyRooms } from "utils/commonFunctions";
 
+import { TickCache } from "helpers/cache";
+
 
 
 
@@ -317,6 +319,7 @@ export class ConstructionManager {
 
 
 
+    @TickCache((room: Room) => room.name)
     public static getConstructionSites(room: Room){
         const ConstructionOperation=room.memory.construction
         if(!ConstructionOperation) {

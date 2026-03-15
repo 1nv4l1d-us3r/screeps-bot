@@ -1,23 +1,27 @@
+import { tickCachedFn } from "helpers/cache";
 
-export const getMyRooms=()=>{
-    const myRooms:Room[]=[]
-
-    for(let roomName in Game.rooms){
-        const room=Game.rooms[roomName]
-        if(room.controller?.my){
+export const getMyRooms = tickCachedFn('myRooms', (): Room[] => {
+    const myRooms: Room[] = []
+    for (let roomName in Game.rooms) {
+        const room = Game.rooms[roomName]
+        if (room.controller?.my) {
             myRooms.push(room)
         }
     }
     return myRooms
-}
+})
 
-export const getAllWorkers=()=>{
+
+
+export const getAllWorkers=tickCachedFn('allWorkers', (): Creep[] => {
     return Object.values(Game.creeps)
-}
+})
 
-export const getRoomWorkers=(room:Room)=>{
+
+
+export const getMyWorkers=tickCachedFn('myWorkers', (): Creep[] => {
     return getAllWorkers()
         .filter(
-                creep => creep.room.name === room.name
+                creep => creep.my
             )
-}
+})
