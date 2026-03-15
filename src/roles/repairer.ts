@@ -1,10 +1,12 @@
 import { Worker } from "types/worker";
 import { WorkerRoles } from "types/roles";
 import { RepairableStructure, RepairTask, TasksType, WithdrawResourceTask } from "types/tasks";
-import { upgraderRole } from "./upgrader";
 
+import { TickCache } from "helpers/cache";
 
+import { builderRole } from "./builder";
 
+type BuilderWorker = Worker<WorkerRoles.BUILDER>;
 type RepairerWorker = Worker<WorkerRoles.REPAIRER>;
 
 export class Repairer {
@@ -18,18 +20,18 @@ export class Repairer {
 
     public static handleRepairerRole(worker: RepairerWorker) {
 
-        if(worker.store.getUsedCapacity()>0) {
 
-            const repairTask = this.findRepairTaskData(worker);
-            if(repairTask) {
-                worker.memory.task = repairTask;
-            }
-            else {
-                upgraderRole(worker);
-            }
-
+        const repairTasks = Repairer.findRepairTaskData(worker.room);
+        if(!repairTasks){
+            builderRole(worker as unknown as BuilderWorker);
+            return;
         }
-        if(worker.store.getUsedCapacity()==0) {
+        
+        if(worker.store.getUsedCapacity()>0) {
+            worker.memory.task = repairTasks;
+            return;
+        }
+        else {
             const withdrawEnergyTask: WithdrawResourceTask = {
                 taskType: TasksType.WITHDRAW_RESOURCE,
                 data: {
@@ -38,6 +40,7 @@ export class Repairer {
                 }
             }
             worker.memory.task = withdrawEnergyTask;
+            return;
         }
     }
 
@@ -45,8 +48,8 @@ export class Repairer {
 
 
 
-    private static findRepairTaskData(worker: RepairerWorker) {
-        const room = worker.room;
+    @TickCache((room: Room) => room.name)
+    private static findRepairTaskData(room: Room) {
         const roomStructures=room.find(FIND_STRUCTURES);
         const repairWallsAndRamparts:(StructureWall|StructureRampart)[] = [];
         const repairContainers:StructureContainer[] = [];
@@ -58,20 +61,18 @@ export class Repairer {
             if(structureHits==structureMaxHits){
                 continue;
             }
-            if(
-                (structure.structureType === STRUCTURE_WALL
-                || structure.structureType === STRUCTURE_RAMPART
-                )
-                    && structureHits < Repairer.WALL_REPAIR_HITS) {
-                repairWallsAndRamparts.push(structure);
+            if(structure.structureType === STRUCTURE_WALL || structure.structureType === STRUCTURE_RAMPART){
+
+                if(structureHits < Repairer.WALL_REPAIR_HITS) {
+                    repairWallsAndRamparts.push(structure);
+                }
             }
-            else if(
-                structure.structureType === STRUCTURE_CONTAINER
-                && structureHits < Repairer.CONTAINER_REPAIR_THRESHOLD * structure.hits
-            ){
-                repairContainers.push(structure);
+            else if(structure.structureType === STRUCTURE_CONTAINER){
+                if(structureHits < Repairer.CONTAINER_REPAIR_THRESHOLD * structureMaxHits) {
+                    repairContainers.push(structure);
+                }
             }
-            else if(structure) {
+            else {
                 otherStructures.push(structure);
             }
         }
@@ -82,24 +83,28 @@ export class Repairer {
         if(repairWallsAndRamparts.length>0) {
             repairStructures=repairWallsAndRamparts;
             repairHits=Repairer.WALL_REPAIR_HITS
+            console.log('walls and ramparts found');
         }
-        if(repairContainers.length>0) {
+        else if(repairContainers.length>0) {
             repairStructures=repairContainers;
             repairHits=Repairer.CONTAINER_REPAIR_THRESHOLD * Repairer.CONTAINER_MAX_HITS;
+            console.log('repairHits',repairHits);
+            console.log('containers found');
         }
-        if(otherStructures.length>0) {
+        else if(otherStructures.length>0) {
             repairStructures=otherStructures;
             repairHits=undefined;
+            console.log('other structures found');
         }
         if(repairStructures.length===0) {
             return
         }
-        repairStructures.sort((a,b)=>a.pos.getRangeTo(worker.pos)-b.pos.getRangeTo(worker.pos))
-        const closestStructure = repairStructures.shift();
+        repairStructures.sort((a,b)=>a.hits-b.hits)
+        const leastHitPointStructure = repairStructures.shift();
         const repairTask:RepairTask = {
             taskType: TasksType.REPAIR,
             data: {
-                repairStructureId: closestStructure.id,
+                repairStructureId: leastHitPointStructure.id,
                 repairHits: repairHits,
             }
         }

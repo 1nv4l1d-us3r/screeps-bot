@@ -41,7 +41,7 @@ export class SimpleTaskHandler {
             memory.task = undefined;
             return 
         }
-        if(taskData.repairHits && repairStructure.hits >= repairStructure.hits) {
+        if(taskData.repairHits && repairStructure.hits >= taskData.repairHits) {
             memory.task = undefined;
             return;
         }

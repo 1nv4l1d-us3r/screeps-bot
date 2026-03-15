@@ -18,14 +18,14 @@ export class PopulationPlanner {
 
         const miningWorkerSpawnConfigs = this.getMiningWorkerSpawnConfigs(room,miningConfig);
         const fillerSpawnConfigs = this.getFillerSpawnConfigs(room);
-        const builderSpawnConfigs = this.getBuilderSpawnConfigs(room);
         const repairerSpawnConfigs = this.getRepairerSpawnConfigs(room);
+        const builderSpawnConfigs = this.getBuilderSpawnConfigs(room);
 
 
         const workerSpawnConfigs:WorkerSpawnConfig[] =miningWorkerSpawnConfigs
             .concat(fillerSpawnConfigs)
+            .concat(repairerSpawnConfigs)
             .concat(builderSpawnConfigs)
-            .concat(repairerSpawnConfigs);
 
         const populationConfig: PopulationConfig = {
             totalWorkers: workerSpawnConfigs.length,
@@ -119,7 +119,7 @@ export class PopulationPlanner {
             fillerCount = 2;
 
         const fillerOptimalBodyParts=[CARRY,MOVE];
-        const fillerMaxBodyParts=14;
+        const fillerMaxBodyParts=20;
         const fillerBodyParts=this.getAutoScaledBodyParts(fillerOptimalBodyParts,room.energyCapacityAvailable,fillerMaxBodyParts);
         const fillerSpawnConfigs: WorkerSpawnConfig[] = [];
 
@@ -144,7 +144,7 @@ export class PopulationPlanner {
     
     private static getBuilderSpawnConfigs = (room: Room) => {
         const roomLevel = room.controller?.level || 0;
-        let builderCount=4;
+        let builderCount=3;
         const commonWorkerBodyParts=[WORK,CARRY,MOVE,MOVE];
         const commonWorkerMaxParts=16;
         const autoScaledBodyParts=this.getAutoScaledBodyParts(commonWorkerBodyParts,room.energyCapacityAvailable,commonWorkerMaxParts);
