@@ -1,4 +1,4 @@
-import {  BuilderMemory, HarvesterMemory, RoleMemory, WorkerRoles } from "types/roles";
+import {  BuilderMemory, RoleMemory, WorkerRoles } from "types/roles";
 import { Worker,WorkerMemory } from "../../types/worker";
 
 
@@ -16,16 +16,16 @@ export class PopulationPlanner {
     public static getPopulationConfigForRoom = (room: Room,miningConfig: MiningSiteConfig[]) => {
 
 
-        const miningWorkerConfigs = this.getMiningWorkerSpawnConfigs(room,miningConfig);
-        const fillerWorkerConfigs = this.getFillerSpawnConfigs(room);
-        const builderWorkerConfigs = this.getBuilderSpawnConfigs(room);
+        const miningWorkerSpawnConfigs = this.getMiningWorkerSpawnConfigs(room,miningConfig);
+        const fillerSpawnConfigs = this.getFillerSpawnConfigs(room);
+        const repairerSpawnConfigs = this.getRepairerSpawnConfigs(room);
+        const builderSpawnConfigs = this.getBuilderSpawnConfigs(room);
 
 
-        const workerSpawnConfigs = [
-            ...miningWorkerConfigs, 
-            ...fillerWorkerConfigs,
-            ...builderWorkerConfigs
-        ];
+        const workerSpawnConfigs:WorkerSpawnConfig[] =miningWorkerSpawnConfigs
+            .concat(fillerSpawnConfigs)
+            .concat(repairerSpawnConfigs)
+            .concat(builderSpawnConfigs)
 
         const populationConfig: PopulationConfig = {
             totalWorkers: workerSpawnConfigs.length,
@@ -59,7 +59,7 @@ export class PopulationPlanner {
             minerBodyParts.push(...autoScaledBodyParts);
 
             const minerId = `M-${room.name}-${miningSite.resourceId}` as Id<Worker>;
-            const minerMemory: MinerMemory = {
+            const minerRoleMemory: RoleMemory<WorkerRoles.MINER> = {
                 role: WorkerRoles.MINER,
                 resourceId: miningSite.resourceId,
                 resourceType: miningSite.resourceType,
@@ -72,9 +72,7 @@ export class PopulationPlanner {
                 workerId: minerId,
                 bodyParts: minerBodyParts,
                 optimalBodyParts: minerOptimalBodyParts,
-                memory: {
-                    roleMemory: minerMemory,
-                }
+                roleMemory: minerRoleMemory,
             }
             mineWorkerSpawnConfigs.push(minerSpawnConfig);
 
@@ -85,7 +83,7 @@ export class PopulationPlanner {
                 const haulerBodyParts=this.getAutoScaledBodyParts(haulerOptimalBodyParts,roomSpawnBudget,haulerMaxBodyParts);
 
                 const mineHaulerId = `M-H-${room.name}-${miningSite.resourceId}` as Id<Worker>;
-                const mineHaulerMemory: MineHaulerMemory = {
+                const mineHaulerRoleMemory: RoleMemory<WorkerRoles.HAULER> = {
                     role: WorkerRoles.HAULER,
                     resourceType: miningSite.resourceType,
                     miningCoord: miningSite.miningCoord,
@@ -95,9 +93,7 @@ export class PopulationPlanner {
                     workerId: mineHaulerId,
                     bodyParts: haulerBodyParts,
                     optimalBodyParts: haulerOptimalBodyParts,
-                    memory: {
-                        roleMemory: mineHaulerMemory,
-                    }
+                    roleMemory: mineHaulerRoleMemory,
                 }
                 mineWorkerSpawnConfigs.push(mineHaulerSpawnConfig);
             }
@@ -123,23 +119,21 @@ export class PopulationPlanner {
             fillerCount = 2;
 
         const fillerOptimalBodyParts=[CARRY,MOVE];
-        const fillerMaxBodyParts=14;
+        const fillerMaxBodyParts=20;
         const fillerBodyParts=this.getAutoScaledBodyParts(fillerOptimalBodyParts,room.energyCapacityAvailable,fillerMaxBodyParts);
         const fillerSpawnConfigs: WorkerSpawnConfig[] = [];
 
         for(let i = 0; i < fillerCount; i++) {
             const fillerId = `F-${room.name}-${i}` as Id<Worker>;
 
-            const fillerMemory: RoleMemory<WorkerRoles.FILLER> = {
+            const fillerRoleMemory: RoleMemory<WorkerRoles.FILLER> = {
                 role: WorkerRoles.FILLER,
             }
             const fillerSpawnConfig: WorkerSpawnConfig = {
                 workerId: fillerId,
                 bodyParts: fillerBodyParts,
                 optimalBodyParts: fillerOptimalBodyParts,
-                memory: {
-                    roleMemory: fillerMemory,
-                }
+                roleMemory: fillerRoleMemory,
             }
             fillerSpawnConfigs.push(fillerSpawnConfig);
         }
@@ -150,7 +144,7 @@ export class PopulationPlanner {
     
     private static getBuilderSpawnConfigs = (room: Room) => {
         const roomLevel = room.controller?.level || 0;
-        let builderCount=4;
+        let builderCount=3;
         const commonWorkerBodyParts=[WORK,CARRY,MOVE,MOVE];
         const commonWorkerMaxParts=16;
         const autoScaledBodyParts=this.getAutoScaledBodyParts(commonWorkerBodyParts,room.energyCapacityAvailable,commonWorkerMaxParts);
@@ -158,20 +152,49 @@ export class PopulationPlanner {
         const builderSpawnConfigs: WorkerSpawnConfig[] = [];
         for(let i = 0; i < builderCount; i++) {
             const builderId = `B-${room.name}-${i}` as Id<Worker>;
-            const builderMemory: BuilderMemory = {
+            const builderRoleMemory: RoleMemory<WorkerRoles.BUILDER> = {
                 role: WorkerRoles.BUILDER,
             }
             const builderSpawnConfig: WorkerSpawnConfig = {
                 workerId: builderId,
                 bodyParts: autoScaledBodyParts,
                 optimalBodyParts: commonWorkerBodyParts,
-                memory: {
-                    roleMemory: builderMemory,
-                }
+                roleMemory: builderRoleMemory,
             }
             builderSpawnConfigs.push(builderSpawnConfig);
         }
         return builderSpawnConfigs;
+    }
+
+
+    private static getRepairerSpawnConfigs = (room: Room) => {
+        const roomLevel = room.controller?.level || 0;
+        let repairerCount:number;
+        if(roomLevel < 3){
+            return [];
+        }
+        else {
+            repairerCount = 1;
+            // add more if required
+        }
+        const commonWorkerBodyParts=[WORK,CARRY,MOVE,MOVE];
+        const commonWorkerMaxParts=16;
+        const autoScaledBodyParts=this.getAutoScaledBodyParts(commonWorkerBodyParts,room.energyCapacityAvailable,commonWorkerMaxParts);
+        const repairerSpawnConfigs: WorkerSpawnConfig[] = [];
+        for(let i = 0; i < repairerCount; i++) {
+            const repairerId = `R-${room.name}-${i}` as Id<Worker>;
+            const repairerRoleMemory: RoleMemory<WorkerRoles.REPAIRER> = {
+                role: WorkerRoles.REPAIRER,
+            }
+            const repairerSpawnConfig: WorkerSpawnConfig = {
+                workerId: repairerId,
+                bodyParts: autoScaledBodyParts,
+                optimalBodyParts: commonWorkerBodyParts,
+                roleMemory: repairerRoleMemory,
+            }
+            repairerSpawnConfigs.push(repairerSpawnConfig);
+        }
+        return repairerSpawnConfigs;
     }
 
     
@@ -217,141 +240,3 @@ export class PopulationPlanner {
 
 
 
-
-// export const getRoomPopulation = (room: Room) => {
-
-//     const roomWorkerSpawnConfigs: WorkerSpawnConfig[] = [];
-
-//         // using a record to store the worker configs for each worker role.
-//         // makes sure all the worker roles are accounted for.
-//     const roomWorkerConfigs:Record<WorkerRoles, WorkerSpawnConfig[]>={
-//         [WorkerRoles.HARVESTER]: getHarvestersSpawnDetails(room),
-//         [WorkerRoles.UPGRADER]: getUpgradersSpawnDetails(room),
-//         [WorkerRoles.BUILDER]: getBuildersSpawnDetails(room),
-//         [WorkerRoles.MINER]: getMinersSpawnDetails(room),
-//     }
-
-//     for(const workerRole of Object.values(WorkerRoles)) {
-//         const workerSpawnConfigs = roomWorkerConfigs[workerRole];
-//         roomWorkerSpawnConfigs.push(...workerSpawnConfigs);
-//     }
-//     const roomPopulation: RoomPopulation = {
-//         totalWorkers: roomWorkerSpawnConfigs.length,
-//         workerSpawnConfigs: roomWorkerSpawnConfigs
-//     }
-//     return roomPopulation;
-// }
-
-// type WorkerMemoryWithoutId = Omit<WorkerMemory, 'workerId'>;
-/*
-generic function to get the spawn configuration for a simple worker.
-creates a array of worker configs for the given number of workers.
-*/
-// interface GetSimpleWorkerSpawnDetailsParams {
-//     room:Room
-//     bodyParts: BodyPartConstant[]
-//     optimalBodyParts: BodyPartConstant[]
-//     memory: WorkerMemoryWithoutId
-//     workerCount: number
-// }
-
-// const getSimpleWorkerSpawnConfig=(params: GetSimpleWorkerSpawnDetailsParams) => {
-
-//     const {room,bodyParts,optimalBodyParts,memory,workerCount} = params;
-//     return Array(workerCount).fill(0).map((_,index)=>{
-//         const workerId = `${memory.role}-${room.name}-${index}` as Id<Worker>;
-//         return {
-//             workerId: workerId,
-//             bodyParts: bodyParts,
-//             optimalBodyParts: optimalBodyParts,
-//             memory: {
-//                 ...memory,
-//                 workerId: workerId
-//             }
-//         }
-//     });
-// }
-
-
-
-// /*
-// Get the spawn configuration for the harvesters in the room.
-// replicate the same body parts for all the harvesters.
-// */
-// const getHarvestersSpawnDetails = (room: Room) => {
-//     const roomLevel = room.controller?.level || 0;
-//     const harvesterCount = roomLevel == 1 ? 6 : 4;
-//     const roomSpawnBudget = room.energyCapacityAvailable;
-//     const harvesterOptimalBodyParts=[WORK,CARRY,MOVE,MOVE];
-//     const harvesterAutoScaleBodyParts=[WORK,CARRY,MOVE,MOVE];
-//     const harvesterBody=roomLevel==1 ?harvesterOptimalBodyParts:getAutoScaledBodyParts(harvesterAutoScaleBodyParts,roomSpawnBudget,15);
-//     const harvesterSpawnDetails = getSimpleWorkerSpawnConfig({
-//         room,
-//         bodyParts: harvesterBody,
-//         optimalBodyParts: harvesterOptimalBodyParts,
-//         memory: {
-//             role: WorkerRoles.HARVESTER
-//         },
-//         workerCount: harvesterCount
-//     });
-//     return harvesterSpawnDetails;
-// }
-
-
-
-// const getUpgradersSpawnDetails = (room: Room) => {
-//     const roomLevel = room.controller?.level || 0;
-//     let upgraderCount = roomLevel == 1 ? 1 : Math.min(1,roomLevel);
-//     const roomSpawnBudget = room.energyCapacityAvailable;
-//     const upgraderOptimalBodyParts=[WORK,CARRY,MOVE,MOVE];
-//     const upgraderAutoScaleBodyParts=[WORK,CARRY,MOVE,MOVE];
-//     const upgraderBody=roomLevel==1 ?upgraderOptimalBodyParts:getAutoScaledBodyParts(upgraderAutoScaleBodyParts,roomSpawnBudget,15);
-//     const upgraderSpawnDetails = getSimpleWorkerSpawnConfig({
-//         room,
-//         bodyParts: upgraderBody,
-//         optimalBodyParts: upgraderOptimalBodyParts,
-//         memory: {
-//             role: WorkerRoles.UPGRADER
-//         },
-//         workerCount: upgraderCount
-//     });
-//     return upgraderSpawnDetails;
-// }
-
-
-
-
-// const getBuildersSpawnDetails = (room: Room) => {
-//     const roomLevel = room.controller?.level || 0;
-//     let builderCount = roomLevel == 1 ? 1 : Math.min(1,roomLevel);
-//     const roomSpawnBudget = room.energyCapacityAvailable;
-//     const builderOptimalBodyParts=[WORK,CARRY,MOVE,MOVE];
-//     const builderAutoScaleBodyParts=[WORK,CARRY,MOVE,MOVE];
-//     const builderBody=roomLevel==1 ?builderOptimalBodyParts:getAutoScaledBodyParts(builderAutoScaleBodyParts,roomSpawnBudget,15);
-//     const builderSpawnDetails = getSimpleWorkerSpawnConfig({
-//         room,
-//         bodyParts: builderBody,
-//         optimalBodyParts: builderOptimalBodyParts,
-//         memory: {
-//             role: WorkerRoles.BUILDER
-//         },
-//         workerCount: builderCount
-//     });
-//     return builderSpawnDetails;
-// }
-
-
-
-
-
-
-/*
-Get the number of work parts required to mine the source.
-based on the source energy capacity and the energy regeneration rate.
-*/
-// const getWorkPartsRequiredForSourceMining = (source: Source) => {
-//     const sourceEnergyCapacity=source.energyCapacity;
-//     const energyRegenTime=300; // 300 ticks per energy generation
-//     const regenRate= Math.ceil(sourceEnergyCapacity/energyRegenTime);
-//     return Math.ceil(regenRate/HARVEST_POWER);
-// }

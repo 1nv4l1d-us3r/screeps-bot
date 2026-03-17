@@ -6,6 +6,7 @@ export enum TasksType{
     WITHDRAW_RESOURCE = "WITHDRAW_RESOURCE",
     TRANSFER_RESOURCE = "TRANSFER_RESOURCE",
     MINE_RESOURCE = "MINE_RESOURCE",
+    REPAIR= "REPAIR",
     // BUILD_STRUCTURE = "BUILD_STRUCTURE",
 }
 
@@ -49,11 +50,24 @@ export interface ResourceMiningTask{
 }
 
 
+export type RepairableStructure = StructureContainer|StructureRampart|StructureWall|StructureRoad | AnyStructure;
+export interface RepairTask{
+    taskType: TasksType.REPAIR;
+    data: {
+        repairStructureId: Id<RepairableStructure>;
+        repairHits?: number;
+    }
+}
+
+
+
+
 export type Task<T extends TasksType> =(
-    | ResourceMiningTask 
     | PickupResourceTask
     | TransferResourceTask
     | WithdrawResourceTask
+    | ResourceMiningTask 
+    | RepairTask
 ) & {taskType:T};
 
 

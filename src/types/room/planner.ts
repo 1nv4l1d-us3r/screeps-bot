@@ -1,5 +1,7 @@
+import { RoleMemory } from "types/roles";
 import { Coord, PackedCoord } from "../geometry";
-import { Worker, WorkerMemory } from "../worker";
+import { Worker } from "../worker";
+import { WorkerRoles } from "types/roles";
 
 
 
@@ -46,7 +48,7 @@ export interface WorkerSpawnConfig{
     workerId: Id<Worker>;
     bodyParts: BodyPartConstant[];
     optimalBodyParts: BodyPartConstant[];
-    memory: WorkerMemory;
+    roleMemory: RoleMemory<WorkerRoles>
 }
 
 export interface PopulationConfig{

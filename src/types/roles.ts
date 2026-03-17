@@ -3,15 +3,12 @@ import { MiningSiteConfig } from "./room/planner";
 
 export enum WorkerRoles{
     FILLER = "filler",
-    HARVESTER = "harvester",
     BUILDER = "builder",
     UPGRADER = "upgrader",
+    REPAIRER = "repairer",
     MINER = "miner",
     HAULER = "hauler",
 }
-
-// -------------- Harvester Memory --------------//
-export type RefillingStructure = StructureExtension|StructureTower|StructureSpawn;
 
 
 interface BaseRoleMemory {
@@ -22,9 +19,8 @@ export interface FillterMemory extends BaseRoleMemory {
     role: WorkerRoles.FILLER;
 }
 
-export interface HarvesterMemory extends BaseRoleMemory {
-    role: WorkerRoles.HARVESTER;
-    energyFillingStructureId?: Id<RefillingStructure>;
+export interface RepairerMemory extends BaseRoleMemory {
+    role: WorkerRoles.REPAIRER;
 }
 
 
@@ -58,7 +54,7 @@ export interface MineHaulerMemory extends BaseRoleMemory {
 
 export type RoleMemory<R extends WorkerRoles> = (
      FillterMemory
-    | HarvesterMemory
+    | RepairerMemory
     | BuilderMemory
     | MinerMemory
     | MineHaulerMemory

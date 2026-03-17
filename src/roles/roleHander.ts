@@ -1,5 +1,4 @@
 
-import { harvesterRole } from "./harvester";
 import { upgraderRole, } from "./upgrader";
 import { builderRole} from "./builder";
 import { minerRole } from "./miner";
@@ -8,6 +7,7 @@ import { WorkersConfig, Worker } from "../types/worker";
 
 import { MineHauler } from "./hauler";
 import { Filler } from "./filler";
+import { Repairer } from "./repairer";
 
 
 
@@ -17,11 +17,11 @@ import { Filler } from "./filler";
 export class RoleHandler {
     private static roleHandlerMap: Record<WorkerRoles, (worker: Worker) => void> = {
         [WorkerRoles.MINER]: minerRole,
-        [WorkerRoles.HARVESTER]: harvesterRole,
         [WorkerRoles.UPGRADER]: upgraderRole,
         [WorkerRoles.BUILDER]: builderRole,
         [WorkerRoles.HAULER]:  MineHauler.handleMineHaulerRole,
         [WorkerRoles.FILLER]: Filler.handleFillerRole,
+        [WorkerRoles.REPAIRER]: Repairer.handleRepairerRole,
     };
 
     public static handleRole(worker: Worker) {
