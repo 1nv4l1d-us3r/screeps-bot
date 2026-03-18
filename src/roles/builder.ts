@@ -7,7 +7,7 @@ import { WorkerRoles } from "types/roles";
 type BuilderWorker = Worker<WorkerRoles.BUILDER>;
 
 
-import { ConstructionManager } from "room/operations/construction/constructionManager";
+import { ConstructionManager } from "room/managers/constructionManager";
 
 
 export const builderRole = (worker: BuilderWorker) => {

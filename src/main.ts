@@ -9,7 +9,7 @@ import { testScriptRunner } from "./helpers/testScriptRunner";
 
 import { RoomPlanner } from "./room/planners/roomPlanner";
 import { SpawnManager } from "./room/managers/spawnManager";
-import { ConstructionManager } from "./room/operations/construction/constructionManager";
+import { ConstructionManager } from "./room/managers/constructionManager";
 import { LogisticsManager } from "room/managers/logisticsManager";
 import { DefenceManager } from "room/managers/defenceManager";
 

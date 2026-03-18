@@ -1,18 +1,24 @@
-import { packCoord,getAlternateSpiralCoords, unpackCoord } from "../../../geometry";
-import { getMaxBuildableStructuresByLevel } from "../../../utils/gameConstants";
+import { packCoord,getAlternateSpiralCoords, unpackCoord } from "../../geometry";
+import { getMaxBuildableStructuresByLevel } from "../../utils/gameConstants";
+import { RoomPlanner } from "../planners/roomPlanner";
 
-import {  getTowerConstructionCoords } from "./towers";
-import { RoomPlanner } from "../../planners/roomPlanner";
+import { isCoordReachable, spiralCoordsGenerator, findMinDistanceCoord } from "../../geometry";
 
-import { Coord, PackedCoord } from "../../../types/geometry";
-import { ConstructionRequest } from "../../../types/room/managers";
+import { Coord, PackedCoord } from "../../types/geometry";
+import { ConstructionRequest } from "../../types/room/managers";
 import { Scheduler } from "helpers/Scheduler";
 import { CommonFunctions } from "utils/commonFunctions";
 
 import { TickCache } from "helpers/cache";
 
 
-
+interface GetTowerConstructionCoordsParams {
+    baseCenterCoord: Coord;
+    roomTerrain: RoomTerrain;
+    occupiedPackedCoordsSet: Set<PackedCoord>;
+    existingTowerCoords: Coord[];
+    towersNeededCount: number;
+}
 
 const constructionPriorityMap: Partial<Record<BuildableStructureConstant, number>>={
     [STRUCTURE_SPAWN]:1,
@@ -276,7 +282,7 @@ export class ConstructionManager {
             const assumedTowerSites=[...towers,...constructingTowers];
             const assumedTowerCoords:Coord[]=assumedTowerSites.map(tower => ({x:tower.pos.x, y:tower.pos.y}));
 
-            const towersConstructionCoords=getTowerConstructionCoords({
+            const towersConstructionCoords=ConstructionManager.getTowerConstructionCoords({
                 baseCenterCoord:primarySpawnCoord,
                 roomTerrain,
                 occupiedPackedCoordsSet,
@@ -314,6 +320,63 @@ export class ConstructionManager {
         }
     }
 
+
+
+    private static getTowerConstructionCoords = (params: GetTowerConstructionCoordsParams): Coord[] => {
+
+        const {
+            baseCenterCoord,
+            roomTerrain,
+            occupiedPackedCoordsSet,
+            existingTowerCoords,
+            towersNeededCount,
+        } = params;
+    
+    
+        const minDistanceBetweenTowers = 10;
+    
+    
+        const foundCoords:Coord[] = [];
+        
+        const yieldFunction = (coord: Coord, index: number) => {
+            if(index%2!==0) {
+                return false;
+            }
+            if(occupiedPackedCoordsSet.has(packCoord(coord))) {
+                return false;
+            }
+            if(roomTerrain.get(coord.x, coord.y) === TERRAIN_MASK_WALL) {
+                occupiedPackedCoordsSet.add(packCoord(coord));
+                return false;
+            }
+    
+            let closestExistingTowerDistance=Infinity;
+    
+            if(existingTowerCoords.length) {
+                const { minDistance } = findMinDistanceCoord({ center: coord, targets: existingTowerCoords });
+                closestExistingTowerDistance = minDistance;
+    
+            }
+    
+            if(closestExistingTowerDistance < minDistanceBetweenTowers) {
+                return false;
+            }
+            if(!isCoordReachable({ coord, occupiedPackedCoordsSet })) {
+                occupiedPackedCoordsSet.add(packCoord(coord));
+                return false;
+            }
+            foundCoords.push(coord);
+            existingTowerCoords.push(coord);
+            return foundCoords.length>=towersNeededCount;
+        }
+    
+        spiralCoordsGenerator({
+            center:baseCenterCoord,
+            yieldFunction,
+            spiralStepSize:3, // sparse search
+        });
+        return foundCoords;
+    }
 
     
 
