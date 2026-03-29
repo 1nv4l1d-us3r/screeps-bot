@@ -4,6 +4,7 @@
   "description": "my bot program for the screeps game",
   "main": "index.js",
   "scripts": {
+    "run-ts": "node --loader ts-node/esm",
     "build": "rollup -c",
     "push-main": "rollup -c --environment DEST:main",
     "push-pserver": "rollup -c --environment DEST:pserver",
