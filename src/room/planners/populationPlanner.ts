@@ -56,16 +56,17 @@ export class PopulationPlanner {
 
         const haulerCount=roomLevel<3?2:1;
 
-        const minerOptimalBodyParts=[WORK,WORK,MOVE];
       
         const mineWorkerSpawnConfigs: WorkerSpawnConfig[] = [];
         const roomSpawnBudget = room.energyCapacityAvailable;
       
         miningConfig.forEach(miningSite => {
+            let minerOptimalBodyParts: BodyPartConstant[]=[WORK,MOVE];
 
             let minerBodyParts: BodyPartConstant[]=[MOVE];
             if(miningSite.storageType===STRUCTURE_LINK) {
                 minerBodyParts.push(CARRY);
+                minerOptimalBodyParts.push(CARRY);
                 // add storage if using link storage
             }
             const spentBudget=this.getBodyPartsCost(minerBodyParts);
