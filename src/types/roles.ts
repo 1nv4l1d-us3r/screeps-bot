@@ -8,6 +8,7 @@ export enum WorkerRoles{
     REPAIRER = "repairer",
     MINER = "miner",
     HAULER = "hauler",
+    RECYCLER = "recycler",
 }
 
 
@@ -56,6 +57,11 @@ export interface MineHaulerMemory extends BaseRoleMemory {
 }
 
 
+export interface RecyclerMemory extends BaseRoleMemory {
+    role: WorkerRoles.RECYCLER;
+    ruinId?: Id<Ruin>;
+}
+
 
 export type RoleMemory<R extends WorkerRoles> = (
      FillterMemory
@@ -64,6 +70,7 @@ export type RoleMemory<R extends WorkerRoles> = (
     | BuilderMemory
     | MinerMemory
     | MineHaulerMemory
+    | RecyclerMemory
 ) & {
     role: R;
 }

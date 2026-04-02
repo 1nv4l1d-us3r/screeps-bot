@@ -25,6 +25,7 @@ export class PopulationPlanner {
         const repairerSpawnConfigs = this.getRepairerSpawnConfigs(room);
         const builderSpawnConfigs = this.getBuilderSpawnConfigs(room);
         const upgraderSpawnConfigs = this.getUpgraderSpawnConfigs(room);
+        const recyclerSpawnConfigs = this.getRecyclerSpawnConfigs(room);
 
 
         const workerSpawnConfigs:WorkerSpawnConfig[] =miningWorkerSpawnConfigs
@@ -32,6 +33,7 @@ export class PopulationPlanner {
             .concat(repairerSpawnConfigs)
             .concat(builderSpawnConfigs)
             .concat(upgraderSpawnConfigs)
+            .concat(recyclerSpawnConfigs)
 
 
         const criticalWorkers=workerSpawnConfigs.filter(spawnConfig => spawnConfig.isCriticalWorker)
@@ -236,7 +238,41 @@ export class PopulationPlanner {
         }
         return upgraderSpawnConfigs;
     }
-    
+
+
+
+    private static getRecyclerSpawnConfigs = (room: Room) => {
+        
+        const roomRuins = room.find(FIND_RUINS);
+
+        const valuableRuins = roomRuins.filter(ruin => {
+            if(!ruin.store) {
+                return false;
+            }
+            const hasEnergy = ruin.store.getUsedCapacity(RESOURCE_ENERGY) > 10000;
+            const isLasting = ruin.ticksToDecay > 1000;
+            return hasEnergy && isLasting;
+        });
+        if(valuableRuins.length === 0) {
+            return [];
+        }
+
+        const recyclerBodyParts=[CARRY,MOVE];
+        const recyclerMaxBodyParts=20;
+        const autoScaledBodyParts=this.getAutoScaledBodyParts(recyclerBodyParts,room.energyCapacityAvailable,recyclerMaxBodyParts);
+
+        const recyclerId = `RCY-${room.name}` as Id<Worker>;
+        const recyclerRoleMemory: RoleMemory<WorkerRoles.RECYCLER> = {
+            role: WorkerRoles.RECYCLER,
+        }
+        const recyclerSpawnConfig: WorkerSpawnConfig = {
+            workerId: recyclerId,
+            bodyParts: autoScaledBodyParts,
+            optimalBodyParts: recyclerBodyParts,
+            roleMemory: recyclerRoleMemory,
+        }
+        return [recyclerSpawnConfig];
+    }
 
 
 
