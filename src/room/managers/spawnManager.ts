@@ -11,7 +11,7 @@ export class SpawnManager {
 
         Scheduler.createRecurringJob({
             name: 'SpawnManagerDeamon',
-            interval: 15,
+            interval: 20,
             func: SpawnManager.startRoomPopulationJobs,
         })
 
@@ -51,9 +51,9 @@ export class SpawnManager {
         const aliveWorkerCount=roomWorkers.length;
 
         const needWorkerReconciliation=aliveWorkerCount<populationConfig.totalWorkers
-        const alreadySpawning=spawningOperation.spawnQueue.length>0;
+        const spawningLocked=spawningOperation.lockedUntil>Game.time;
 
-        if(needWorkerReconciliation && !alreadySpawning) {
+        if(needWorkerReconciliation && !spawningLocked) {
             const aliveWorkerIds=new Set(roomWorkers.map(worker => worker.name));
             const toBeSpawnedWorkerConfigs=populationConfig.workerSpawnConfigs.filter(spawnConfig => !aliveWorkerIds.has(spawnConfig.workerId));
             spawningOperation.spawnQueue=toBeSpawnedWorkerConfigs;
