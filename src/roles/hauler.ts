@@ -56,7 +56,7 @@ export class MineHauler {
             }
         }
 
-        if(worker.store.getUsedCapacity()>0) {
+        if(worker.store.getUsedCapacity()<worker.store.getCapacity()) {
 
             let haulerTask: Task<TasksType.PICKUP_RESOURCE> | Task<TasksType.WITHDRAW_RESOURCE> | undefined;
 
