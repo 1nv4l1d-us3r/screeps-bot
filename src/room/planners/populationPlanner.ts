@@ -43,7 +43,11 @@ export class PopulationPlanner {
 
 
     private static getMiningWorkerSpawnConfigs = (room: Room,miningConfig: MiningSiteConfig[]) => {
-    
+
+        const roomLevel = room.controller?.level || 0;
+
+        const haulerCount=roomLevel<3?2:1;
+
         const minerOptimalBodyParts=[WORK,WORK,MOVE];
       
         const mineWorkerSpawnConfigs: WorkerSpawnConfig[] = [];
@@ -87,21 +91,25 @@ export class PopulationPlanner {
                 const haulerMaxBodyParts=14;
                 const haulerBodyParts=this.getAutoScaledBodyParts(haulerOptimalBodyParts,roomSpawnBudget,haulerMaxBodyParts);
 
-                const mineHaulerId = `M-H-${room.name}-${miningSite.resourceId}` as Id<Worker>;
-                const mineHaulerRoleMemory: RoleMemory<WorkerRoles.HAULER> = {
-                    role: WorkerRoles.HAULER,
-                    resourceType: miningSite.resourceType,
-                    miningCoord: miningSite.miningCoord,
-                    storageCoord: miningSite.storageCoord,
+
+                for(let haunerIndex=0; haunerIndex<haulerCount; haunerIndex++) {
+                    const mineHaulerId = `M-H-${room.name}-${miningSite.resourceId}-${haunerIndex}` as Id<Worker>;
+                    const mineHaulerRoleMemory: RoleMemory<WorkerRoles.HAULER> = {
+                        role: WorkerRoles.HAULER,
+                        resourceType: miningSite.resourceType,
+                        miningCoord: miningSite.miningCoord,
+                        storageCoord: miningSite.storageCoord,
+                    }
+                    const mineHaulerSpawnConfig: WorkerSpawnConfig = {
+                        workerId: mineHaulerId,
+                        isCriticalWorker: true,
+                        bodyParts: haulerBodyParts,
+                        optimalBodyParts: haulerOptimalBodyParts,
+                        roleMemory: mineHaulerRoleMemory,
+                    }
+                    mineWorkerSpawnConfigs.push(mineHaulerSpawnConfig);
                 }
-                const mineHaulerSpawnConfig: WorkerSpawnConfig = {
-                    workerId: mineHaulerId,
-                    isCriticalWorker: true,
-                    bodyParts: haulerBodyParts,
-                    optimalBodyParts: haulerOptimalBodyParts,
-                    roleMemory: mineHaulerRoleMemory,
-                }
-                mineWorkerSpawnConfigs.push(mineHaulerSpawnConfig);
+
             }
             
 
