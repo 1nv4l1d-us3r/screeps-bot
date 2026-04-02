@@ -56,7 +56,7 @@ export class MineHauler {
             }
         }
 
-        if(worker.store.getUsedCapacity() < worker.store.getCapacity()) {
+        if(worker.store.getUsedCapacity()>0) {
 
             let haulerTask: Task<TasksType.PICKUP_RESOURCE> | Task<TasksType.WITHDRAW_RESOURCE> | undefined;
 
@@ -97,7 +97,7 @@ export class MineHauler {
 
 
 
-        if(worker.store.getFreeCapacity() === 0) {
+        if(worker.store.getUsedCapacity()==worker.store.getCapacity()) {
             
             const storageTask: TransferResourceTask = {
                 taskType: TasksType.TRANSFER_RESOURCE,
