@@ -159,7 +159,7 @@ export class PopulationPlanner {
     
     private static getBuilderSpawnConfigs = (room: Room) => {
         const roomLevel = room.controller?.level || 0;
-        let builderCount=1;
+        let builderCount=roomLevel<3?2:1;
         const commonWorkerBodyParts=[WORK,CARRY,MOVE,MOVE];
         const commonWorkerMaxParts=16;
         const autoScaledBodyParts=this.getAutoScaledBodyParts(commonWorkerBodyParts,room.energyCapacityAvailable,commonWorkerMaxParts);
