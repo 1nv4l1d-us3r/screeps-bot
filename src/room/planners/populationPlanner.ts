@@ -13,6 +13,10 @@ import { MinerMemory, MineHaulerMemory } from "types/roles";
 export class PopulationPlanner {
 
 
+    private static commonWorkerBodyParts=[WORK,CARRY,MOVE,MOVE];
+    private static commonWorkerMaxParts=16;
+
+
     public static getPopulationConfigForRoom = (room: Room,miningConfig: MiningSiteConfig[]) => {
 
 
@@ -20,12 +24,14 @@ export class PopulationPlanner {
         const fillerSpawnConfigs = this.getFillerSpawnConfigs(room);
         const repairerSpawnConfigs = this.getRepairerSpawnConfigs(room);
         const builderSpawnConfigs = this.getBuilderSpawnConfigs(room);
+        const upgraderSpawnConfigs = this.getUpgraderSpawnConfigs(room);
 
 
         const workerSpawnConfigs:WorkerSpawnConfig[] =miningWorkerSpawnConfigs
             .concat(fillerSpawnConfigs)
             .concat(repairerSpawnConfigs)
             .concat(builderSpawnConfigs)
+            .concat(upgraderSpawnConfigs)
 
 
         const criticalWorkers=workerSpawnConfigs.filter(spawnConfig => spawnConfig.isCriticalWorker)
@@ -160,9 +166,7 @@ export class PopulationPlanner {
     private static getBuilderSpawnConfigs = (room: Room) => {
         const roomLevel = room.controller?.level || 0;
         let builderCount=roomLevel<3?2:1;
-        const commonWorkerBodyParts=[WORK,CARRY,MOVE,MOVE];
-        const commonWorkerMaxParts=16;
-        const autoScaledBodyParts=this.getAutoScaledBodyParts(commonWorkerBodyParts,room.energyCapacityAvailable,commonWorkerMaxParts);
+        const autoScaledBodyParts=this.getAutoScaledBodyParts(PopulationPlanner.commonWorkerBodyParts,room.energyCapacityAvailable,PopulationPlanner.commonWorkerMaxParts);
         
         const builderSpawnConfigs: WorkerSpawnConfig[] = [];
         for(let i = 0; i < builderCount; i++) {
@@ -173,7 +177,7 @@ export class PopulationPlanner {
             const builderSpawnConfig: WorkerSpawnConfig = {
                 workerId: builderId,
                 bodyParts: autoScaledBodyParts,
-                optimalBodyParts: commonWorkerBodyParts,
+                optimalBodyParts: PopulationPlanner.commonWorkerBodyParts,
                 roleMemory: builderRoleMemory,
             }
             builderSpawnConfigs.push(builderSpawnConfig);
@@ -212,6 +216,26 @@ export class PopulationPlanner {
         return repairerSpawnConfigs;
     }
 
+    private static getUpgraderSpawnConfigs = (room: Room) => {
+        const roomLevel = room.controller?.level || 0;
+        let upgraderCount=roomLevel<3?2:1;
+        const autoScaledBodyParts=this.getAutoScaledBodyParts(PopulationPlanner.commonWorkerBodyParts,room.energyCapacityAvailable,PopulationPlanner.commonWorkerMaxParts);
+        const upgraderSpawnConfigs: WorkerSpawnConfig[] = [];
+        for(let i = 0; i < upgraderCount; i++) {
+            const upgraderId = `U-${room.name}-${i}` as Id<Worker>;
+            const upgraderRoleMemory: RoleMemory<WorkerRoles.UPGRADER> = {
+                role: WorkerRoles.UPGRADER,
+            }
+            const upgraderSpawnConfig: WorkerSpawnConfig = {
+                workerId: upgraderId,
+                bodyParts: autoScaledBodyParts,
+                optimalBodyParts: PopulationPlanner.commonWorkerBodyParts,
+                roleMemory: upgraderRoleMemory,
+            }
+            upgraderSpawnConfigs.push(upgraderSpawnConfig);
+        }
+        return upgraderSpawnConfigs;
+    }
     
 
 

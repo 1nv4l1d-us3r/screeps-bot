@@ -15,12 +15,17 @@ interface BaseRoleMemory {
     role: WorkerRoles;
 }
 
+
 export interface FillterMemory extends BaseRoleMemory {
     role: WorkerRoles.FILLER;
 }
 
 export interface RepairerMemory extends BaseRoleMemory {
     role: WorkerRoles.REPAIRER;
+}
+
+export interface UpgraderMemory extends BaseRoleMemory {
+    role: WorkerRoles.UPGRADER;
 }
 
 
@@ -55,6 +60,7 @@ export interface MineHaulerMemory extends BaseRoleMemory {
 export type RoleMemory<R extends WorkerRoles> = (
      FillterMemory
     | RepairerMemory
+    | UpgraderMemory
     | BuilderMemory
     | MinerMemory
     | MineHaulerMemory
