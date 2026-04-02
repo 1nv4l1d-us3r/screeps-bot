@@ -119,7 +119,7 @@ export class PopulationPlanner {
 
         if(roomLevel === 1) 
             return [];
-        else if(roomLevel >2 && roomLevel < 5)
+        else if(roomLevel >=2 && roomLevel < 5)
             fillerCount = 1;
         else if(roomLevel >= 5)
             fillerCount = 2;
