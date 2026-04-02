@@ -49,10 +49,12 @@ export interface WorkerSpawnConfig{
     bodyParts: BodyPartConstant[];
     optimalBodyParts: BodyPartConstant[];
     roleMemory: RoleMemory<WorkerRoles>
+    isCriticalWorker?: boolean;
 }
 
 export interface PopulationConfig{
     totalWorkers: number;
+    criticalWorkers: number;
     workerSpawnConfigs: WorkerSpawnConfig[];
 }
 

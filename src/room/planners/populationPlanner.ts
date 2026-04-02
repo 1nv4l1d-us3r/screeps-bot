@@ -27,9 +27,13 @@ export class PopulationPlanner {
             .concat(repairerSpawnConfigs)
             .concat(builderSpawnConfigs)
 
+
+        const criticalWorkers=workerSpawnConfigs.filter(spawnConfig => spawnConfig.isCriticalWorker)
+
         const populationConfig: PopulationConfig = {
             totalWorkers: workerSpawnConfigs.length,
-            workerSpawnConfigs: workerSpawnConfigs
+            criticalWorkers: criticalWorkers.length,
+            workerSpawnConfigs: workerSpawnConfigs,
         }
         return populationConfig;
 
@@ -70,6 +74,7 @@ export class PopulationPlanner {
             }
             const minerSpawnConfig: WorkerSpawnConfig = {
                 workerId: minerId,
+                isCriticalWorker: true,
                 bodyParts: minerBodyParts,
                 optimalBodyParts: minerOptimalBodyParts,
                 roleMemory: minerRoleMemory,
@@ -91,6 +96,7 @@ export class PopulationPlanner {
                 }
                 const mineHaulerSpawnConfig: WorkerSpawnConfig = {
                     workerId: mineHaulerId,
+                    isCriticalWorker: true,
                     bodyParts: haulerBodyParts,
                     optimalBodyParts: haulerOptimalBodyParts,
                     roleMemory: mineHaulerRoleMemory,
@@ -131,6 +137,7 @@ export class PopulationPlanner {
             }
             const fillerSpawnConfig: WorkerSpawnConfig = {
                 workerId: fillerId,
+                isCriticalWorker: true,
                 bodyParts: fillerBodyParts,
                 optimalBodyParts: fillerOptimalBodyParts,
                 roleMemory: fillerRoleMemory,
