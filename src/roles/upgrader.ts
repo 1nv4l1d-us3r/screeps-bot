@@ -23,11 +23,13 @@ export const upgraderRole = (worker: Worker) => {
     }
     if(upgradeResult==ERR_NOT_ENOUGH_RESOURCES){
         const upgraderStorage=LogisticsManager.getUpgraderStorage(worker.room)
+
+        const upgraderStorageHasEnergy=upgraderStorage?.store.getUsedCapacity(RESOURCE_ENERGY) > 0;
         
         const withdrawEnergyTask: WithdrawResourceTask = {
             taskType: TasksType.WITHDRAW_RESOURCE,
             data: {
-                withdrawStructureId:upgraderStorage?upgraderStorage.id: 'auto',
+                withdrawStructureId:upgraderStorageHasEnergy ? upgraderStorage.id : 'auto',
                 resourceType: RESOURCE_ENERGY,
             }
         }

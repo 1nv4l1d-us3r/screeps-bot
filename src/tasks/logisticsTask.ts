@@ -39,20 +39,20 @@ export class LogisticsTaskHandler {
             return;
         }
         const pickupResult = worker.pickup(droppedResource);
-        console.log(`pickupResult: ${pickupResult}`);
+
         if(pickupResult === ERR_NOT_IN_RANGE) {
             worker.moveTo(droppedResource);
             return;
         }
         else if(
-            pickupResult === ERR_FULL
+               pickupResult === ERR_FULL
             || pickupResult === ERR_INVALID_TARGET
+            || pickupResult === OK
+            || worker.store.getUsedCapacity() === worker.store.getCapacity()
         ) {
             memory.task = undefined;
         }
-        if(worker.store.getUsedCapacity() === worker.store.getCapacity()) {
-            memory.task = undefined;
-        }
+        
     }
 
     public static handleWithdrawResourceTask(worker: WithdrawResourceTaskWorker) {
@@ -95,13 +95,12 @@ export class LogisticsTaskHandler {
                 withdrawResult === ERR_INVALID_TARGET 
                 || withdrawResult === ERR_NOT_ENOUGH_RESOURCES
                 || withdrawResult === ERR_FULL
+                || withdrawResult === OK
+                || worker.store.getUsedCapacity() === worker.store.getCapacity()
             ) {
                 memory.task = undefined;
                 return;
             }
-            if(worker.store.getUsedCapacity()===worker.store.getCapacity()) {
-                memory.task = undefined;
-            } 
         }
     }
 
@@ -137,12 +136,11 @@ export class LogisticsTaskHandler {
             transferResult === ERR_NOT_ENOUGH_RESOURCES
             || transferResult === ERR_FULL
             || transferResult === ERR_INVALID_TARGET
+            || transferResult === OK
+            || worker.store.getFreeCapacity() === worker.store.getCapacity()
         ) {
             memory.task = undefined;
         }
         
-        if(worker.store.getUsedCapacity() === 0) {
-            memory.task = undefined;
-        }
     }
 }
