@@ -2,9 +2,8 @@ import {  BuilderMemory, RoleMemory, WorkerRoles } from "types/roles";
 import { Worker,WorkerMemory } from "../../types/worker";
 
 
-import { BaseConfig, MiningSiteConfig } from "../../types/room/planner";
+import { MiningConfig, MiningSiteConfig } from "../../types/room/planner";
 import { PopulationConfig, WorkerSpawnConfig } from "../../types/room/planner";
-import { MinerMemory, MineHaulerMemory } from "types/roles";
 
 
 
@@ -17,7 +16,7 @@ export class PopulationPlanner {
     private static commonWorkerMaxParts=16;
 
 
-    public static getPopulationConfigForRoom = (room: Room,miningConfig: MiningSiteConfig[]) => {
+    public static getPopulationConfigForRoom = (room: Room,miningConfig: MiningConfig) => {
 
 
         const miningWorkerSpawnConfigs = this.getMiningWorkerSpawnConfigs(room,miningConfig);
@@ -50,7 +49,7 @@ export class PopulationPlanner {
 
 
 
-    private static getMiningWorkerSpawnConfigs = (room: Room,miningConfig: MiningSiteConfig[]) => {
+    private static getMiningWorkerSpawnConfigs = (room: Room,miningConfig: MiningConfig) => {
 
         const roomLevel = room.controller?.level || 0;
 
@@ -60,7 +59,7 @@ export class PopulationPlanner {
         const mineWorkerSpawnConfigs: WorkerSpawnConfig[] = [];
         const roomSpawnBudget = room.energyCapacityAvailable;
       
-        miningConfig.forEach(miningSite => {
+        miningConfig.miningSites.forEach(miningSite => {
             let minerOptimalBodyParts: BodyPartConstant[]=[WORK,MOVE];
 
             let minerBodyParts: BodyPartConstant[]=[MOVE];

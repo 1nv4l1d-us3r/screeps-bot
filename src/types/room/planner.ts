@@ -26,6 +26,12 @@ export interface MiningSiteConfig{
     extractorCoord?: Coord;
 }
 
+export interface MiningConfig{
+    miningSites: MiningSiteConfig[];
+    containerCoords: Coord[];
+    linkCoords: Coord[];
+}
+
 
 
 // -------------- Logistics Configuration --------------//
@@ -64,7 +70,7 @@ export interface PopulationConfig{
 
 export interface RoomPlan{
     baseConfig: BaseConfig;
-    miningConfig: MiningSiteConfig[];
+    miningConfig: MiningConfig;
     logisticsConfig: LogisticsConfig;
     populationConfig: PopulationConfig;
 }

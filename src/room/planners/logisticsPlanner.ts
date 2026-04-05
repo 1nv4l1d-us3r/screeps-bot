@@ -11,7 +11,7 @@ import {
 import { Coord, PackedCoord } from "types/geometry";
 
 import { LogisticsConfig } from "types/room/planner";
-import { MiningSiteConfig } from "types/room/planner";
+import { MiningConfig } from "types/room/planner";
 import { getMaxBuildableStructuresByLevel } from "utils/gameConstants";
 
 
@@ -23,7 +23,7 @@ export class LogisticsPlanner {
 
 
 
-    public static getLogisticsConfig = (room: Room, baseCenterCoord: Coord,miningConfig:MiningSiteConfig[]) => {
+    public static getLogisticsConfig = (room: Room, baseCenterCoord: Coord,miningConfig:MiningConfig) => {
 
         const {upgraderStoragePackedCoord,upgraderStorageType}=this.getUpgraderContainerConfig(room,baseCenterCoord,miningConfig);
         const logisticsConfig: LogisticsConfig = {
@@ -37,7 +37,7 @@ export class LogisticsPlanner {
    /*
     * This function finds the best spot for the upgrader container 
     */
-   private static getUpgraderContainerConfig = (room: Room,baseCenterCoord:Coord,miningConfig:MiningSiteConfig[]) => {
+   private static getUpgraderContainerConfig = (room: Room,baseCenterCoord:Coord,miningConfig:MiningConfig) => {
         const controller=room.controller;
 
 
@@ -96,7 +96,7 @@ export class LogisticsPlanner {
         }
         else if(upgraderStorageDistance>=this.UPGRADER_LINK_USAGE_DISTANCE){
             const maxLinks=getMaxBuildableStructuresByLevel(STRUCTURE_LINK, roomLevel);
-            const usedLinks=miningConfig.filter(config => config.storageType===STRUCTURE_LINK).length;
+            const usedLinks=miningConfig.linkCoords.length;
             // 1 link is reserved for the base reciever
             const availableLinks=maxLinks-1-usedLinks;
 
