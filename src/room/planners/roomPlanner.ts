@@ -20,6 +20,7 @@ export class RoomPlanner {
         Scheduler.createRecurringJob({
             name: 'RoomPlannerDeamon',
             interval: 500,
+            executeOnCreate: true,
             func: this.startRoomPlannerJobs,
         })
 

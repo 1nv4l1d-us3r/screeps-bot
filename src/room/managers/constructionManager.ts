@@ -43,6 +43,7 @@ export class ConstructionManager {
         Scheduler.createRecurringJob({
             name: 'ConstructionManagerDeamon',
             interval: 100,
+            executeOnCreate: true,
             func: ConstructionManager.startConstructionJobs,
         })
     }

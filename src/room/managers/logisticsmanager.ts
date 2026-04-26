@@ -26,6 +26,7 @@ export class LogisticsService {
         Scheduler.createRecurringJob({
             name: 'LogisticsManagerDeamon',
             interval: 300,
+            executeOnCreate: true,
             func: LogisticsService.scheduleStorageProviderIdsUpdate,
         })
     }

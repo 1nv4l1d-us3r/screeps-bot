@@ -124,7 +124,7 @@ class Scheduler {
 
 
     public static createRecurringJob(params:CreateRecurringJobParams) {
-        const {name, interval, func} = params;
+        const {name, interval,executeOnCreate=false,func} = params;
 
         const triggerTick=Game.time+interval;
         const recurringJob:RecurringJob={
@@ -136,6 +136,16 @@ class Scheduler {
         }
 
         this.addJobToQueue(recurringJob)
+        if(executeOnCreate){
+
+            const immediateJob:OneTimeJob={
+                name:`${name} (immediate on create)`,
+                type:JobType.ONE_TIME,
+                triggerTick:Game.time+1,
+                func,
+            }
+            this.addJobToQueue(immediateJob)
+        }
     }
 
 
