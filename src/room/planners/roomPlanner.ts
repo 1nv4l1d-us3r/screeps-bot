@@ -20,6 +20,7 @@ export class RoomPlanner {
         Scheduler.createRecurringJob({
             name: 'RoomPlannerDeamon',
             interval: 500,
+            executeOnCreate: true,
             func: this.startRoomPlannerJobs,
         })
 
@@ -43,13 +44,18 @@ export class RoomPlanner {
         })
     }
 
-    public static updateRoomPlan = (room: Room) => {
-        const roomPlan = RoomPlanner.getRoomPlan(room);
-        room.memory.roomPlan = roomPlan;
+    public static getRoomPlan = (room: Room) => {
+        let roomPlan = room.memory.roomPlan;
+        if(!roomPlan) {
+            RoomPlanner.updateRoomPlan(room);
+            roomPlan = room.memory.roomPlan;
+        }
+        return roomPlan;
     }
 
 
-    public static getRoomPlan = (room: Room): RoomPlan => {
+
+    public static updateRoomPlan = (room: Room) => {
 
         const roomPlan=room.memory.roomPlan;
         const newRoomPlan:Partial<RoomPlan>={};
@@ -74,7 +80,7 @@ export class RoomPlanner {
         
         const updatedRoomPlan={...roomPlan, ...newRoomPlan} as RoomPlan;
 
-        return updatedRoomPlan;
+        room.memory.roomPlan = updatedRoomPlan;
     }
 
 }

@@ -1,7 +1,7 @@
 import { getCoordDistance, getMaxReachableNeighborCoords,  } from "../../geometry/coords";
 import { getMaxBuildableStructuresByLevel } from "../../utils/gameConstants";
 
-import { MiningSiteConfig } from "../../types/room/planner";
+import { MiningConfig, MiningSiteConfig } from "../../types/room/planner";
 import { Coord } from "../../types/geometry";
 
 /*
@@ -17,9 +17,11 @@ export class MiningPlanner {
     // minimum distance from source to base in order to use a link as transfer mechanism for energy.
 
 
-    public static  getMiningConfigForRoom= (room: Room,baseCenterCoord: Coord): MiningSiteConfig[] => {
+    public static  getMiningConfigForRoom= (room: Room,baseCenterCoord: Coord): MiningConfig => {
     
         const miningSiteConfigs: MiningSiteConfig[] = [];
+        const miningContainerCoords: Coord[] = [];
+        const miningLinkCoords: Coord[] = [];
         
         const roomLevel=room.controller?.level||0;
         const sources=room.find(FIND_SOURCES);
@@ -30,7 +32,11 @@ export class MiningPlanner {
         // TODO: use cache provider to get the room terrain ( use better bitmap instead of getTerrain )
     
         if(!sources.length) {
-            return [];
+            return {
+                miningSites: [],
+                containerCoords: [],
+                linkCoords: [],
+            };
         }
     
         const sourceDistanceMap=new Map<Id<Source>, number>();
@@ -106,6 +112,12 @@ export class MiningPlanner {
                 storageType,
                 storageCoord
             }
+            if(storageType===STRUCTURE_CONTAINER) {
+                miningContainerCoords.push(storageCoord);
+            }
+            else if(storageType===STRUCTURE_LINK) {
+                miningLinkCoords.push(storageCoord);
+            }
             miningSiteConfigs.push(sourceMiningSiteConfig);
         });
     
@@ -145,12 +157,17 @@ export class MiningPlanner {
                     storageCoord,
                     extractorCoord
                 }
+                miningContainerCoords.push(storageCoord);
                 miningSiteConfigs.push(mineralStorageConfig);
             });
         }
     
     
-        return miningSiteConfigs;
+        return {
+            miningSites: miningSiteConfigs,
+            containerCoords: miningContainerCoords,
+            linkCoords: miningLinkCoords,
+        };
     }
 
 

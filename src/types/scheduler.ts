@@ -32,6 +32,7 @@ export type Job=RecurringJob|OneTimeJob;
 export interface CreateRecurringJobParams {
     name: string;
     interval: number;
+    executeOnCreate?: boolean;
     func: () => void
 }
 
