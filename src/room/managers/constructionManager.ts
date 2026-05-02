@@ -231,7 +231,7 @@ export class ConstructionManager {
 
         // ----------------- Mining Utility Structures Construction ----------------//
 
-        for(const miningSiteConfig of miningConfig) {
+        for(const miningSiteConfig of miningConfig.miningSites) {
             const { storageCoord, storageType,extractorCoord } = miningSiteConfig;
             if(storageCoord && storageType) {
                 const storageCoordPacked=packCoord(storageCoord);
